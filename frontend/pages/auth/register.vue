@@ -12,12 +12,12 @@
           </NuxtLink>
         </p>
       </div>
-      <form class="mt-2 bg-green-100 p-7 rounded-xl space-y-6" @submit.prevent="register">
+      <form v-if="!formSubmitted" class="mt-2 bg-green-100 p-7 rounded-xl space-y-6" @submit.prevent="register">
         <div class="rounded-md shadow-sm -space-y-px">
           <!-- Email -->
           <div class="relative">
             <input id="email-address" name="email" type="email" autocomplete="email" required
-              v-model="email"
+              v-model="formData.email"
               class="appearance-none mb-4 relative block w-full pl-10 px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm"
               placeholder="Adresse e-mail"
             />
@@ -34,7 +34,7 @@
           <!-- Nom -->
           <div class="relative">
             <input id="name" name="name" type="text" required
-              v-model="name"
+              v-model="formData.nom"
               class="appearance-none mb-4 relative block w-full pl-10 px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm"
               placeholder="Nom"
             />
@@ -51,7 +51,7 @@
           <!-- Prénom -->
           <div class="relative">
             <input id="surname" name="surname" type="text" required
-              v-model="surname"
+              v-model="formData.prenom"
               class="appearance-none mb-4 relative block w-full pl-10 px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm"
               placeholder="Prénom"
             />
@@ -68,7 +68,7 @@
           <!-- Téléphone -->
           <div class="relative">
             <input id="phone" name="phone" type="text" required
-              v-model="phone"
+              v-model="formData.telephone"
               class="appearance-none mb-4 relative block w-full pl-10 px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm"
               placeholder="Téléphone"
             />
@@ -84,13 +84,13 @@
 
           <!-- Rôle -->
           <div class="relative">
-            <select id="role" name="role" v-model="role" required
+            <select id="role" name="role" v-model="formData.role" required
               class="appearance-none mb-4 relative block w-full pl-10 px-3 py-2 border border-gray-300 text-gray-900 focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm">
               <option disabled value="">Sélectionnez un rôle</option>
-              <option value="Admin">Admin</option>
+              <option value="Administrateur">Admin</option>
               <option value="ONG">ONG</option>
               <option value="Entreprise">Entreprise</option>
-              <option value="Citoyen">Citoyen</option>
+              <option value="Citoyens">Citoyen</option>
             </select>
             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <!-- Heroicon: briefcase -->
@@ -101,11 +101,32 @@
               </svg>
             </div>
           </div>
-
+          
+          <!-- Communes -->
+          <div class="relative">
+            <select id="commune" name="commune" v-model="formData.commune" required
+              class="appearance-none mb-4 relative block w-full pl-10 px-3 py-2 border border-gray-300 text-gray-900 focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm">
+              <option disabled value="">Sélectionnez une commune</option>
+              <option v-for="commune in communes" :key="commune.id" :value="commune.id">
+                {{ commune.name }}
+              </option>
+            </select>
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <!-- Heroicon: location-marker -->
+              <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none"
+                   viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+              </svg>
+            </div>
+          </div>
+          
           <!-- Mot de passe -->
           <div class="relative">
             <input id="password" name="password" type="password" required
-              v-model="password"
+              v-model="formData.password"
               class="appearance-none mb-4 relative block w-full pl-10 px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm"
               placeholder="Mot de passe"
             />
@@ -141,72 +162,126 @@
         <div>
           <button type="submit"
             class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-            :disabled="loading"
+            :disabled="authStore.loading"
           >
-            <span v-if="loading">Chargement...</span>
-            <span v-else>S'inscrire</span>
+            <span v-if="authStore.loading">Chargement...</span>
+            <span v-else>Valider</span>
           </button>
         </div>
 
         <!-- Erreur -->
-        <div v-if="error" class="text-red-600 text-center">
-          {{ error }}
+        <div v-if="errorMessage" class="text-red-600 text-center">
+          {{ errorMessage }}
         </div>
       </form>
+      
+      <!-- Message de succès après soumission -->
+      <div v-if="formSubmitted" class="mt-2 bg-green-100 p-7 rounded-xl space-y-6">
+        <div class="text-center text-green-700">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <h3 class="text-xl font-bold mt-2">Inscription réussie!</h3>
+          <p class="mt-2">Vérifiez votre e-mail pour activer votre compte.</p>
+          <button @click="goToLogin" class="mt-4 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+            Aller à la page de connexion
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
-
 <script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { useNuxtApp } from '#app'
+import { ref, onMounted, computed } from 'vue';
+import { useRouter } from 'vue-router';
+import { useAuthStore, useCommunes } from '~/stores/auth';
 
-// Variables réactives
-const email = ref('')
-const name = ref('')
-const surname = ref('')
-const phone = ref('')
-const role = ref('')
-const password = ref('')
-const passwordConfirm = ref('')
-const loading = ref(false)
-const error = ref(null)
+const router = useRouter();
+const authStore = useAuthStore();
+const { getCommunes } = useCommunes();
 
-const router = useRouter()
-const { $axios } = useNuxtApp()
+// Références pour le formulaire
+const formData = ref({
+  email: '',
+  nom: '',
+  prenom: '',
+  telephone: '',
+  role: '',
+  commune: '',
+  password: ''
+});
+const passwordConfirm = ref('');
+const communes = ref([]);
+const formSubmitted = ref(false);
 
-const register = async () => {
-  error.value = ''
+// Récupérer l'erreur du store
+const errorMessage = computed(() => {
+  if (!authStore.error) return null;
   
-  if (password.value !== passwordConfirm.value) {
-    error.value = 'Les mots de passe ne correspondent pas.'
-    return
+  // Si l'erreur est un objet, on extrait le premier message d'erreur
+  if (typeof authStore.error === 'object') {
+    const firstError = Object.values(authStore.error)[0];
+    return Array.isArray(firstError) ? firstError[0] : firstError;
   }
+  
+  return authStore.error;
+});
 
-  loading.value = true
+// Charger les communes au chargement du composant
+onMounted(async () => {
   try {
-    const response = await $axios.post('/api/register', {
-      email: email.value,
-      name: name.value,
-      surname: surname.value,
-      phone: phone.value,
-      role: role.value,
-      password: password.value,
-    })
-
-    if (response.data.success) {
-      // Redirection après inscription
-      router.push('/auth/login')
-    } else {
-      error.value = response.data.message || 'Une erreur est survenue.'
-    }
+    // Utiliser les données hardcodées en attendant l'API
+    communes.value = [
+      { id: 1, name: 'Bafoussam I', region: 'ouest' },
+      { id: 2, name: 'Bafoussam II', region: 'ouest' },
+      { id: 3, name: 'Mandjou', region: 'Est' }
+    ];
+    
+    // Décommenter quand l'API sera prête
+    // const communesData = await getCommunes();
+    // communes.value = communesData;
   } catch (err) {
-    error.value = err.response?.data?.message || 'Erreur lors de l’inscription.'
-  } finally {
-    loading.value = false
+    console.error('Erreur lors du chargement des communes:', err);
   }
-}
+});
 
+// Enregistrement d'un nouvel utilisateur
+const register = async () => {
+  // Vérification du mot de passe
+  if (formData.value.password !== passwordConfirm.value) {
+    authStore.error = "Les mots de passe ne correspondent pas";
+    return;
+  }
+
+  try {
+    // Appel à l'action du store pour l'inscription
+    await authStore.register({
+      email: formData.value.email,
+      nom: formData.value.nom,
+      prenom: formData.value.prenom,
+      telephone: formData.value.telephone,
+      role: formData.value.role,
+      commune: formData.value.commune,
+      password: formData.value.password
+    });
+
+    // Si l'inscription est réussie
+    formSubmitted.value = true;
+    
+    // Facultatif: Redirection automatique après un délai
+    setTimeout(() => {
+      router.push('/auth/login');
+    }, 5000);
+    
+  } catch (err) {
+    // Les erreurs sont gérées dans le store et accessibles via errorMessage
+    console.error('Erreur d\'inscription:', err);
+  }
+};
+
+// Navigation vers la page de connexion
+const goToLogin = () => {
+  router.push('/auth/login');
+};
 </script>

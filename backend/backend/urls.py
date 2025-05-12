@@ -23,8 +23,9 @@ from django.conf import settings
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-        path('api/accounts/', include('accounts.urls')),
+    path('api/accounts/', include('accounts.urls')),
     path('api/communes/', include('communes.urls')),
+    path('api/photos/', include('photos.urls')),
 ]
 
 # Add media files URLs in development

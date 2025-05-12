@@ -68,44 +68,45 @@
     </div>
   </template>
   
-  <script>
-  export default {
-    data() {
-      return {
-        email: '',
-        password: '',
-        rememberMe: false,
-        loading: false,
-        error: null
-      }
-    },
-    methods: {
-      async login() {
-        this.loading = true;
-        this.error = null;
-        
-        try {
-          const response = await this.$axios.post('/api/auth/login', {
-            email: this.email,
-            password: this.password,
-            remember: this.rememberMe
-          });
-          
-          // Stocker le token dans les cookies ou localStorage
-          this.$auth.setToken(response.data.token);
-          
-          // Rediriger vers la page d'accueil
-          this.$router.push('/');
-        } catch (error) {
-          if (error.response && error.response.data) {
-            this.error = error.response.data.message || 'Erreur de connexion';
-          } else {
-            this.error = 'Une erreur s\'est produite lors de la connexion';
-          }
-        } finally {
-          this.loading = false;
-        }
-      }
+  <script setup>
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '~/stores/auth'
+
+
+const email = ref('')
+const password = ref('')
+const rememberMe = ref(false)
+const loading = ref(false)
+const error = ref(null)
+
+const router = useRouter()
+const authStore = useAuthStore()
+
+const login = async () => {
+  loading.value = true
+  error.value = null
+
+  try {
+    const result = await authStore.login({
+  email: email.value,
+  password: password.value
+})
+
+if (user.role === "Citoyens") {
+  router.push('/dashboard')
+} else {
+  router.push('/')
+}
+
+  } catch (err) {
+    if (err.response && err.response.data) {
+      error.value = err.response.data.message || "Erreur de connexion"
+    } else {
+      error.value = "Une erreur s'est produite lors de la connexion"
     }
+  } finally {
+    loading.value = false
   }
-  </script>
+}
+</script>

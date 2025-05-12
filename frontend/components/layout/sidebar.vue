@@ -1,7 +1,7 @@
 <template>
     <aside class="w-64 bg-green-700 text-white min-h-screen p-4 space-y-4">
         <NuxtLink to="/" class="flex-shrink-0 flex items-center">
-                <span class="text-xl font-bold">Redevabilité Verte</span>
+                <span class="text-xl font-bold">EcoVert</span>
               </NuxtLink>
       <ul>
         <!-- <li><NuxtLink to="/communes" class="block py-2 hover:bg-green-600 rounded">Communes</NuxtLink></li> -->

@@ -1,190 +1,150 @@
-import { defineStore } from 'pinia'
-import jwtDecode from 'jwt-decode'
-import axios from 'axios'
+import { defineStore } from 'pinia';
+import axios from 'axios';
+
+// Créer une instance axios avec la configuration de base
+const apiClient = axios.create({
+  baseURL: process.env.NUXT_PUBLIC_API_URL || 'http://localhost:8000',
+  headers: {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json'
+  }
+});
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
     user: null,
     token: null,
-    refreshToken: null,
-    isLoading: false,
+    loading: false,
     error: null,
+    isAuthenticated: false
   }),
 
   getters: {
-    isAuthenticated: (state) => !!state.token,
-    userRole: (state) => state.user?.role || null,
+    getUser: (state) => state.user,
+    getToken: (state) => state.token,
+    getLoading: (state) => state.loading,
+    getError: (state) => state.error,
+    getIsAuthenticated: (state) => state.isAuthenticated
   },
 
   actions: {
+    // Inscription
     async register(userData) {
+      this.loading = true;
+      this.error = null;
+
       try {
-        this.isLoading = true
-        this.error = null
-
-        const config = useRuntimeConfig()
-        const response = await axios.post(`${config.public.apiBaseUrl}/accounts/register/`, userData)
-
-        return response.data
+        const response = await apiClient.post('/api/accounts/register/', userData);
+        return response.data;
       } catch (error) {
-        this.error = error.response?.data || 'Erreur lors de l\'inscription'
-        throw error
+        this.error = error.response?.data || "Une erreur s'est produite lors de l'inscription";
+        throw error;
       } finally {
-        this.isLoading = false
+        this.loading = false;
       }
     },
 
-    async verifyEmail(verificationData) {
-      try {
-        this.isLoading = true
-        this.error = null
-
-        const config = useRuntimeConfig()
-        const response = await axios.post(`${config.public.apiBaseUrl}/accounts/verify-email/`, verificationData)
-
-        this.setAuthData(response.data)
-        return response.data
-      } catch (error) {
-        this.error = error.response?.data || 'Erreur lors de la vérification de l\'email'
-        throw error
-      } finally {
-        this.isLoading = false
-      }
-    },
-
+    // Connexion
     async login(credentials) {
+      this.loading = true;
+      this.error = null;
+
       try {
-        this.isLoading = true
-        this.error = null
+        const response = await apiClient.post('/api/accounts/login/', credentials);
+        const { token } = response.data;
 
-        const config = useRuntimeConfig()
-        const response = await axios.post(`${config.public.apiBaseUrl}/accounts/login/`, credentials)
+        this.token = token;
+        this.isAuthenticated = true;
 
-        this.setAuthData(response.data)
-        return response.data
-      } catch (error) {
-        this.error = error.response?.data || 'Erreur lors de la connexion'
-        throw error
-      } finally {
-        this.isLoading = false
-      }
-    },
-
-    async logout() {
-      try {
-        this.isLoading = true
-
-        if (this.refreshToken) {
-          const config = useRuntimeConfig()
-          await axios.post(
-            `${config.public.apiBaseUrl}/accounts/logout/`,
-            { refresh: this.refreshToken },
-            { headers: { Authorization: `Bearer ${this.token}` } }
-          )
+        if (process.client) {
+          localStorage.setItem('authToken', token.access);
         }
 
-        this.clearAuthData()
-        return { success: true }
+        apiClient.defaults.headers.common['Authorization'] = `Bearer ${token.access}`;
+        await this.fetchUserProfile();
+
+        return response.data;
       } catch (error) {
-        console.error('Erreur lors de la déconnexion:', error)
-        this.clearAuthData()
-        return { success: true }
+        this.error = error.response?.data || "Une erreur s'est produite lors de la connexion";
+        throw error;
       } finally {
-        this.isLoading = false
+        this.loading = false;
       }
     },
 
-    async fetchCurrentUser() {
+
+    // Vérification du compte
+    async verifyAccount(verificationData) {
+      this.loading = true;
+      this.error = null;
+
       try {
-        if (!this.token) return null
-
-        this.isLoading = true
-        const config = useRuntimeConfig()
-        const response = await axios.get(
-          `${config.public.apiBaseUrl}/accounts/me/`,
-          { headers: { Authorization: `Bearer ${this.token}` } }
-        )
-
-        this.user = response.data
-        return this.user
+        const response = await apiClient.post('/api/accounts/verify/', verificationData);
+        return response.data;
       } catch (error) {
-        console.error('Erreur lors de la récupération du profil:', error)
-        if (error.response?.status === 401) {
-          this.clearAuthData()
-        }
-        return null
+        this.error = error.response?.data || "Une erreur s'est produite lors de la vérification du compte";
+        throw error;
       } finally {
-        this.isLoading = false
+        this.loading = false;
       }
     },
 
-    setAuthData(data) {
-      this.token = data.access
-      this.refreshToken = data.refresh
-      this.user = data.user
+    // Déconnexion
+    logout() {
+      this.user = null;
+      this.token = null;
+      this.isAuthenticated = false;
 
-      // Enregistrer dans le localStorage uniquement côté client
       if (process.client) {
-        localStorage.setItem('auth_token', this.token)
-        localStorage.setItem('auth_refresh', this.refreshToken)
-        localStorage.setItem('auth_user', JSON.stringify(this.user))
+        localStorage.removeItem('authToken');
       }
 
-      this.setupAxiosInterceptor()
+      delete apiClient.defaults.headers.common['Authorization'];
     },
 
-    clearAuthData() {
-      this.user = null
-      this.token = null
-      this.refreshToken = null
-
-      // Supprimer du localStorage uniquement côté client
-      if (process.client) {
-        localStorage.removeItem('auth_token')
-        localStorage.removeItem('auth_refresh')
-        localStorage.removeItem('auth_user')
-      }
-    },
-
+    // Initialiser l'authentification
     initAuth() {
-      // Cette méthode ne doit s'exécuter que côté client
-      if (!process.client) return false
-
-      const token = localStorage.getItem('auth_token')
-      const refresh = localStorage.getItem('auth_refresh')
-      const user = JSON.parse(localStorage.getItem('auth_user') || 'null')
-
-      if (token && refresh && user) {
-        try {
-          const decoded = jwtDecode(token)
-          const currentTime = Date.now() / 1000
-
-          if (decoded.exp > currentTime) {
-            this.token = token
-            this.refreshToken = refresh
-            this.user = user
-            this.setupAxiosInterceptor()
-            return true
-          }
-        } catch (error) {
-          console.error('Erreur lors du décodage du token:', error)
+      if (process.client) {
+        const token = localStorage.getItem('authToken');
+        if (token) {
+          this.token = token;
+          this.isAuthenticated = true;
+          apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+          this.fetchUserProfile();
         }
       }
-
-      this.clearAuthData()
-      return false
     },
 
-    setupAxiosInterceptor() {
-      axios.interceptors.request.use(
-        (config) => {
-          if (this.token) {
-            config.headers.Authorization = `Bearer ${this.token}`
-          }
-          return config
-        },
-        (error) => Promise.reject(error)
-      )
+    // Récupérer le profil utilisateur
+    async fetchUserProfile() {
+      if (!this.token) return;
+      this.loading = true;
+
+      try {
+        const response = await apiClient.get('/api/accounts/me/');
+        this.user = response.data;
+      } catch (error) {
+        if (error.response?.status === 401) {
+          this.logout();
+        }
+      } finally {
+        this.loading = false;
+      }
     }
   }
-})
+});
+
+// Service pour les communes
+export const useCommunes = () => {
+  const getCommunes = async () => {
+    try {
+      const response = await apiClient.get('/api/communes/');
+      return response.data;
+    } catch (error) {
+      console.error('Erreur lors de la récupération des communes:', error);
+      throw error;
+    }
+  };
+
+  return { getCommunes };
+};

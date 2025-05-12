@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'accounts',
     'communes',
+    'photos',
 ]
 
 MIDDLEWARE = [
@@ -81,14 +82,20 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#          'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'EcoVert',
+#         'USER': 'postgres',
+#         'PASSWORD': 'postgres',
+#         'HOST': 'localhost',
+#         'PORT': '5432',
+#     }
+# }
 DATABASES = {
     'default': {
-         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'Ecovert',
-        'USER': 'postgres',
-        'PASSWORD': 'postgres',
-        'HOST': 'localhost',
-        'PORT': '5432',
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
 
@@ -141,11 +148,16 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 #autorisation des requettes nuxt
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
+    "http://127.0.0.1:3000",
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:3000",
+    "http://localhost:3000", "http://127.0.0.1:3000"
 ]
+# CSRF_COOKIE_AGE = 60*60*24*14
+# CSRF_USE_SESSIONS = False
+# CSRF_COOKIE_SECURE = False
+# CSRF_COOKIE_HTTPONLY = False
 # CORS settings
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
@@ -178,3 +190,9 @@ SIMPLE_JWT = {
     "SIGNING_KEY": SECRET_KEY,
     "USER_ID_FIELD": "id",
 }
+
+# SITE_DOMAIN ="http://localhost:8000"
+# SITE_NAME = "EcoVert"
+
+# SESSION_COOKIE_AGE =1800
+AUTHENTICATION_BACKENDS = ['accounts.backends.EmailBackend']

@@ -1,15 +1,11 @@
-from django.urls import path, include
-from rest_framework.routers import DefaultRouter
-from . import views
+# backend/accounts/urls.py
+from django.urls import path
+from .views import RegisterView, VerifyAccountView, LoginView
 
-router = DefaultRouter()
-router.register(r'users', views.UserViewSet)
+app_name = 'accounts'
 
 urlpatterns = [
-    path('', include(router.urls)),
-    path('register/', views.register_user, name='register'),
-    path('verify-email/', views.verify_email, name='verify_email'),
-    path('login/', views.login_user, name='login'),
-    path('logout/', views.logout_user, name='logout'),
-    path('me/', views.get_current_user, name='current_user'),
+    path('register/', RegisterView.as_view(), name='register'),
+    path('verify/', VerifyAccountView.as_view(), name='verify'),
+    path('login/', LoginView.as_view(), name='login'),
 ]
