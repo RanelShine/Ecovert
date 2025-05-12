@@ -53,8 +53,8 @@ class LoginSerializer(serializers.Serializer):
         
         data['user'] = user
         return data
-    from accounts.models import User
-user = User.objects.get(email="ranelles@gmail.com")
-user.is_active = True
-user.is_verified = True  
-user.save()
+#     from accounts.models import User
+# user = User.objects.get(email="ranelleshine076@gmail.com")
+# user.is_active = True
+# user.is_verified = True  
+# user.save()

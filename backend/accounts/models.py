@@ -1,3 +1,5 @@
+from django.utils import timezone
+from datetime import timedelta
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.utils.translation import gettext_lazy as _
@@ -42,8 +44,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     
     is_active = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
-    is_verified = models.BooleanField(default=False)
-    verification_code = models.CharField(max_length=6, blank=True, null=True)
+    verification_code   = models.CharField(max_length=6, null=True, blank=True)
+    code_expiration     = models.DateTimeField(null=True, blank=True)
+    is_verified         = models.BooleanField(default=False)
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -52,6 +55,16 @@ class User(AbstractBaseUser, PermissionsMixin):
     
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['nom', 'prenom', 'role']
+
+    def set_verification_code(self):
+        import random, string
+        code = ''.join(random.choices(string.digits, k=6))
+        self.verification_code = code
+        self.code_expiration   = timezone.now() + timedelta(hours=1)
+        self.is_active         = False
+        self.is_verified       = False
+        self.save()
+        return code
     
     class Meta:
         verbose_name = _('utilisateur')

@@ -115,6 +115,24 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
+  // Renvoi du code de vérification
+  async resendVerificationCode(email) {
+    this.loading = true;
+    this.error = null;
+
+    try {
+      const response = await apiClient.post('/api/accounts/resend-code/', { email });
+      return response.data;
+    } catch (error) {
+      this.error = error.response?.data || "Erreur lors du renvoi du code";
+      throw error;
+    } finally {
+      this.loading = false;
+    }
+  },
+    // Récupérer le mot de passe
+
+
     // Récupérer le profil utilisateur
     async fetchUserProfile() {
       if (!this.token) return;

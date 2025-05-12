@@ -1,7 +1,10 @@
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
+
+from .utils import send_verification_email
 from .models import User
 from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import UserSerializer, UserRegisterSerializer, LoginSerializer
@@ -14,46 +17,40 @@ class RegisterView(APIView):
     def post(self, request):
         serializer = UserRegisterSerializer(data=request.data)
         if serializer.is_valid():
-            # Générer un code de vérification (6 chiffres)
-            verification_code = ''.join(random.choices(string.digits, k=6))
+            # Création de l’utilisateur (is_active=False par défaut dans create_user())
+            user = serializer.save()
             
-            # Enregistrer l'utilisateur
-            user = serializer.save(verification_code=verification_code, is_active=False)
+            # Génération du code + sauvegarde
+            code = user.set_verification_code()
             
-            # send_verification_email(user.email, verification_code)
+            # Envoi de l’email
+            send_verification_email(user.email, code)
             
             return Response({
                 'success': True,
-                'message': 'Compte créé avec succès. Veuillez vérifier votre email pour activer votre compte.'
+                'message': 'Compte créé. Vérifiez votre email pour activer votre compte.'
             }, status=status.HTTP_201_CREATED)
-        
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class VerifyAccountView(APIView):
     permission_classes = [AllowAny]
-    
     def post(self, request):
         email = request.data.get('email')
-        code = request.data.get('code')
-        
+        code  = request.data.get('code')
         try:
             user = User.objects.get(email=email, verification_code=code)
-            user.is_active = True
-            user.is_verified = True
+            if timezone.now() > user.code_expiration:
+                return Response({'success': False, 'message': 'Code expiré.'}, status=400)
+            user.is_active       = True
+            user.is_verified     = True
             user.verification_code = None
+            user.code_expiration   = None
             user.save()
-            
-            return Response({
-                'success': True,
-                'message': 'Compte activé avec succès.'
-            }, status=status.HTTP_200_OK)
+            return Response({'success': True, 'message': 'Compte activé.'}, status=200)
         except User.DoesNotExist:
-            return Response({
-                'success': False,
-                'message': 'Code de vérification invalide ou utilisateur introuvable.'
-            }, status=status.HTTP_400_BAD_REQUEST)
-
+            return Response({'success': False, 'message': 'Code invalide.'}, status=400)
 
 class LoginView(APIView):
     permission_classes = [AllowAny]
