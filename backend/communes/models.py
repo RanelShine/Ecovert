@@ -20,7 +20,7 @@ class Commune(models.Model):
 
 @receiver(post_migrate)
 def create_default_communes(sender, **kwargs):
-    if sender.label == 'communes':  # <-- nom exact de l'app dans INSTALLED_APPS
+    if sender.label == 'communes':  
         Commune = apps.get_model('communes', 'Commune')
         default_communes = [
             {'id': 1, 'nom': 'Bafoussam I', 'region': 'Ouest'},

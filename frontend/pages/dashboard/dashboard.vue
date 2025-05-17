@@ -30,8 +30,8 @@
       </div>
       <div class="flex justify-center bg-gray-100 p-6">
   <form class="w-full max-w-xl" @submit.prevent="ajout">
-    <!-- objet
     <div class="relative">
+      <!-- objet -->
       <input
         id="objet"
         name="objet"
@@ -42,9 +42,21 @@
         class="appearance-none mb-4 block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900"
         placeholder="ajouter l'objet du signalement"
       />
-    </div> -->
-
-    <!-- description
+    </div>
+<!-- localisation -->
+ <div class="relative">
+    <input
+        id="localisation"
+        name="localisation"
+        type="text"
+        autocomplete="localisation"
+        required
+        v-model="objet"
+        class="appearance-none mb-4 block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900"
+        placeholder="ajouter l'emplacement du siglement"
+      />
+    </div>
+    <!-- description -->
     <div class="relative">
       <textarea
         id="description"
@@ -55,9 +67,9 @@
         class="appearance-none mb-4 block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900"
         placeholder="ajouter une description"
       ></textarea>
-    </div> -->
+    </div>
 
-    <!-- photo
+    <!-- photo -->
     <div class="relative">
       <input
         id="file"
@@ -66,7 +78,7 @@
         required
         class="appearance-none mb-4 block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900"
       />
-    </div> -->
+    </div>
     <div class="relative">
     <video ref="video" autoplay playsinline></video>
     <button @click="takePhoto">Prendre une photo</button>
@@ -74,11 +86,12 @@
     <form @submit.prevent="submitData">
       <input type="hidden" v-model="latitude" />
       <input type="hidden" v-model="longitude" />
-      <input type="submit" value="Envoyer" />
+      <input type="submit" class="w-full py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+        :disabled="loading" value="Envoyer" />
     </form>
   </div>
 
-    <!-- Bouton -->
+    <!-- Bouton
     <div>
       <button
         type="submit"
@@ -88,7 +101,7 @@
         <span v-if="loading">Chargement...</span>
         <span v-else>Ajouter</span>
       </button>
-    </div>
+    </div> -->
 
     <!-- Erreur -->
     <div v-if="error" class="text-red-600 text-center mt-4">

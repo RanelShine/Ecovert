@@ -1,5 +1,3 @@
-<!-- frontend/layouts/auth.vue -->
-
 <template>
     <div class="min-h-screen flex flex-col bg-gray-50">
       <header class="bg-white shadow-sm">
