@@ -68,7 +68,7 @@
     </div>
   </template>
   
-  <script setup>
+  <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '~/stores/auth'
@@ -78,7 +78,7 @@ const email = ref('')
 const password = ref('')
 const rememberMe = ref(false)
 const loading = ref(false)
-const error = ref(null)
+const error = ref<string | null>(null)
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -88,20 +88,20 @@ const login = async () => {
   error.value = null
 
   try {
-    const result = await authStore.login({
+const user = await authStore.login({
   email: email.value,
   password: password.value
 })
 
 if (user.role === "Citoyens") {
-  router.push('/dashboard')
-} else {
   router.push('/')
+} else {
+  router.push('/dashboard/dashboard')
 }
 
   } catch (err) {
-    if (err.response && err.response.data) {
-      error.value = err.response.data.message || "Erreur de connexion"
+    if (typeof err === 'object' && err !== null && 'response' in err && typeof (err as any).response === 'object' && (err as any).response !== null && 'data' in (err as any).response) {
+      error.value = ((err as any).response.data.message) || "Erreur de connexion"
     } else {
       error.value = "Une erreur s'est produite lors de la connexion"
     }

@@ -5,7 +5,7 @@ from .models import Photo
 class PhotoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Photo
-        fields = ['image', 'latitude', 'longitude']
+        fields = ['id', 'image', 'latitude', 'longitude']
 
 class PhotoLocationView(ListAPIView):
     queryset = Photo.objects.all()

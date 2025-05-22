@@ -18,6 +18,7 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 
+
 from django.conf import settings
 
 
@@ -26,6 +27,7 @@ urlpatterns = [
     path('api/accounts/', include('accounts.urls')),
     path('api/communes/', include('communes.urls')),
     path('api/photos/', include('photos.urls')),
+    path('api/signalements/', include('signalement.urls')),
 ]
 
 # Add media files URLs in development

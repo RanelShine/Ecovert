@@ -3,13 +3,12 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
-
+from rest_framework.permissions import IsAuthenticated
 from .utils import send_verification_email
 from .models import User
 from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import UserSerializer, UserRegisterSerializer, LoginSerializer
-import random
-import string
+
 
 class RegisterView(APIView):
     permission_classes = [AllowAny]
@@ -74,3 +73,10 @@ class LoginView(APIView):
             }, status=status.HTTP_200_OK)
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class CurrentUserAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        serializer = UserSerializer(request.user)
+        return Response(serializer.data)

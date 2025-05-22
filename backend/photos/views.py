@@ -4,15 +4,23 @@ from rest_framework import status
 from django.http import JsonResponse
 from .models import Photo
 from .serializers import PhotoSerializer
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
 # POST : Envoie une photo avec lat/lon
 class UploadPhotoView(APIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+
     def post(self, request):
         serializer = PhotoSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
-            return Response({"message": "Photo enregistrée avec succès"}, status=status.HTTP_201_CREATED)
+            photo = serializer.save()
+            # Retourne les données du serializer, notamment l'id
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        print("Erreurs serializer :", serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 # GET : Liste toutes les photos avec leurs coordonnées
 def photo_locations(request):

@@ -1,212 +1,284 @@
 <template>
-  <div>
-    <!-- Carte de signalement seule -->
-    <div class="border rounded-lg shadow mb-6">
-      <div class="bg-green-600 text-white p-4 font-semibold rounded-t-lg flex items-center justify-between">
-        <span>faire un signalement</span>
-        <span class="text-xl">svg</span>
-      </div>
-      <div class="flex flex-wrap gap-4 bg-gray-200 p-4 rounded-b-lg">
-        <div class="bg-gray-100 p-4 rounded shadow">
-          <NuxtLink to="/signalement" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
-            déchets
-          </NuxtLink>
-        </div>
-        <div class="bg-gray-100 p-4 rounded shadow">
-          <NuxtLink to="/signalement" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
-            pollution
-          </NuxtLink>
-        </div>
-        <div class="bg-gray-100 p-4 rounded shadow">
-          <NuxtLink to="/signalement" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
-            écologie
-          </NuxtLink>
-        </div>
-        <div class="bg-gray-100 p-4 rounded shadow">
-          <NuxtLink to="/signalement" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
-            dégradations
-          </NuxtLink>
-        </div>
-      </div>
-      <div class="flex justify-center bg-gray-100 p-6">
-  <form class="w-full max-w-xl" @submit.prevent="ajout">
-    <div class="relative">
-      <!-- objet -->
-      <input
-        id="objet"
-        name="objet"
-        type="text"
-        autocomplete="objet"
-        required
-        v-model="objet"
-        class="appearance-none mb-4 block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900"
-        placeholder="ajouter l'objet du signalement"
-      />
-    </div>
-<!-- localisation -->
- <div class="relative">
-    <input
-        id="localisation"
-        name="localisation"
-        type="text"
-        autocomplete="localisation"
-        required
-        v-model="objet"
-        class="appearance-none mb-4 block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900"
-        placeholder="ajouter l'emplacement du siglement"
-      />
-    </div>
-    <!-- description -->
-    <div class="relative">
-      <textarea
-        id="description"
-        name="description"
-        type="text"
-        required
-        v-model="description"
-        class="appearance-none mb-4 block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900"
-        placeholder="ajouter une description"
-      ></textarea>
-    </div>
+  <div class="max-w-4xl mx-auto py-8 px-4">
+    <!-- FORMULAIRE -->
+    <div class="bg-white rounded-lg shadow p-6 mb-8">
+      <h2 class="text-2xl font-semibold text-green-700 mb-4">Faire un signalement</h2>
 
-    <!-- photo -->
-    <div class="relative">
-      <input
-        id="file"
-        name="file"
-        type="file"
-        required
-        class="appearance-none mb-4 block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900"
-      />
-    </div>
-    <div class="relative">
-    <video ref="video" autoplay playsinline></video>
-    <button @click="takePhoto">Prendre une photo</button>
-    <canvas ref="canvas" style="display: none;"></canvas>
-    <form @submit.prevent="submitData">
-      <input type="hidden" v-model="latitude" />
-      <input type="hidden" v-model="longitude" />
-      <input type="submit" class="w-full py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-        :disabled="loading" value="Envoyer" />
-    </form>
-  </div>
+      <div class="flex gap-2 mb-4">
+        <button
+          v-for="type in ['pollution', 'déchets', 'climat']"
+          :key="type"
+          @click="selectedType = type"
+          :class="[
+            'px-4 py-2 rounded shadow',
+            selectedType === type
+              ? 'bg-green-700 text-white'
+              : 'bg-green-100 text-green-800'
+          ]"
+        >
+          {{ type }}
+        </button>
+      </div>
 
-    <!-- Bouton
-    <div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <input v-model="objet" type="text" placeholder="Objet" class="border rounded p-2 w-full" />
+        <input v-model="localisation" type="text" placeholder="Localisation" class="border rounded p-2 w-full" />
+      </div>
+
+      <textarea v-model="description" placeholder="Description" class="border rounded p-2 w-full h-28 mb-4"></textarea>
+
+      <div class="flex flex-col sm:flex-row sm:items-center gap-4 mb-4">
+        <input
+          type="file"
+          accept="image/*"
+          @change="onFileChange"
+          class="block"
+        />
+
+        <button @click="openCameraModal" class="bg-green-600 text-white px-4 py-2 rounded shadow">
+          Prendre une photo
+        </button>
+      </div>
+
       <button
-        type="submit"
-        class="w-full py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-        :disabled="loading"
+        @click="submitData"
+        class="bg-green-700 text-white px-6 py-2 rounded shadow hover:bg-green-800"
       >
-        <span v-if="loading">Chargement...</span>
-        <span v-else>Ajouter</span>
+        Envoyer le signalement
       </button>
-    </div> -->
-
-    <!-- Erreur -->
-    <div v-if="error" class="text-red-600 text-center mt-4">
-      {{ error }}
-    </div>
-  </form>
-</div>
-
     </div>
 
-      <!-- Carte de liste de signalement -->
-      <div class="border rounded-lg shadow">
-        <div class="bg-green-600 text-white p-4 font-semibold rounded-t-lg flex items-center justify-between">
-          <span>Liste des signalements</span>
-          <span class="text-xl">svg</span>
-        </div>
-        <div class="bg-gray-100 p-4 rounded-b-lg space-y-4">
-          <!-- definition des elements pour la liste des signalements -->
-        </div>
+    <!-- TABLEAU -->
+    <div class="border rounded-lg shadow">
+      <div class="bg-green-600 text-white p-4 font-semibold rounded-t-lg">
+        Liste de mes signalements
       </div>
+      <div class="p-4 bg-gray-50 overflow-x-auto">
+        <table class="w-full text-left border border-collapse">
+          <thead class="bg-green-100">
+            <tr>
+              <th class="p-2 border">Objet</th>
+              <th class="p-2 border">Type</th>
+              <th class="p-2 border">Date</th>
+              <th class="p-2 border">Statut</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="s in signalements" :key="s.id" class="bg-white hover:bg-gray-50">
+              <td class="p-2 border">{{ s.objet }}</td>
+              <td class="p-2 border capitalize">{{ s.type_signalement }}</td>
+              <td class="p-2 border">{{ formatDate(s.date_signalement) }}</td>
+              <td class="p-2 border">
+                <span :class="statusClass(s.statut)">
+                  {{ s.statut }}
+                </span>
+              </td>
+            </tr>
+            <tr v-if="signalements.length === 0">
+              <td colspan="4" class="p-4 text-center text-gray-500">Aucun signalement trouvé.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
 
-      <!-- Carte 3 -->
-       <div class="flex pt-4 gap-4">
-      <div class="border rounded-lg shadow">
-        <div class="bg-green-600 text-white p-4 font-semibold rounded-t-lg flex items-center justify-between">
-          <span>autre carte</span>
-          <span class="text-xl"> </span>
-        </div>
-        <div class="bg-gray-100 p-4 rounded-b-lg space-y-4">
-          <!-- definition des elements pour cette carte -->
-        </div>
+    <!-- MODAL CAMERA -->
+    <div v-if="showCamera" class="fixed inset-0 bg-black bg-opacity-75 flex flex-col items-center justify-center z-50 p-4">
+      <video ref="video" autoplay playsinline class="rounded shadow-lg max-w-full max-h-[60vh]"></video>
+      <div class="mt-4 flex gap-4">
+        <button @click="capturePhoto" class="bg-green-700 text-white px-4 py-2 rounded shadow">Prendre la photo</button>
+        <button @click="closeCameraModal" class="bg-red-600 text-white px-4 py-2 rounded shadow">Annuler</button>
       </div>
-      <div class="border rounded-lg shadow">
-        <div class="bg-green-600 text-white p-4 font-semibold rounded-t-lg flex items-center justify-between">
-          <span>autre carte</span>
-          <span class="text-xl"> </span>
-        </div>
-        <div class="bg-gray-100 p-4 rounded-b-lg space-y-4">
-          <!-- definition des elements pour cette carte -->
-        </div>
-      </div>
+      <canvas ref="canvas" class="hidden"></canvas>
     </div>
   </div>
 </template>
 
+<script setup lang="ts">
+ definePageMeta({
+    layout: 'dashboard'
+  })
+import { ref, onMounted, nextTick } from 'vue'
 
-<script setup>
-definePageMeta({
-  layout: 'dashboard'
-})
-
-import { ref, onMounted } from 'vue'
-
-const video = ref(null)
-const canvas = ref(null)
-const latitude = ref('')
-const longitude = ref('')
-let photoBlob = null
-
-onMounted(async () => {
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({ video: true })
-    video.value.srcObject = stream
-  } catch (err) {
-    alert("Erreur d'accès à la caméra : " + err)
-  }
-
-  navigator.geolocation.getCurrentPosition(
-    (pos) => {
-      latitude.value = pos.coords.latitude
-      longitude.value = pos.coords.longitude
-    },
-    (err) => {
-      alert("Erreur GPS : " + err.message)
-    }
-  )
-})
-
-const takePhoto = () => {
-  const context = canvas.value.getContext('2d')
-  canvas.value.width = video.value.videoWidth
-  canvas.value.height = video.value.videoHeight
-  context.drawImage(video.value, 0, 0)
-  canvas.value.toBlob((blob) => {
-    photoBlob = blob
-  }, 'image/jpeg')
+interface Signalement {
+  id: number
+  objet: string
+  type_signalement: string
+  date_signalement: string
+  statut: string
 }
 
-const submitData = async () => {
-  if (!photoBlob) {
-    alert('Prenez d’abord une photo.')
+const selectedType = ref('pollution')
+const objet = ref('')
+const localisation = ref('')
+const description = ref('')
+const file = ref<File | null>(null)
+const latitude = ref<number | null>(null)
+const longitude = ref<number | null>(null)
+
+const signalements = ref<Signalement[]>([])
+
+const showCamera = ref(false)
+const video = ref<HTMLVideoElement | null>(null)
+const canvas = ref<HTMLCanvasElement | null>(null)
+let stream: MediaStream | null = null
+
+const openCameraModal = async () => {
+  if (!navigator.geolocation) {
+    alert('Géolocalisation non supportée.')
     return
   }
 
-  const formData = new FormData()
-  formData.append('image', photoBlob, 'photo.jpg')
-  formData.append('latitude', latitude.value)
-  formData.append('longitude', longitude.value)
-
-  await fetch('http://localhost:8000/api/photos/upload-photo/', {
-    method: 'POST',
-    body: formData
-  })
-  alert("Données envoyées !")
+  navigator.geolocation.getCurrentPosition(
+    position => {
+      latitude.value = position.coords.latitude
+      longitude.value = position.coords.longitude
+      startCamera()
+    },
+    error => {
+      alert('Erreur de géolocalisation.')
+    }
+  )
 }
 
-const user = useState('user')
+const startCamera = async () => {
+  showCamera.value = true
+  await nextTick()
+
+  if (navigator.mediaDevices?.getUserMedia) {
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false })
+      if (video.value) {
+        video.value.srcObject = stream
+        await video.value.play()
+      }
+    } catch {
+      alert('Impossible d\'accéder à la caméra.')
+      showCamera.value = false
+    }
+  } else {
+    alert('Votre navigateur ne supporte pas la capture vidéo.')
+    showCamera.value = false
+  }
+}
+
+const closeCameraModal = () => {
+  showCamera.value = false
+  if (stream) {
+    stream.getTracks().forEach(track => track.stop())
+    stream = null
+  }
+}
+
+const capturePhoto = () => {
+  if (!video.value || !canvas.value) return
+
+  const width = video.value.videoWidth
+  const height = video.value.videoHeight
+  canvas.value.width = width
+  canvas.value.height = height
+
+  const ctx = canvas.value.getContext('2d')
+  if (!ctx) return
+
+  ctx.drawImage(video.value, 0, 0, width, height)
+  canvas.value.toBlob(blob => {
+    if (blob) {
+      file.value = new File([blob], 'photo.jpg', { type: 'image/jpeg' })
+      alert('Photo prise avec succès !')
+      closeCameraModal()
+    }
+  }, 'image/jpeg', 0.95)
+}
+
+const onFileChange = (e: Event) => {
+  const target = e.target as HTMLInputElement
+  if (target.files && target.files[0]) {
+    file.value = target.files[0]
+  }
+}
+
+const fetchSignalements = async () => {
+  try {
+    const res = await fetch('http://localhost:8000/api/signalements/liste/')
+    if (!res.ok) throw new Error('Erreur lors du chargement des signalements')
+    const data = await res.json()
+    signalements.value = data
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+const submitData = async () => {
+  if (!file.value) {
+    alert('Veuillez prendre ou importer une photo.')
+    return
+  }
+
+  try {
+    const photoFormData = new FormData()
+    photoFormData.append('image', file.value)
+    if (latitude.value !== null) photoFormData.append('latitude', latitude.value.toString())
+    if (longitude.value !== null) photoFormData.append('longitude', longitude.value.toString())
+
+    const token = localStorage.getItem('authToken') || ''
+
+  const photoResponse = await fetch('http://localhost:8000/api/photos/upload-photo/', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`
+    },
+    body: photoFormData,
+    credentials: 'include'
+  })
+
+
+    if (!photoResponse.ok) throw new Error('Erreur lors de l\'upload de la photo')
+
+    const photoData = await photoResponse.json()
+
+    const signalementPayload = {
+      objet: objet.value,
+      localisation: localisation.value,
+      description: description.value,
+      type_signalement: selectedType.value,
+      photo_id: photoData.id
+    }
+
+  const response = await fetch('http://localhost:8000/api/signalements/create/', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify(signalementPayload),
+    credentials: 'include'
+  })
+
+    if (!response.ok) throw new Error('Erreur lors de la création du signalement')
+
+    alert('Signalement envoyé avec succès !')
+    fetchSignalements()
+  } catch (error) {
+    alert(error)
+  }
+}
+
+const formatDate = (dateStr: string) => {
+  return new Date(dateStr).toLocaleDateString()
+}
+
+const statusClass = (status: string) => {
+  switch (status.toLowerCase()) {
+    case 'en cours': return 'text-yellow-600'
+    case 'résolu': return 'text-green-600'
+    default: return 'text-gray-600'
+  }
+}
+
+onMounted(fetchSignalements)
 </script>
+
+<style scoped>
+
+</style>

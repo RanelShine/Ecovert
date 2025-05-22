@@ -107,7 +107,7 @@
                 class="appearance-none mb-4 block w-full pl-10 px-3 py-2 border border-gray-300 text-gray-900 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
               >
                 <option disabled value="">Sélectionnez un rôle</option>
-                <option value="Administrateur">Admin</option>
+                <option value="CTD">CTD</option>
                 <option value="ONG">ONG</option>
                 <option value="Entreprise">Entreprise</option>
                 <option value="Citoyens">Citoyen</option>
@@ -244,7 +244,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore, useCommunes } from '~/stores/auth';
@@ -260,12 +260,14 @@ const formData         = ref({
   email: '', nom: '', prenom: '', telephone: '', role: '', commune: '', password: ''
 });
 const passwordConfirm  = ref('');
-const communes         = ref([]);
+const communes         = ref<{ id: number; name: string }[]>([]);
 const emailUsed        = ref('');
 const verificationCode = ref('');
 
 // Gestion des erreurs
+const localError = ref<string | null>(null);
 const errorMessage = computed(() => {
+  if (localError.value) return localError.value;
   if (!authStore.error) return null;
   if (typeof authStore.error === 'object') {
     const first = Object.values(authStore.error)[0];
@@ -283,13 +285,12 @@ onMounted(async () => {
   ];
   // ou : communes.value = await getCommunes();
 });
-
-// 1️⃣ Inscription
 const register = async () => {
   if (formData.value.password !== passwordConfirm.value) {
-    authStore.error = "Les mots de passe ne correspondent pas";
+    localError.value = "Les mots de passe ne correspondent pas";
     return;
   }
+  localError.value = null;
   try {
     await authStore.register({ ...formData.value });
     emailUsed.value = formData.value.email;
