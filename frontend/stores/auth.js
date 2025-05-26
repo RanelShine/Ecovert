@@ -105,11 +105,15 @@ export const useAuthStore = defineStore('auth', {
     // Initialiser l'authentification
     initAuth() {
       if (process.client) {
-        const token = localStorage.getItem('authToken');
-        if (token) {
-          this.token = token;
+        const accessToken = localStorage.getItem('authToken');
+        if (accessToken) {
+          this.token = { access: accessToken }; // simule structure de login
           this.isAuthenticated = true;
-          apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+
+          // Assure-toi que l'en-tête est bien mis
+          apiClient.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
+
+          // Puis appelle le profil
           this.fetchUserProfile();
         }
       }

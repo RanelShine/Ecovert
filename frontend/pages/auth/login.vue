@@ -88,25 +88,22 @@ const login = async () => {
   error.value = null
 
   try {
-const user = await authStore.login({
-  email: email.value,
-  password: password.value
-})
+    const user = await authStore.login({
+      email: email.value,
+      password: password.value
+    })
 
-if (user.role === "Citoyens") {
-  router.push('/')
-} else {
-  router.push('/dashboard/dashboard')
-}
+    // Enregistre le rôle dans localStorage (ou dans Pinia si persistance activée)
+    localStorage.setItem('userRole', user.role)
+
+    // Redirection commune
+    router.push('/dashboard/dashboard')
 
   } catch (err) {
-    if (typeof err === 'object' && err !== null && 'response' in err && typeof (err as any).response === 'object' && (err as any).response !== null && 'data' in (err as any).response) {
-      error.value = ((err as any).response.data.message) || "Erreur de connexion"
-    } else {
-      error.value = "Une erreur s'est produite lors de la connexion"
-    }
+    error.value = (err as any)?.response?.data?.message || "Une erreur s'est produite lors de la connexion"
   } finally {
     loading.value = false
   }
 }
+
 </script>

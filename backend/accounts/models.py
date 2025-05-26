@@ -1,3 +1,4 @@
+#accounts/models.py
 from django.utils import timezone
 from datetime import timedelta
 from django.db import models
@@ -49,7 +50,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         ('Citoyens', 'Citoyens'),
         ('ONG', 'ONG'),
         ('Entreprise', 'Entreprise'),
-        ('Administrateur', 'Administrateur'),
+        ('ctd', 'CTD'),
     )
     
     #definition des champs requis pour l'inscription de l'utilisateur
