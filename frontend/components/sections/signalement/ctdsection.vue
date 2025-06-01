@@ -2,7 +2,15 @@
 <template>
   <!-- Filtres -->
   <div class="bg-white rounded-lg shadow p-4 mb-6">
-    <h3 class="text-lg font-semibold mb-4">Filtres</h3>
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="text-lg font-semibold">Filtres</h3>
+      <!-- Nouveau bouton pour la carte -->
+      <button @click="navigateToMap"
+        class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center gap-2">
+        <Icon name="mdi:map" class="text-xl" />
+        Voir sur la carte
+      </button>
+    </div>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
       <select v-model="filtreStatut" @change="chargerTousSignalements" class="border rounded p-2">
         <option value="">Tous les statuts</option>
@@ -16,10 +24,7 @@
           {{ type.label }}
         </option>
       </select>
-      <button 
-        @click="resetFiltres" 
-        class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
-      >
+      <button @click="resetFiltres" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
         Réinitialiser
       </button>
     </div>
@@ -29,10 +34,7 @@
   <div class="bg-white rounded-lg shadow">
     <div class="bg-green-600 text-white p-4 font-semibold rounded-t-lg flex justify-between items-center">
       <span>Tous les signalements ({{ tousSignalements.length }})</span>
-      <button 
-        @click="chargerTousSignalements" 
-        class="bg-green-700 px-3 py-1 rounded text-sm hover:bg-green-800"
-      >
+      <button @click="chargerTousSignalements" class="bg-green-700 px-3 py-1 rounded text-sm hover:bg-green-800">
         Actualiser
       </button>
     </div>
@@ -61,32 +63,24 @@
               </span>
             </td>
             <td class="p-2 border">
-              <select 
-                :value="s.statut" 
-                @change="(event) => {
-                  const target = event.target as HTMLSelectElement;
-                  if (target && target.value) {
-                    changerStatut(s.id, target.value);
-                  }
-                }" 
-                class="border p-1 rounded text-sm"
-              >
+              <select :value="s.statut" @change="(event) => {
+                const target = event.target as HTMLSelectElement;
+                if (target && target.value) {
+                  changerStatut(s.id, target.value);
+                }
+              }" class="border p-1 rounded text-sm">
                 <option v-for="statut in statutChoices" :key="statut.value" :value="statut.value">
                   {{ statut.label }}
                 </option>
               </select>
             </td>
             <td class="p-2 border">
-              <button 
-                @click="voirDetails(s)" 
-                class="bg-blue-500 text-white px-2 py-1 rounded text-xs mr-1 hover:bg-blue-600"
-              >
+              <button @click="voirDetails(s)"
+                class="bg-blue-500 text-white px-2 py-1 rounded text-xs mr-1 hover:bg-blue-600">
                 Détails
               </button>
-              <button 
-                @click="supprimerSignalement(s.id)" 
-                class="bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600"
-              >
+              <button @click="supprimerSignalement(s.id)"
+                class="bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600">
                 Supprimer
               </button>
             </td>
@@ -100,19 +94,20 @@
   </div>
 
   <!-- Modal Détails -->
-  <div v-if="showDetails && selectedSignalement" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+  <div v-if="showDetails && selectedSignalement"
+    class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
     <div class="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-start mb-4">
         <h3 class="text-xl font-semibold">Détails du signalement</h3>
         <button @click="showDetails = false" class="text-gray-500 hover:text-gray-700">✕</button>
       </div>
-      
+
       <div class="space-y-3">
         <div><strong>Objet :</strong> {{ selectedSignalement.objet }}</div>
         <div><strong>Type :</strong> {{ selectedSignalement.type_signalement_display }}</div>
         <div><strong>Description :</strong> {{ selectedSignalement.description }}</div>
         <div><strong>Localisation :</strong> {{ selectedSignalement.localisation }}</div>
-        <div><strong>Statut :</strong> 
+        <div><strong>Statut :</strong>
           <span :class="statusClass(selectedSignalement.statut)">
             {{ selectedSignalement.statut_display }}
           </span>
@@ -129,6 +124,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 
 interface Signalement {
   id: number
@@ -172,10 +168,12 @@ const filtreType = ref('')
 const showDetails = ref(false)
 const selectedSignalement = ref<Signalement | null>(null)
 
+const router = useRouter()
+
 // Charger les choix disponibles
 const chargerChoix = async () => {
   console.log('🎛️ Début chargerChoix - Token:', token ? 'présent' : 'absent')
-  
+
   try {
     const response = await fetch('http://localhost:8000/api/signalements/choices/', {
       headers: {
@@ -183,13 +181,13 @@ const chargerChoix = async () => {
         'Content-Type': 'application/json'
       }
     })
-    
+
     console.log('📊 Réponse choix - Status:', response.status, 'OK:', response.ok)
-    
+
     if (response.ok) {
       const data = await response.json()
       console.log('📦 Choix reçus:', data)
-      
+
       if (data.types_signalement) {
         typeChoices.value = data.types_signalement
         console.log('✅ Types chargés:', data.types_signalement.length)
@@ -210,14 +208,14 @@ const chargerChoix = async () => {
 // Charger tous les signalements (pour CTD)
 const chargerTousSignalements = async () => {
   console.log('🔍 Début chargerTousSignalements - Token:', token ? 'présent' : 'absent')
-  
+
   try {
     let url = 'http://localhost:8000/api/signalements/liste/'
     const params = new URLSearchParams()
-    
+
     if (filtreStatut.value) params.append('statut', filtreStatut.value)
     if (filtreType.value) params.append('type', filtreType.value)
-    
+
     if (params.toString()) {
       url += '?' + params.toString()
     }
@@ -230,14 +228,14 @@ const chargerTousSignalements = async () => {
         'Content-Type': 'application/json'
       }
     })
-    
+
     console.log('📊 Réponse API - Status:', response.status, 'OK:', response.ok)
-    
+
     if (response.ok) {
       const data = await response.json()
       console.log('📦 Données reçues:', data)
       console.log('📋 Structure data:', Object.keys(data))
-      
+
       // Essayer différentes structures possibles
       if (data.signalements) {
         tousSignalements.value = data.signalements
@@ -259,7 +257,7 @@ const chargerTousSignalements = async () => {
   } catch (error) {
     console.error('💥 Erreur lors du chargement des signalements:', error)
   }
-  
+
   console.log('🏁 Fin chargerTousSignalements - Nombre de signalements:', tousSignalements.value.length)
 }
 
@@ -360,15 +358,20 @@ const statusClass = (status: string) => {
   }
 }
 
+// Fonction de navigation vers la carte
+const navigateToMap = () => {
+  router.push('/dashboard/map')
+}
+
 // Initialisation
 onMounted(async () => {
   console.log('🚀 Composant CTD monté - Initialisation')
   console.log('🔑 Token présent:', !!token)
   console.log('🔑 Token value:', token ? token.substring(0, 20) + '...' : 'null')
-  
+
   await chargerChoix()
   await chargerTousSignalements()
-  
+
   console.log('✅ Initialisation terminée')
 })
 </script>

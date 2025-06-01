@@ -16,13 +16,13 @@ class RegisterView(APIView):
     def post(self, request):
         serializer = UserRegisterSerializer(data=request.data)
         if serializer.is_valid():
-            # Création de l’utilisateur (is_active=False par défaut dans create_user())
+            # Création de l'utilisateur (is_active=False par défaut dans create_user())
             user = serializer.save()
             
             # Génération du code + sauvegarde
             code = user.set_verification_code()
             
-            # Envoi de l’email
+            # Envoi de l'email
             send_verification_email(user.email, code)
             
             return Response({
@@ -80,3 +80,39 @@ class CurrentUserAPIView(APIView):
     def get(self, request):
         serializer = UserSerializer(request.user)
         return Response(serializer.data)
+
+class LogoutView(APIView):
+    permission_classes = [AllowAny]
+    
+    def post(self, request):
+        try:
+            # Récupérer les tokens
+            refresh_token = request.data.get('refresh_token')
+            access_token = request.data.get('access_token')
+
+            if refresh_token:
+                try:
+                    # Invalider le refresh token
+                    token = RefreshToken(refresh_token)
+                    token.blacklist()
+                except Exception as e:
+                    print(f"Erreur lors de l'invalidation du refresh token: {str(e)}")
+
+            # Nettoyer les tokens côté client
+            response = Response(
+                {'success': True, 'message': 'Déconnexion réussie'}, 
+                status=status.HTTP_200_OK
+            )
+            
+            # Supprimer les cookies si présents
+            response.delete_cookie('auth_token')
+            response.delete_cookie('refresh_token')
+            
+            return response
+            
+        except Exception as e:
+            print(f"Erreur lors de la déconnexion: {str(e)}")
+            return Response(
+                {'success': True, 'message': 'Déconnexion effectuée'},
+                status=status.HTTP_200_OK
+            )

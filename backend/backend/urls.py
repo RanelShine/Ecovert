@@ -28,6 +28,8 @@ urlpatterns = [
     path('api/communes/', include('communes.urls')),
     path('api/photos/', include('photos.urls')),
     path('api/signalements/', include('signalement.urls')),
+    # path('api/forum/', include('forum.urls')),
+    path('api/projects/', include('projects.urls')),
 ]
 
 # Add media files URLs in development

@@ -58,6 +58,7 @@ export const useAuthStore = defineStore('auth', {
 
         if (process.client) {
           localStorage.setItem('authToken', token.access);
+          localStorage.setItem('refreshToken', token.refresh);
         }
 
         apiClient.defaults.headers.common['Authorization'] = `Bearer ${token.access}`;
@@ -71,7 +72,6 @@ export const useAuthStore = defineStore('auth', {
         this.loading = false;
       }
     },
-
 
     // Vérification du compte
     async verifyAccount(verificationData) {
@@ -90,52 +90,56 @@ export const useAuthStore = defineStore('auth', {
     },
 
     // Déconnexion
-    logout() {
-      this.user = null;
-      this.token = null;
-      this.isAuthenticated = false;
+    async logout() {
+      try {
+        await apiClient.post('/api/accounts/logout/');
+      } catch (error) {
+        console.error('Erreur lors de la déconnexion:', error);
+      } finally {
+        this.token = null;
+        this.user = null;
+        this.isAuthenticated = false;
 
-      if (process.client) {
-        localStorage.removeItem('authToken');
+        if (process.client) {
+          localStorage.removeItem('authToken');
+          localStorage.removeItem('refreshToken');
+          localStorage.removeItem('userData');
+          localStorage.removeItem('userRole');
+          localStorage.removeItem('userCommune');
+        }
+
+        delete apiClient.defaults.headers.common['Authorization'];
       }
-
-      delete apiClient.defaults.headers.common['Authorization'];
     },
 
-    // Initialiser l'authentification
+    // Initialiser l'authentification au chargement de l'application
     initAuth() {
       if (process.client) {
-        const accessToken = localStorage.getItem('authToken');
-        if (accessToken) {
-          this.token = { access: accessToken }; // simule structure de login
+        const token = localStorage.getItem('authToken');
+        if (token) {
+          this.token = { access: token };
           this.isAuthenticated = true;
-
-          // Assure-toi que l'en-tête est bien mis
-          apiClient.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
-
-          // Puis appelle le profil
+          apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
           this.fetchUserProfile();
         }
       }
     },
 
-  // Renvoi du code de vérification
-  async resendVerificationCode(email) {
-    this.loading = true;
-    this.error = null;
+    // Renvoi du code de vérification
+    async resendVerificationCode(email) {
+      this.loading = true;
+      this.error = null;
 
-    try {
-      const response = await apiClient.post('/api/accounts/resend-code/', { email });
-      return response.data;
-    } catch (error) {
-      this.error = error.response?.data || "Erreur lors du renvoi du code";
-      throw error;
-    } finally {
-      this.loading = false;
-    }
-  },
-    // Récupérer le mot de passe
-
+      try {
+        const response = await apiClient.post('/api/accounts/resend-code/', { email });
+        return response.data;
+      } catch (error) {
+        this.error = error.response?.data || "Erreur lors du renvoi du code";
+        throw error;
+      } finally {
+        this.loading = false;
+      }
+    },
 
     // Récupérer le profil utilisateur
     async fetchUserProfile() {
@@ -145,9 +149,16 @@ export const useAuthStore = defineStore('auth', {
       try {
         const response = await apiClient.get('/api/accounts/me/');
         this.user = response.data;
+        if (process.client) {
+          localStorage.setItem('userData', JSON.stringify(response.data));
+          localStorage.setItem('userRole', response.data.role);
+          if (response.data.commune) {
+            localStorage.setItem('userCommune', response.data.commune.toString());
+          }
+        }
       } catch (error) {
         if (error.response?.status === 401) {
-          this.logout();
+          await this.logout();
         }
       } finally {
         this.loading = false;

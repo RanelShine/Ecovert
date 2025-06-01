@@ -28,7 +28,11 @@ SECRET_KEY = 'django-insecure-d5m_z^)cm0!amfbutoebq88vi6p3#t*%@d5#d7sy5*ngv2pj^@
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    '192.168.99.20',  
+]
 
 
 # Application definition
@@ -42,10 +46,12 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'corsheaders',
+    'rest_framework_simplejwt.token_blacklist',
     'accounts',
     'communes',
     'photos',
     'signalement',
+    'projects'
 ]
 
 MIDDLEWARE = [
@@ -53,6 +59,7 @@ MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     #ajout du middleware cores
     'corsheaders.middleware.CorsMiddleware',
+    # 'forum.middleware.UpdateLastSeenMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -78,6 +85,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'backend.wsgi.application'
+TIME_ZONE = 'Africa/Douala'
 
 
 # Database
@@ -97,6 +105,9 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
+    },
+    'OPTIONS': {
+            'timeout': 20,
     }
 }
 
@@ -150,10 +161,11 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
+    "http://192.168.99.20:8000",
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:3000", "http://127.0.0.1:3000"
+    "http://localhost:3000", "http://127.0.0.1:3000", "http://192.168.99.20:8000"
 ]
 # CSRF_COOKIE_AGE = 60*60*24*14
 # CSRF_USE_SESSIONS = False
@@ -182,7 +194,9 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
-    )
+    ),
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 20
 }
 
 
@@ -190,7 +204,7 @@ SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=10),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=50),
     "ROTATE_REFRESH_TOKENS": True,
-    "BLACKLIST_AFTER_ROTATION": False,
+    "BLACKLIST_AFTER_ROTATION": True,
     "UPDATE_LAST_LOGIN": False,
     "ALGORITHM": "HS256",
     "SIGNING_KEY": SECRET_KEY,

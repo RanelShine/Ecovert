@@ -1,17 +1,27 @@
 <template>
   <div class="max-w-6xl mx-auto py-8 px-4">
+    <!-- En-tête avec bouton -->
+    <div v-if="userRole === 'ctd'" class="mb-6 flex justify-between items-center">
+      <h1 class="text-2xl font-bold text-gray-900">Projets de la commune</h1>
+      <a href="#nouveau-projet"
+        class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+        <span class="mr-2">+</span>
+        Nouveau projet
+      </a>
+    </div>
+
     <!-- Section CTD -->
-    <div v-if="userRole === 'CTD'">
+    <div v-if="userRole === 'ctd'" id="nouveau-projet">
       <CTDProjetSection />
     </div>
-    
+
     <!-- Section Citoyens -->
     <div v-if="userRole === 'citoyen'">
       <CitoyenProjetSection />
     </div>
-    
+
     <!-- Section ONG/Entreprise -->
-    <div v-if="userRole === 'ONG' || userRole === 'entreprise'">
+    <div v-if="userRole === 'ong' || userRole === 'entreprise'">
       <EntrepriseProjetSection />
     </div>
   </div>
@@ -31,10 +41,9 @@ const userRole = ref<string>('')
 
 // Fonction pour récupérer le rôle utilisateur
 const getUserRole = () => {
-  const userData = localStorage.getItem('userData')
-  if (userData) {
-    const user = JSON.parse(userData)
-    return user.role || 'citoyen'
+  const userRole = localStorage.getItem('userRole')
+  if (userRole) {
+    return userRole.toLowerCase()
   }
   return 'citoyen'
 }
@@ -43,3 +52,9 @@ onMounted(() => {
   userRole.value = getUserRole()
 })
 </script>
+
+<style scoped>
+html {
+  scroll-behavior: smooth;
+}
+</style>
