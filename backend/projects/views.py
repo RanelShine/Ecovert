@@ -16,12 +16,12 @@ class IsCTDOrReadOnly(permissions.BasePermission):
     def has_permission(self, request, view):
         if request.method in permissions.SAFE_METHODS:
             return True
-        return request.user.is_authenticated and request.user.role == 'CTD'
+        return request.user.is_authenticated and request.user.role == 'ctd'
 
     def has_object_permission(self, request, view, obj):
         if request.method in permissions.SAFE_METHODS:
             return True
-        return request.user.is_authenticated and request.user.role == 'CTD'
+        return request.user.is_authenticated and request.user.role == 'cdt'
 
 # Project views
 @api_view(['GET'])
@@ -85,7 +85,7 @@ def update_project(request, id):
         project = Project.objects.get(pk=id)
         
         # Vérifier que l'utilisateur est un CTD de la bonne commune
-        if request.user.role != 'CTD' or request.user.commune != project.commune:
+        if request.user.role != 'ctd' or request.user.commune != project.commune:
             return Response(
                 {'error': 'Vous n\'êtes pas autorisé à modifier ce projet'},
                 status=status.HTTP_403_FORBIDDEN
@@ -114,7 +114,7 @@ def delete_project(request, id):
         project = Project.objects.get(pk=id)
         
         # Vérifier que l'utilisateur est un CTD de la bonne commune
-        if request.user.role != 'CTD' or request.user.commune != project.commune:
+        if request.user.role != 'ctd' or request.user.commune != project.commune:
             return Response(
                 {'error': 'Vous n\'êtes pas autorisé à supprimer ce projet'},
                 status=status.HTTP_403_FORBIDDEN
@@ -136,7 +136,7 @@ def list_accountability(request):
     user = request.user
     
     # Les CTD voient toutes les demandes de leur commune
-    if user.role == 'CTD':
+    if user.role == 'ctd':
         queryset = Accountability.objects.filter(
             project__commune=user.commune
         ).select_related('project', 'citizen', 'responded_by')
@@ -170,7 +170,7 @@ def accountability_detail(request, id):
         accountability = Accountability.objects.get(pk=id)
         
         # Vérifier les permissions
-        if request.user.role == 'CTD':
+        if request.user.role == 'ctd':
             if request.user.commune != accountability.project.commune:
                 return Response(
                     {'error': 'Vous n\'êtes pas autorisé à voir cette demande'},
@@ -198,7 +198,7 @@ def respond_accountability(request, id):
         accountability = Accountability.objects.get(pk=id)
         
         # Vérifier que l'utilisateur est un CTD de la bonne commune
-        if request.user.role != 'CTD' or request.user.commune != accountability.project.commune:
+        if request.user.role != 'ctd' or request.user.commune != accountability.project.commune:
             return Response(
                 {'error': 'Vous n\'êtes pas autorisé à répondre à cette demande'},
                 status=status.HTTP_403_FORBIDDEN

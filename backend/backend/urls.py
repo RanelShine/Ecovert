@@ -14,9 +14,11 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+import os
 from django.conf.urls.static import static
 from django.contrib import admin
-from django.urls import include, path
+from django.urls import include, path, re_path
+from django.views.static import serve
 
 
 from django.conf import settings
@@ -28,10 +30,17 @@ urlpatterns = [
     path('api/communes/', include('communes.urls')),
     path('api/photos/', include('photos.urls')),
     path('api/signalements/', include('signalement.urls')),
-    # path('api/forum/', include('forum.urls')),
     path('api/projects/', include('projects.urls')),
 ]
 
-# Add media files URLs in development
 if settings.DEBUG:
+    from django.views.static import serve
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    
+    urlpatterns += [
+        re_path(
+            r'^docs/(?P<path>.*)$',
+            serve,
+            {'document_root': os.path.join(settings.BASE_DIR, 'docs', 'build', 'html')}
+        ),
+    ]

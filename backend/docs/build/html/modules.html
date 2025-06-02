@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+
+<html lang="fr" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>backend &#8212; Documentation Ecovert 1.0</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=27fed22d" />
+    <script src="_static/documentation_options.js?v=7a28dfa3"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/translations.js?v=e6b791cb"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Recherche" href="search.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="backend">
+<h1>backend<a class="headerlink" href="#backend" title="Lien vers cette rubrique">¶</a></h1>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="accounts.html">accounts package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="accounts.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="accounts.migrations.html">accounts.migrations package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="accounts.migrations.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="accounts.migrations.html#module-accounts.migrations.0001_initial">accounts.migrations.0001_initial module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="accounts.migrations.html#module-accounts.migrations.0002_user_code_expiration">accounts.migrations.0002_user_code_expiration module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="accounts.migrations.html#module-accounts.migrations.0003_alter_user_role">accounts.migrations.0003_alter_user_role module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="accounts.migrations.html#module-accounts.migrations.0004_alter_user_role">accounts.migrations.0004_alter_user_role module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="accounts.migrations.html#module-accounts.migrations">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="accounts.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="accounts.html#module-accounts.admin">accounts.admin module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="accounts.html#accounts.admin.CommuneAdmin"><code class="docutils literal notranslate"><span class="pre">CommuneAdmin</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="accounts.html#accounts.admin.CommuneAdmin.list_display"><code class="docutils literal notranslate"><span class="pre">CommuneAdmin.list_display</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="accounts.html#accounts.admin.CommuneAdmin.media"><code class="docutils literal notranslate"><span class="pre">CommuneAdmin.media</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="accounts.html#accounts.admin.CommuneAdmin.search_fields"><code class="docutils literal notranslate"><span class="pre">CommuneAdmin.search_fields</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="accounts.html#accounts.admin.UserAdmin"><code class="docutils literal notranslate"><span class="pre">UserAdmin</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="accounts.html#accounts.admin.UserAdmin.add_fieldsets"><code class="docutils literal notranslate"><span class="pre">UserAdmin.add_fieldsets</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="accounts.html#accounts.admin.UserAdmin.fieldsets"><code class="docutils literal notranslate"><span class="pre">UserAdmin.fieldsets</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="accounts.html#accounts.admin.UserAdmin.list_display"><code class="docutils literal notranslate"><span class="pre">UserAdmin.list_display</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="accounts.html#accounts.admin.UserAdmin.list_filter"><code class="docutils literal notranslate"><span class="pre">UserAdmin.list_filter</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="accounts.html#accounts.admin.UserAdmin.media"><code class="docutils literal notranslate"><span class="pre">UserAdmin.media</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="accounts.html#accounts.admin.UserAdmin.ordering"><code class="docutils literal notranslate"><span class="pre">UserAdmin.ordering</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="accounts.html#accounts.admin.UserAdmin.search_fields"><code class="docutils literal notranslate"><span class="pre">UserAdmin.search_fields</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="accounts.html#module-accounts.apps">accounts.apps module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="accounts.html#accounts.apps.AccountsConfig"><code class="docutils literal notranslate"><span class="pre">AccountsConfig</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="accounts.html#accounts.apps.AccountsConfig.default_auto_field"><code class="docutils literal notranslate"><span class="pre">AccountsConfig.default_auto_field</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="accounts.html#accounts.apps.AccountsConfig.name"><code class="docutils literal notranslate"><span class="pre">AccountsConfig.name</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="accounts.html#module-accounts.backends">accounts.backends module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="accounts.html#accounts.backends.EmailBackend"><code class="docutils literal notranslate"><span class="pre">EmailBackend</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="accounts.html#accounts.backends.EmailBackend.authenticate"><code class="docutils literal notranslate"><span class="pre">EmailBackend.authenticate()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="accounts.html#module-accounts.models">accounts.models module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="accounts.html#accounts.models.User"><code class="docutils literal notranslate"><span class="pre">User</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="accounts.html#accounts.models.User.DoesNotExist"><code class="docutils literal notranslate"><span class="pre">User.DoesNotExist</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="accounts.html#accounts.models.User.MultipleObjectsReturned"><code class="docutils literal notranslate"><span class="pre">User.MultipleObjectsReturned</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="accounts.html#accounts.models.User.REQUIRED_FIELDS"><code class="docutils literal notranslate"><span class="pre">User.REQUIRED_FIELDS</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="accounts.html#accounts.models.User.ROLE_CHOICES"><code class="docutils literal notranslate"><span class="pre">User.ROLE_CHOICES</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="accounts.html#accounts.models.User.USERNAME_FIELD"><code class="docutils literal notranslate"><span class="pre">User.USERNAME_FIELD</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="accounts.html#accounts.models.User.accountability_requests"><code class="docutils literal notranslate"><span class="pre">User.accountability_requests</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="accounts.html#accounts.models.User.accountability_responses"><code class="docutils literal notranslate"><span class="pre">User.accountability_responses</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="accounts.html#accounts.models.User.code_expiration"><code class="docutils literal notranslate"><span class="pre">User.code_expiration</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="accounts.html#accounts.models.User.commune"><code class="docutils literal notranslate"><span class="pre">User.commune</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="accounts.html#accounts.models.User.commune_id"><code class="docutils literal notranslate"><span class="pre">User.commune_id</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="accounts.html#accounts.models.User.created_at"><code class="docutils literal notranslate"><span class="pre">User.created_at</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="accounts.html#accounts.models.User.created_projects"><code class="docutils literal notranslate"><span class="pre">User.created_projects</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="accounts.html#accounts.models.User.email"><code class="docutils literal notranslate"><span class="pre">User.email</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="accounts.html#accounts.models.User.get_full_name"><code class="docutils literal notranslate"><span class="pre">User.get_full_name()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="accounts.html#accounts.models.User.get_next_by_created_at"><code class="docutils literal notranslate"><span class="pre">User.get_next_by_created_at()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="accounts.html#accounts.models.User.get_next_by_updated_at"><code class="docutils literal notranslate"><span class="pre">User.get_next_by_updated_at()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="accounts.html#accounts.models.User.get_previous_by_created_at"><code class="docutils literal notranslate"><span class="pre">User.get_previous_by_created_at()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="accounts.html#accounts.models.User.get_previous_by_updated_at"><code class="docutils literal notranslate"><span class="pre">User.get_previous_by_updated_at()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="accounts.html#accounts.models.User.get_role_display"><code class="docutils literal notranslate"><span class="pre">User.get_role_display()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="accounts.html#accounts.models.User.get_short_name"><code class="docutils literal notranslate"><span class="pre">User.get_short_name()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="accounts.html#accounts.models.User.groups"><code class="docutils literal notranslate"><span class="pre">User.groups</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="accounts.html#accounts.models.User.id"><code class="docutils literal notranslate"><span class="pre">User.id</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="accounts.html#accounts.models.User.is_active"><code class="docutils literal notranslate"><span class="pre">User.is_active</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="accounts.html#accounts.models.User.is_staff"><code class="docutils literal notranslate"><span class="pre">User.is_staff</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="accounts.html#accounts.models.User.is_superuser"><code class="docutils literal notranslate"><span class="pre">User.is_superuser</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="accounts.html#accounts.models.User.is_verified"><code class="docutils literal notranslate"><span class="pre">User.is_verified</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="accounts.html#accounts.models.User.last_login"><code class="docutils literal notranslate"><span class="pre">User.last_login</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="accounts.html#accounts.models.User.logentry_set"><code class="docutils literal notranslate"><span class="pre">User.logentry_set</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="accounts.html#accounts.models.User.nom"><code class="docutils literal notranslate"><span class="pre">User.nom</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="accounts.html#accounts.models.User.objects"><code class="docutils literal notranslate"><span class="pre">User.objects</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="accounts.html#accounts.models.User.outstandingtoken_set"><code class="docutils literal notranslate"><span class="pre">User.outstandingtoken_set</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="accounts.html#accounts.models.User.password"><code class="docutils literal notranslate"><span class="pre">User.password</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="accounts.html#accounts.models.User.prenom"><code class="docutils literal notranslate"><span class="pre">User.prenom</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="accounts.html#accounts.models.User.role"><code class="docutils literal notranslate"><span class="pre">User.role</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="accounts.html#accounts.models.User.set_verification_code"><code class="docutils literal notranslate"><span class="pre">User.set_verification_code()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="accounts.html#accounts.models.User.signalement_set"><code class="docutils literal notranslate"><span class="pre">User.signalement_set</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="accounts.html#accounts.models.User.telephone"><code class="docutils literal notranslate"><span class="pre">User.telephone</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="accounts.html#accounts.models.User.updated_at"><code class="docutils literal notranslate"><span class="pre">User.updated_at</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="accounts.html#accounts.models.User.user_permissions"><code class="docutils literal notranslate"><span class="pre">User.user_permissions</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="accounts.html#accounts.models.User.verification_code"><code class="docutils literal notranslate"><span class="pre">User.verification_code</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="accounts.html#accounts.models.UserManager"><code class="docutils literal notranslate"><span class="pre">UserManager</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="accounts.html#accounts.models.UserManager.create_superuser"><code class="docutils literal notranslate"><span class="pre">UserManager.create_superuser()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="accounts.html#accounts.models.UserManager.create_user"><code class="docutils literal notranslate"><span class="pre">UserManager.create_user()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="accounts.html#module-accounts.serializers">accounts.serializers module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="accounts.html#accounts.serializers.LoginSerializer"><code class="docutils literal notranslate"><span class="pre">LoginSerializer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="accounts.html#accounts.serializers.LoginSerializer.validate"><code class="docutils literal notranslate"><span class="pre">LoginSerializer.validate()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="accounts.html#accounts.serializers.UserRegisterSerializer"><code class="docutils literal notranslate"><span class="pre">UserRegisterSerializer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="accounts.html#accounts.serializers.UserRegisterSerializer.Meta"><code class="docutils literal notranslate"><span class="pre">UserRegisterSerializer.Meta</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="accounts.html#accounts.serializers.UserRegisterSerializer.create"><code class="docutils literal notranslate"><span class="pre">UserRegisterSerializer.create()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="accounts.html#accounts.serializers.UserSerializer"><code class="docutils literal notranslate"><span class="pre">UserSerializer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="accounts.html#accounts.serializers.UserSerializer.Meta"><code class="docutils literal notranslate"><span class="pre">UserSerializer.Meta</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="accounts.html#module-accounts.tests">accounts.tests module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="accounts.html#module-accounts.urls">accounts.urls module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="accounts.html#module-accounts.utils">accounts.utils module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="accounts.html#accounts.utils.send_verification_email"><code class="docutils literal notranslate"><span class="pre">send_verification_email()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="accounts.html#module-accounts.views">accounts.views module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="accounts.html#accounts.views.CurrentUserAPIView"><code class="docutils literal notranslate"><span class="pre">CurrentUserAPIView</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="accounts.html#accounts.views.CurrentUserAPIView.get"><code class="docutils literal notranslate"><span class="pre">CurrentUserAPIView.get()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="accounts.html#accounts.views.CurrentUserAPIView.permission_classes"><code class="docutils literal notranslate"><span class="pre">CurrentUserAPIView.permission_classes</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="accounts.html#accounts.views.LoginView"><code class="docutils literal notranslate"><span class="pre">LoginView</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="accounts.html#accounts.views.LoginView.permission_classes"><code class="docutils literal notranslate"><span class="pre">LoginView.permission_classes</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="accounts.html#accounts.views.LoginView.post"><code class="docutils literal notranslate"><span class="pre">LoginView.post()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="accounts.html#accounts.views.LogoutView"><code class="docutils literal notranslate"><span class="pre">LogoutView</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="accounts.html#accounts.views.LogoutView.permission_classes"><code class="docutils literal notranslate"><span class="pre">LogoutView.permission_classes</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="accounts.html#accounts.views.LogoutView.post"><code class="docutils literal notranslate"><span class="pre">LogoutView.post()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="accounts.html#accounts.views.RegisterView"><code class="docutils literal notranslate"><span class="pre">RegisterView</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="accounts.html#accounts.views.RegisterView.permission_classes"><code class="docutils literal notranslate"><span class="pre">RegisterView.permission_classes</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="accounts.html#accounts.views.RegisterView.post"><code class="docutils literal notranslate"><span class="pre">RegisterView.post()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="accounts.html#accounts.views.VerifyAccountView"><code class="docutils literal notranslate"><span class="pre">VerifyAccountView</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="accounts.html#accounts.views.VerifyAccountView.permission_classes"><code class="docutils literal notranslate"><span class="pre">VerifyAccountView.permission_classes</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="accounts.html#accounts.views.VerifyAccountView.post"><code class="docutils literal notranslate"><span class="pre">VerifyAccountView.post()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="accounts.html#module-accounts">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="backend.html">backend package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="backend.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="backend.html#module-backend.asgi">backend.asgi module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="backend.html#module-backend.settings">backend.settings module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="backend.html#module-backend.urls">backend.urls module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="backend.html#module-backend.wsgi">backend.wsgi module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="backend.html#module-backend">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="communes.html">communes package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="communes.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="communes.migrations.html">communes.migrations package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="communes.migrations.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="communes.migrations.html#module-communes.migrations.0001_initial">communes.migrations.0001_initial module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="communes.migrations.html#module-communes.migrations.0002_remove_commune_description_commune_region">communes.migrations.0002_remove_commune_description_commune_region module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="communes.migrations.html#module-communes.migrations.0003_commune_latitude_commune_longitude">communes.migrations.0003_commune_latitude_commune_longitude module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="communes.migrations.html#module-communes.migrations">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="communes.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="communes.html#module-communes.admin">communes.admin module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="communes.html#module-communes.apps">communes.apps module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="communes.html#communes.apps.CommunesConfig"><code class="docutils literal notranslate"><span class="pre">CommunesConfig</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="communes.html#communes.apps.CommunesConfig.default_auto_field"><code class="docutils literal notranslate"><span class="pre">CommunesConfig.default_auto_field</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="communes.html#communes.apps.CommunesConfig.name"><code class="docutils literal notranslate"><span class="pre">CommunesConfig.name</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="communes.html#module-communes.models">communes.models module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="communes.html#communes.models.Commune"><code class="docutils literal notranslate"><span class="pre">Commune</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="communes.html#communes.models.Commune.DoesNotExist"><code class="docutils literal notranslate"><span class="pre">Commune.DoesNotExist</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="communes.html#communes.models.Commune.MultipleObjectsReturned"><code class="docutils literal notranslate"><span class="pre">Commune.MultipleObjectsReturned</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="communes.html#communes.models.Commune.created_at"><code class="docutils literal notranslate"><span class="pre">Commune.created_at</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="communes.html#communes.models.Commune.get_next_by_created_at"><code class="docutils literal notranslate"><span class="pre">Commune.get_next_by_created_at()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="communes.html#communes.models.Commune.get_next_by_updated_at"><code class="docutils literal notranslate"><span class="pre">Commune.get_next_by_updated_at()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="communes.html#communes.models.Commune.get_previous_by_created_at"><code class="docutils literal notranslate"><span class="pre">Commune.get_previous_by_created_at()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="communes.html#communes.models.Commune.get_previous_by_updated_at"><code class="docutils literal notranslate"><span class="pre">Commune.get_previous_by_updated_at()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="communes.html#communes.models.Commune.id"><code class="docutils literal notranslate"><span class="pre">Commune.id</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="communes.html#communes.models.Commune.latitude"><code class="docutils literal notranslate"><span class="pre">Commune.latitude</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="communes.html#communes.models.Commune.longitude"><code class="docutils literal notranslate"><span class="pre">Commune.longitude</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="communes.html#communes.models.Commune.nom"><code class="docutils literal notranslate"><span class="pre">Commune.nom</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="communes.html#communes.models.Commune.objects"><code class="docutils literal notranslate"><span class="pre">Commune.objects</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="communes.html#communes.models.Commune.projects"><code class="docutils literal notranslate"><span class="pre">Commune.projects</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="communes.html#communes.models.Commune.region"><code class="docutils literal notranslate"><span class="pre">Commune.region</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="communes.html#communes.models.Commune.signalement_set"><code class="docutils literal notranslate"><span class="pre">Commune.signalement_set</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="communes.html#communes.models.Commune.updated_at"><code class="docutils literal notranslate"><span class="pre">Commune.updated_at</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="communes.html#communes.models.Commune.user_set"><code class="docutils literal notranslate"><span class="pre">Commune.user_set</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="communes.html#communes.models.create_default_communes"><code class="docutils literal notranslate"><span class="pre">create_default_communes()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="communes.html#module-communes.serializers">communes.serializers module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="communes.html#communes.serializers.CommuneSerializer"><code class="docutils literal notranslate"><span class="pre">CommuneSerializer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="communes.html#communes.serializers.CommuneSerializer.Meta"><code class="docutils literal notranslate"><span class="pre">CommuneSerializer.Meta</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="communes.html#communes.serializers.CommuneSerializer.get_coordinates"><code class="docutils literal notranslate"><span class="pre">CommuneSerializer.get_coordinates()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="communes.html#module-communes.tests">communes.tests module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="communes.html#module-communes.urls">communes.urls module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="communes.html#module-communes.views">communes.views module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="communes.html#communes.views.CommuneViewSet"><code class="docutils literal notranslate"><span class="pre">CommuneViewSet</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="communes.html#communes.views.CommuneViewSet.basename"><code class="docutils literal notranslate"><span class="pre">CommuneViewSet.basename</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="communes.html#communes.views.CommuneViewSet.create"><code class="docutils literal notranslate"><span class="pre">CommuneViewSet.create()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="communes.html#communes.views.CommuneViewSet.description"><code class="docutils literal notranslate"><span class="pre">CommuneViewSet.description</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="communes.html#communes.views.CommuneViewSet.destroy"><code class="docutils literal notranslate"><span class="pre">CommuneViewSet.destroy()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="communes.html#communes.views.CommuneViewSet.detail"><code class="docutils literal notranslate"><span class="pre">CommuneViewSet.detail</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="communes.html#communes.views.CommuneViewSet.get_permissions"><code class="docutils literal notranslate"><span class="pre">CommuneViewSet.get_permissions()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="communes.html#communes.views.CommuneViewSet.list"><code class="docutils literal notranslate"><span class="pre">CommuneViewSet.list()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="communes.html#communes.views.CommuneViewSet.me"><code class="docutils literal notranslate"><span class="pre">CommuneViewSet.me()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="communes.html#communes.views.CommuneViewSet.name"><code class="docutils literal notranslate"><span class="pre">CommuneViewSet.name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="communes.html#communes.views.CommuneViewSet.permission_classes"><code class="docutils literal notranslate"><span class="pre">CommuneViewSet.permission_classes</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="communes.html#communes.views.CommuneViewSet.queryset"><code class="docutils literal notranslate"><span class="pre">CommuneViewSet.queryset</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="communes.html#communes.views.CommuneViewSet.regions"><code class="docutils literal notranslate"><span class="pre">CommuneViewSet.regions()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="communes.html#communes.views.CommuneViewSet.serializer_class"><code class="docutils literal notranslate"><span class="pre">CommuneViewSet.serializer_class</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="communes.html#communes.views.CommuneViewSet.signalements"><code class="docutils literal notranslate"><span class="pre">CommuneViewSet.signalements()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="communes.html#communes.views.CommuneViewSet.suffix"><code class="docutils literal notranslate"><span class="pre">CommuneViewSet.suffix</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="communes.html#communes.views.CommuneViewSet.update"><code class="docutils literal notranslate"><span class="pre">CommuneViewSet.update()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="communes.html#module-communes">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="manage.html">manage module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="manage.html#manage.main"><code class="docutils literal notranslate"><span class="pre">main()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="photos.html">photos package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="photos.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="photos.migrations.html">photos.migrations package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="photos.migrations.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="photos.migrations.html#module-photos.migrations.0001_initial">photos.migrations.0001_initial module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="photos.migrations.html#module-photos.migrations">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="photos.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="photos.html#module-photos.admin">photos.admin module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="photos.html#module-photos.apps">photos.apps module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="photos.html#photos.apps.PhotosConfig"><code class="docutils literal notranslate"><span class="pre">PhotosConfig</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="photos.html#photos.apps.PhotosConfig.default_auto_field"><code class="docutils literal notranslate"><span class="pre">PhotosConfig.default_auto_field</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="photos.html#photos.apps.PhotosConfig.name"><code class="docutils literal notranslate"><span class="pre">PhotosConfig.name</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="photos.html#module-photos.models">photos.models module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="photos.html#photos.models.Photo"><code class="docutils literal notranslate"><span class="pre">Photo</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="photos.html#photos.models.Photo.DoesNotExist"><code class="docutils literal notranslate"><span class="pre">Photo.DoesNotExist</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="photos.html#photos.models.Photo.MultipleObjectsReturned"><code class="docutils literal notranslate"><span class="pre">Photo.MultipleObjectsReturned</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="photos.html#photos.models.Photo.date_uploaded"><code class="docutils literal notranslate"><span class="pre">Photo.date_uploaded</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="photos.html#photos.models.Photo.get_next_by_date_uploaded"><code class="docutils literal notranslate"><span class="pre">Photo.get_next_by_date_uploaded()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="photos.html#photos.models.Photo.get_previous_by_date_uploaded"><code class="docutils literal notranslate"><span class="pre">Photo.get_previous_by_date_uploaded()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="photos.html#photos.models.Photo.id"><code class="docutils literal notranslate"><span class="pre">Photo.id</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="photos.html#photos.models.Photo.image"><code class="docutils literal notranslate"><span class="pre">Photo.image</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="photos.html#photos.models.Photo.latitude"><code class="docutils literal notranslate"><span class="pre">Photo.latitude</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="photos.html#photos.models.Photo.longitude"><code class="docutils literal notranslate"><span class="pre">Photo.longitude</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="photos.html#photos.models.Photo.objects"><code class="docutils literal notranslate"><span class="pre">Photo.objects</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="photos.html#module-photos.serializers">photos.serializers module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="photos.html#photos.serializers.PhotoLocationView"><code class="docutils literal notranslate"><span class="pre">PhotoLocationView</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="photos.html#photos.serializers.PhotoLocationView.queryset"><code class="docutils literal notranslate"><span class="pre">PhotoLocationView.queryset</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="photos.html#photos.serializers.PhotoLocationView.serializer_class"><code class="docutils literal notranslate"><span class="pre">PhotoLocationView.serializer_class</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="photos.html#photos.serializers.PhotoSerializer"><code class="docutils literal notranslate"><span class="pre">PhotoSerializer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="photos.html#photos.serializers.PhotoSerializer.Meta"><code class="docutils literal notranslate"><span class="pre">PhotoSerializer.Meta</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="photos.html#module-photos.tests">photos.tests module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="photos.html#module-photos.urls">photos.urls module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="photos.html#module-photos.views">photos.views module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="photos.html#photos.views.PhotoLocationView"><code class="docutils literal notranslate"><span class="pre">PhotoLocationView</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="photos.html#photos.views.PhotoLocationView.get"><code class="docutils literal notranslate"><span class="pre">PhotoLocationView.get()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="photos.html#photos.views.UploadPhotoView"><code class="docutils literal notranslate"><span class="pre">UploadPhotoView</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="photos.html#photos.views.UploadPhotoView.authentication_classes"><code class="docutils literal notranslate"><span class="pre">UploadPhotoView.authentication_classes</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="photos.html#photos.views.UploadPhotoView.permission_classes"><code class="docutils literal notranslate"><span class="pre">UploadPhotoView.permission_classes</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="photos.html#photos.views.UploadPhotoView.post"><code class="docutils literal notranslate"><span class="pre">UploadPhotoView.post()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="photos.html#photos.views.photo_locations"><code class="docutils literal notranslate"><span class="pre">photo_locations()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="photos.html#module-photos">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="signalement.html">signalement package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="signalement.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="signalement.migrations.html">signalement.migrations package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="signalement.migrations.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="signalement.migrations.html#module-signalement.migrations.0001_initial">signalement.migrations.0001_initial module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="signalement.migrations.html#module-signalement.migrations.0002_rename_titre_signalement_objet">signalement.migrations.0002_rename_titre_signalement_objet module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="signalement.migrations.html#module-signalement.migrations.0003_remove_signalement_commune_id_and_more">signalement.migrations.0003_remove_signalement_commune_id_and_more module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="signalement.migrations.html#module-signalement.migrations.0004_signalement_photo_id">signalement.migrations.0004_signalement_photo_id module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="signalement.migrations.html#module-signalement.migrations.0005_alter_signalement_type_signalement">signalement.migrations.0005_alter_signalement_type_signalement module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="signalement.migrations.html#module-signalement.migrations.0006_alter_signalement_options_signalement_commune_and_more">signalement.migrations.0006_alter_signalement_options_signalement_commune_and_more module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="signalement.migrations.html#module-signalement.migrations">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="signalement.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="signalement.html#module-signalement.admin">signalement.admin module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="signalement.html#module-signalement.apps">signalement.apps module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="signalement.html#signalement.apps.SignalementConfig"><code class="docutils literal notranslate"><span class="pre">SignalementConfig</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="signalement.html#signalement.apps.SignalementConfig.default_auto_field"><code class="docutils literal notranslate"><span class="pre">SignalementConfig.default_auto_field</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="signalement.html#signalement.apps.SignalementConfig.name"><code class="docutils literal notranslate"><span class="pre">SignalementConfig.name</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="signalement.html#module-signalement.models">signalement.models module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="signalement.html#signalement.models.Signalement"><code class="docutils literal notranslate"><span class="pre">Signalement</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="signalement.html#signalement.models.Signalement.DoesNotExist"><code class="docutils literal notranslate"><span class="pre">Signalement.DoesNotExist</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="signalement.html#signalement.models.Signalement.MultipleObjectsReturned"><code class="docutils literal notranslate"><span class="pre">Signalement.MultipleObjectsReturned</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="signalement.html#signalement.models.Signalement.STATUT_CHOICES"><code class="docutils literal notranslate"><span class="pre">Signalement.STATUT_CHOICES</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="signalement.html#signalement.models.Signalement.TYPE_SIGNALLEMENT_CHOICES"><code class="docutils literal notranslate"><span class="pre">Signalement.TYPE_SIGNALLEMENT_CHOICES</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="signalement.html#signalement.models.Signalement.commune"><code class="docutils literal notranslate"><span class="pre">Signalement.commune</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="signalement.html#signalement.models.Signalement.commune_id"><code class="docutils literal notranslate"><span class="pre">Signalement.commune_id</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="signalement.html#signalement.models.Signalement.date_resolution"><code class="docutils literal notranslate"><span class="pre">Signalement.date_resolution</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="signalement.html#signalement.models.Signalement.date_signalement"><code class="docutils literal notranslate"><span class="pre">Signalement.date_signalement</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="signalement.html#signalement.models.Signalement.description"><code class="docutils literal notranslate"><span class="pre">Signalement.description</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="signalement.html#signalement.models.Signalement.get_next_by_date_signalement"><code class="docutils literal notranslate"><span class="pre">Signalement.get_next_by_date_signalement()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="signalement.html#signalement.models.Signalement.get_previous_by_date_signalement"><code class="docutils literal notranslate"><span class="pre">Signalement.get_previous_by_date_signalement()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="signalement.html#signalement.models.Signalement.get_statut_display"><code class="docutils literal notranslate"><span class="pre">Signalement.get_statut_display()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="signalement.html#signalement.models.Signalement.get_type_signalement_display"><code class="docutils literal notranslate"><span class="pre">Signalement.get_type_signalement_display()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="signalement.html#signalement.models.Signalement.id"><code class="docutils literal notranslate"><span class="pre">Signalement.id</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="signalement.html#signalement.models.Signalement.localisation"><code class="docutils literal notranslate"><span class="pre">Signalement.localisation</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="signalement.html#signalement.models.Signalement.objects"><code class="docutils literal notranslate"><span class="pre">Signalement.objects</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="signalement.html#signalement.models.Signalement.objet"><code class="docutils literal notranslate"><span class="pre">Signalement.objet</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="signalement.html#signalement.models.Signalement.photo_id"><code class="docutils literal notranslate"><span class="pre">Signalement.photo_id</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="signalement.html#signalement.models.Signalement.statut"><code class="docutils literal notranslate"><span class="pre">Signalement.statut</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="signalement.html#signalement.models.Signalement.type_signalement"><code class="docutils literal notranslate"><span class="pre">Signalement.type_signalement</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="signalement.html#signalement.models.Signalement.utilisateur"><code class="docutils literal notranslate"><span class="pre">Signalement.utilisateur</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="signalement.html#signalement.models.Signalement.utilisateur_id"><code class="docutils literal notranslate"><span class="pre">Signalement.utilisateur_id</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="signalement.html#module-signalement.permissions">signalement.permissions module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="signalement.html#signalement.permissions.CanAccessStatistics"><code class="docutils literal notranslate"><span class="pre">CanAccessStatistics</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="signalement.html#signalement.permissions.CanAccessStatistics.has_permission"><code class="docutils literal notranslate"><span class="pre">CanAccessStatistics.has_permission()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="signalement.html#signalement.permissions.CanCreateSignalement"><code class="docutils literal notranslate"><span class="pre">CanCreateSignalement</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="signalement.html#signalement.permissions.CanCreateSignalement.has_permission"><code class="docutils literal notranslate"><span class="pre">CanCreateSignalement.has_permission()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="signalement.html#signalement.permissions.CanManageComments"><code class="docutils literal notranslate"><span class="pre">CanManageComments</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="signalement.html#signalement.permissions.CanManageComments.has_object_permission"><code class="docutils literal notranslate"><span class="pre">CanManageComments.has_object_permission()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="signalement.html#signalement.permissions.CanManageComments.has_permission"><code class="docutils literal notranslate"><span class="pre">CanManageComments.has_permission()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="signalement.html#signalement.permissions.CanManageSignalement"><code class="docutils literal notranslate"><span class="pre">CanManageSignalement</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="signalement.html#signalement.permissions.CanManageSignalement.has_object_permission"><code class="docutils literal notranslate"><span class="pre">CanManageSignalement.has_object_permission()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="signalement.html#signalement.permissions.CanManageSignalement.has_permission"><code class="docutils literal notranslate"><span class="pre">CanManageSignalement.has_permission()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="signalement.html#signalement.permissions.CanManageUsers"><code class="docutils literal notranslate"><span class="pre">CanManageUsers</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="signalement.html#signalement.permissions.CanManageUsers.has_object_permission"><code class="docutils literal notranslate"><span class="pre">CanManageUsers.has_object_permission()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="signalement.html#signalement.permissions.CanManageUsers.has_permission"><code class="docutils literal notranslate"><span class="pre">CanManageUsers.has_permission()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="signalement.html#signalement.permissions.CanUpdateSignalementStatus"><code class="docutils literal notranslate"><span class="pre">CanUpdateSignalementStatus</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="signalement.html#signalement.permissions.CanUpdateSignalementStatus.has_object_permission"><code class="docutils literal notranslate"><span class="pre">CanUpdateSignalementStatus.has_object_permission()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="signalement.html#signalement.permissions.CanUpdateSignalementStatus.has_permission"><code class="docutils literal notranslate"><span class="pre">CanUpdateSignalementStatus.has_permission()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="signalement.html#signalement.permissions.CanViewSignalement"><code class="docutils literal notranslate"><span class="pre">CanViewSignalement</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="signalement.html#signalement.permissions.CanViewSignalement.has_object_permission"><code class="docutils literal notranslate"><span class="pre">CanViewSignalement.has_object_permission()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="signalement.html#signalement.permissions.CanViewSignalement.has_permission"><code class="docutils literal notranslate"><span class="pre">CanViewSignalement.has_permission()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="signalement.html#signalement.permissions.IsAdminOnly"><code class="docutils literal notranslate"><span class="pre">IsAdminOnly</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="signalement.html#signalement.permissions.IsAdminOnly.has_permission"><code class="docutils literal notranslate"><span class="pre">IsAdminOnly.has_permission()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="signalement.html#signalement.permissions.IsAdminOrOwner"><code class="docutils literal notranslate"><span class="pre">IsAdminOrOwner</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="signalement.html#signalement.permissions.IsAdminOrOwner.has_object_permission"><code class="docutils literal notranslate"><span class="pre">IsAdminOrOwner.has_object_permission()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="signalement.html#signalement.permissions.IsAdminOrOwner.has_permission"><code class="docutils literal notranslate"><span class="pre">IsAdminOrOwner.has_permission()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="signalement.html#signalement.permissions.IsAdminOrReadOnly"><code class="docutils literal notranslate"><span class="pre">IsAdminOrReadOnly</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="signalement.html#signalement.permissions.IsAdminOrReadOnly.has_permission"><code class="docutils literal notranslate"><span class="pre">IsAdminOrReadOnly.has_permission()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="signalement.html#signalement.permissions.IsCitoyenOrAdmin"><code class="docutils literal notranslate"><span class="pre">IsCitoyenOrAdmin</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="signalement.html#signalement.permissions.IsCitoyenOrAdmin.has_permission"><code class="docutils literal notranslate"><span class="pre">IsCitoyenOrAdmin.has_permission()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="signalement.html#signalement.permissions.IsCtdOrAdmin"><code class="docutils literal notranslate"><span class="pre">IsCtdOrAdmin</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="signalement.html#signalement.permissions.IsCtdOrAdmin.has_permission"><code class="docutils literal notranslate"><span class="pre">IsCtdOrAdmin.has_permission()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="signalement.html#signalement.permissions.IsOwnerOrReadOnly"><code class="docutils literal notranslate"><span class="pre">IsOwnerOrReadOnly</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="signalement.html#signalement.permissions.IsOwnerOrReadOnly.has_object_permission"><code class="docutils literal notranslate"><span class="pre">IsOwnerOrReadOnly.has_object_permission()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="signalement.html#signalement.permissions.IsProfileOwnerOrAdmin"><code class="docutils literal notranslate"><span class="pre">IsProfileOwnerOrAdmin</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="signalement.html#signalement.permissions.IsProfileOwnerOrAdmin.has_object_permission"><code class="docutils literal notranslate"><span class="pre">IsProfileOwnerOrAdmin.has_object_permission()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="signalement.html#signalement.permissions.IsProfileOwnerOrAdmin.has_permission"><code class="docutils literal notranslate"><span class="pre">IsProfileOwnerOrAdmin.has_permission()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="signalement.html#signalement.permissions.SignalementViewPermission"><code class="docutils literal notranslate"><span class="pre">SignalementViewPermission</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="signalement.html#signalement.permissions.SignalementViewPermission.has_object_permission"><code class="docutils literal notranslate"><span class="pre">SignalementViewPermission.has_object_permission()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="signalement.html#signalement.permissions.SignalementViewPermission.has_permission"><code class="docutils literal notranslate"><span class="pre">SignalementViewPermission.has_permission()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="signalement.html#module-signalement.serializers">signalement.serializers module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="signalement.html#signalement.serializers.SignalementAdminUpdateSerializer"><code class="docutils literal notranslate"><span class="pre">SignalementAdminUpdateSerializer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="signalement.html#signalement.serializers.SignalementAdminUpdateSerializer.Meta"><code class="docutils literal notranslate"><span class="pre">SignalementAdminUpdateSerializer.Meta</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="signalement.html#signalement.serializers.SignalementAdminUpdateSerializer.update"><code class="docutils literal notranslate"><span class="pre">SignalementAdminUpdateSerializer.update()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="signalement.html#signalement.serializers.SignalementAdminUpdateSerializer.validate_statut"><code class="docutils literal notranslate"><span class="pre">SignalementAdminUpdateSerializer.validate_statut()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="signalement.html#signalement.serializers.SignalementAdminUpdateSerializer.validate_type_signalement"><code class="docutils literal notranslate"><span class="pre">SignalementAdminUpdateSerializer.validate_type_signalement()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="signalement.html#signalement.serializers.SignalementCreateSerializer"><code class="docutils literal notranslate"><span class="pre">SignalementCreateSerializer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="signalement.html#signalement.serializers.SignalementCreateSerializer.Meta"><code class="docutils literal notranslate"><span class="pre">SignalementCreateSerializer.Meta</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="signalement.html#signalement.serializers.SignalementCreateSerializer.validate_type_signalement"><code class="docutils literal notranslate"><span class="pre">SignalementCreateSerializer.validate_type_signalement()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="signalement.html#signalement.serializers.SignalementFilterSerializer"><code class="docutils literal notranslate"><span class="pre">SignalementFilterSerializer</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="signalement.html#signalement.serializers.SignalementListSerializer"><code class="docutils literal notranslate"><span class="pre">SignalementListSerializer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="signalement.html#signalement.serializers.SignalementListSerializer.Meta"><code class="docutils literal notranslate"><span class="pre">SignalementListSerializer.Meta</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="signalement.html#signalement.serializers.SignalementSerializer"><code class="docutils literal notranslate"><span class="pre">SignalementSerializer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="signalement.html#signalement.serializers.SignalementSerializer.Meta"><code class="docutils literal notranslate"><span class="pre">SignalementSerializer.Meta</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="signalement.html#signalement.serializers.SignalementStatsSerializer"><code class="docutils literal notranslate"><span class="pre">SignalementStatsSerializer</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="signalement.html#signalement.serializers.SignalementStatutSerializer"><code class="docutils literal notranslate"><span class="pre">SignalementStatutSerializer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="signalement.html#signalement.serializers.SignalementStatutSerializer.Meta"><code class="docutils literal notranslate"><span class="pre">SignalementStatutSerializer.Meta</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="signalement.html#signalement.serializers.SignalementStatutSerializer.update"><code class="docutils literal notranslate"><span class="pre">SignalementStatutSerializer.update()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="signalement.html#signalement.serializers.SignalementStatutSerializer.validate_statut"><code class="docutils literal notranslate"><span class="pre">SignalementStatutSerializer.validate_statut()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="signalement.html#signalement.serializers.SignalementUpdateSerializer"><code class="docutils literal notranslate"><span class="pre">SignalementUpdateSerializer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="signalement.html#signalement.serializers.SignalementUpdateSerializer.Meta"><code class="docutils literal notranslate"><span class="pre">SignalementUpdateSerializer.Meta</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="signalement.html#signalement.serializers.SignalementUpdateSerializer.validate"><code class="docutils literal notranslate"><span class="pre">SignalementUpdateSerializer.validate()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="signalement.html#signalement.serializers.SignalementUpdateSerializer.validate_type_signalement"><code class="docutils literal notranslate"><span class="pre">SignalementUpdateSerializer.validate_type_signalement()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="signalement.html#module-signalement.tests">signalement.tests module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="signalement.html#module-signalement.urls">signalement.urls module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="signalement.html#module-signalement.views">signalement.views module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="signalement.html#signalement.views.create_signalement"><code class="docutils literal notranslate"><span class="pre">create_signalement()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="signalement.html#signalement.views.delete_signalement"><code class="docutils literal notranslate"><span class="pre">delete_signalement()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="signalement.html#signalement.views.detail_signalement"><code class="docutils literal notranslate"><span class="pre">detail_signalement()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="signalement.html#signalement.views.get_signalement_choices"><code class="docutils literal notranslate"><span class="pre">get_signalement_choices()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="signalement.html#signalement.views.list_signalements"><code class="docutils literal notranslate"><span class="pre">list_signalements()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="signalement.html#signalement.views.mes_signalements"><code class="docutils literal notranslate"><span class="pre">mes_signalements()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="signalement.html#signalement.views.signalements_commune"><code class="docutils literal notranslate"><span class="pre">signalements_commune()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="signalement.html#signalement.views.statistiques_signalements"><code class="docutils literal notranslate"><span class="pre">statistiques_signalements()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="signalement.html#signalement.views.update_signalement"><code class="docutils literal notranslate"><span class="pre">update_signalement()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="signalement.html#signalement.views.update_signalement_statut"><code class="docutils literal notranslate"><span class="pre">update_signalement_statut()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="signalement.html#module-signalement">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">Ecovert</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2025, Ranelle.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.2.3</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="_sources/modules.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

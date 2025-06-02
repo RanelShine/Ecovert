@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+
+<html lang="fr" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>signalement.permissions &#8212; Documentation Ecovert 1.0</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="../../_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=27fed22d" />
+    <script src="../../_static/documentation_options.js?v=7a28dfa3"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/translations.js?v=e6b791cb"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Recherche" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Code source de signalement.permissions</h1><div class="highlight"><pre>
+<span></span><span class="c1">#signalement/permissions.py</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rest_framework</span><span class="w"> </span><span class="kn">import</span> <span class="n">permissions</span>
+
+<div class="viewcode-block" id="IsAdminOrReadOnly">
+<a class="viewcode-back" href="../../signalement.html#signalement.permissions.IsAdminOrReadOnly">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">IsAdminOrReadOnly</span><span class="p">(</span><span class="n">permissions</span><span class="o">.</span><span class="n">BasePermission</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Permission personnalisée qui permet seulement aux administrateurs de modifier les objets.</span>
+<span class="sd">    Les autres utilisateurs peuvent seulement lire.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="IsAdminOrReadOnly.has_permission">
+<a class="viewcode-back" href="../../signalement.html#signalement.permissions.IsAdminOrReadOnly.has_permission">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">has_permission</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">view</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">method</span> <span class="ow">in</span> <span class="n">permissions</span><span class="o">.</span><span class="n">SAFE_METHODS</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">is_authenticated</span> <span class="ow">and</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">role</span> <span class="o">==</span> <span class="s1">&#39;admin&#39;</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="IsOwnerOrReadOnly">
+<a class="viewcode-back" href="../../signalement.html#signalement.permissions.IsOwnerOrReadOnly">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">IsOwnerOrReadOnly</span><span class="p">(</span><span class="n">permissions</span><span class="o">.</span><span class="n">BasePermission</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Permission personnalisée qui permet seulement aux propriétaires d&#39;un objet de le modifier.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="IsOwnerOrReadOnly.has_object_permission">
+<a class="viewcode-back" href="../../signalement.html#signalement.permissions.IsOwnerOrReadOnly.has_object_permission">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">has_object_permission</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">view</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="c1"># Permissions de lecture pour tous les utilisateurs authentifiés</span>
+        <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">method</span> <span class="ow">in</span> <span class="n">permissions</span><span class="o">.</span><span class="n">SAFE_METHODS</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">is_authenticated</span>
+        
+        <span class="c1"># Permissions d&#39;écriture seulement pour le propriétaire</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">is_authenticated</span> <span class="ow">and</span> 
+                <span class="nb">hasattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s1">&#39;utilisateur&#39;</span><span class="p">)</span> <span class="ow">and</span> 
+                <span class="n">obj</span><span class="o">.</span><span class="n">utilisateur</span> <span class="o">==</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="IsAdminOrOwner">
+<a class="viewcode-back" href="../../signalement.html#signalement.permissions.IsAdminOrOwner">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">IsAdminOrOwner</span><span class="p">(</span><span class="n">permissions</span><span class="o">.</span><span class="n">BasePermission</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Permission personnalisée qui permet aux administrateurs et aux propriétaires de modifier les objets.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="IsAdminOrOwner.has_permission">
+<a class="viewcode-back" href="../../signalement.html#signalement.permissions.IsAdminOrOwner.has_permission">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">has_permission</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">view</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">is_authenticated</span></div>
+
+    
+<div class="viewcode-block" id="IsAdminOrOwner.has_object_permission">
+<a class="viewcode-back" href="../../signalement.html#signalement.permissions.IsAdminOrOwner.has_object_permission">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">has_object_permission</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">view</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">method</span> <span class="ow">in</span> <span class="n">permissions</span><span class="o">.</span><span class="n">SAFE_METHODS</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        
+        <span class="k">return</span> <span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">is_authenticated</span> <span class="ow">and</span> 
+                <span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">role</span> <span class="o">==</span> <span class="s1">&#39;admin&#39;</span> <span class="ow">or</span> 
+                 <span class="p">(</span><span class="nb">hasattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s1">&#39;utilisateur&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">obj</span><span class="o">.</span><span class="n">utilisateur</span> <span class="o">==</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="p">)))</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="IsCtdOrAdmin">
+<a class="viewcode-back" href="../../signalement.html#signalement.permissions.IsCtdOrAdmin">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">IsCtdOrAdmin</span><span class="p">(</span><span class="n">permissions</span><span class="o">.</span><span class="n">BasePermission</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Permission personnalisée pour les ctd et administrateurs.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="IsCtdOrAdmin.has_permission">
+<a class="viewcode-back" href="../../signalement.html#signalement.permissions.IsCtdOrAdmin.has_permission">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">has_permission</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">view</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">is_authenticated</span> <span class="ow">and</span> 
+                <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">role</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;ctd&#39;</span><span class="p">,</span> <span class="s1">&#39;admin&#39;</span><span class="p">])</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="IsAdminOnly">
+<a class="viewcode-back" href="../../signalement.html#signalement.permissions.IsAdminOnly">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">IsAdminOnly</span><span class="p">(</span><span class="n">permissions</span><span class="o">.</span><span class="n">BasePermission</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Permission réservée aux administrateurs uniquement.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="IsAdminOnly.has_permission">
+<a class="viewcode-back" href="../../signalement.html#signalement.permissions.IsAdminOnly.has_permission">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">has_permission</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">view</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">is_authenticated</span> <span class="ow">and</span> 
+                <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">role</span> <span class="o">==</span> <span class="s1">&#39;admin&#39;</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="IsCitoyenOrAdmin">
+<a class="viewcode-back" href="../../signalement.html#signalement.permissions.IsCitoyenOrAdmin">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">IsCitoyenOrAdmin</span><span class="p">(</span><span class="n">permissions</span><span class="o">.</span><span class="n">BasePermission</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Permission pour les citoyens et administrateurs.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="IsCitoyenOrAdmin.has_permission">
+<a class="viewcode-back" href="../../signalement.html#signalement.permissions.IsCitoyenOrAdmin.has_permission">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">has_permission</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">view</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">is_authenticated</span> <span class="ow">and</span> 
+                <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">role</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;citoyen&#39;</span><span class="p">,</span> <span class="s1">&#39;admin&#39;</span><span class="p">])</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="CanCreateSignalement">
+<a class="viewcode-back" href="../../signalement.html#signalement.permissions.CanCreateSignalement">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">CanCreateSignalement</span><span class="p">(</span><span class="n">permissions</span><span class="o">.</span><span class="n">BasePermission</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Permission pour créer des signalements.</span>
+<span class="sd">    Seuls les citoyens authentifiés peuvent créer des signalements.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="CanCreateSignalement.has_permission">
+<a class="viewcode-back" href="../../signalement.html#signalement.permissions.CanCreateSignalement.has_permission">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">has_permission</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">view</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;POST&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">is_authenticated</span> <span class="ow">and</span> 
+                    <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">role</span> <span class="o">==</span> <span class="s1">&#39;citoyen&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="CanManageSignalement">
+<a class="viewcode-back" href="../../signalement.html#signalement.permissions.CanManageSignalement">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">CanManageSignalement</span><span class="p">(</span><span class="n">permissions</span><span class="o">.</span><span class="n">BasePermission</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Permission complexe pour la gestion des signalements selon les rôles.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="CanManageSignalement.has_permission">
+<a class="viewcode-back" href="../../signalement.html#signalement.permissions.CanManageSignalement.has_permission">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">has_permission</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">view</span><span class="p">):</span>
+        <span class="c1"># Autoriser l&#39;accès général aux utilisateurs authentifiés</span>
+        <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">method</span> <span class="ow">in</span> <span class="n">permissions</span><span class="o">.</span><span class="n">SAFE_METHODS</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        
+        <span class="c1"># Pour les opérations de création/modification, vérifier l&#39;authentification</span>
+        <span class="k">return</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">is_authenticated</span></div>
+
+
+<div class="viewcode-block" id="CanManageSignalement.has_object_permission">
+<a class="viewcode-back" href="../../signalement.html#signalement.permissions.CanManageSignalement.has_object_permission">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">has_object_permission</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">view</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="c1"># Permissions de lecture</span>
+        <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">method</span> <span class="ow">in</span> <span class="n">permissions</span><span class="o">.</span><span class="n">SAFE_METHODS</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">is_authenticated</span><span class="p">:</span>
+                <span class="c1"># Utilisateurs non authentifiés : seulement signalements publics</span>
+                <span class="k">return</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s1">&#39;statut&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">obj</span><span class="o">.</span><span class="n">statut</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;en_cours&#39;</span><span class="p">,</span> <span class="s1">&#39;resolu&#39;</span><span class="p">]</span>
+            
+            <span class="k">elif</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">role</span> <span class="o">==</span> <span class="s1">&#39;citoyen&#39;</span><span class="p">:</span>
+                <span class="c1"># Citoyens : seulement leurs signalements ou signalements publics</span>
+                <span class="k">return</span> <span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">utilisateur</span> <span class="o">==</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span> <span class="ow">or</span> 
+                       <span class="p">(</span><span class="nb">hasattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s1">&#39;statut&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">obj</span><span class="o">.</span><span class="n">statut</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;en_cours&#39;</span><span class="p">,</span> <span class="s1">&#39;resolu&#39;</span><span class="p">]))</span>
+
+            <span class="k">elif</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">role</span> <span class="o">==</span> <span class="s1">&#39;ctd&#39;</span><span class="p">:</span>
+                <span class="c1"># CTD : signalements de leur commune</span>
+                <span class="k">return</span> <span class="p">(</span><span class="nb">hasattr</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="p">,</span> <span class="s1">&#39;commune&#39;</span><span class="p">)</span> <span class="ow">and</span>
+                        <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">commune</span> <span class="ow">and</span>
+                        <span class="nb">hasattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s1">&#39;commune&#39;</span><span class="p">)</span> <span class="ow">and</span>
+                        <span class="n">obj</span><span class="o">.</span><span class="n">commune</span> <span class="o">==</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">commune</span><span class="p">)</span>
+            
+            <span class="k">elif</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">role</span> <span class="o">==</span> <span class="s1">&#39;admin&#39;</span><span class="p">:</span>
+                <span class="c1"># Administrateurs : tous les signalements</span>
+                <span class="k">return</span> <span class="kc">True</span>
+        
+        <span class="c1"># Permissions d&#39;écriture/suppression</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">is_authenticated</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+            
+        <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">role</span> <span class="o">==</span> <span class="s1">&#39;citoyen&#39;</span><span class="p">:</span>
+            <span class="c1"># Citoyens : seulement leurs signalements et seulement modification limitée</span>
+            <span class="k">return</span> <span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">utilisateur</span> <span class="o">==</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span> <span class="ow">and</span> 
+                   <span class="nb">hasattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s1">&#39;statut&#39;</span><span class="p">)</span> <span class="ow">and</span> 
+                   <span class="n">obj</span><span class="o">.</span><span class="n">statut</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;en_attente&#39;</span><span class="p">,</span> <span class="s1">&#39;en_cours&#39;</span><span class="p">])</span>
+        
+        <span class="k">elif</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">role</span> <span class="o">==</span> <span class="s1">&#39;ctd&#39;</span><span class="p">:</span>
+            <span class="c1">#ctd : signalements de leur commune</span>
+            <span class="k">return</span> <span class="p">(</span><span class="nb">hasattr</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="p">,</span> <span class="s1">&#39;commune&#39;</span><span class="p">)</span> <span class="ow">and</span> 
+                    <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">commune</span> <span class="ow">and</span> 
+                    <span class="nb">hasattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s1">&#39;commune&#39;</span><span class="p">)</span> <span class="ow">and</span>
+                    <span class="n">obj</span><span class="o">.</span><span class="n">commune</span> <span class="o">==</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">commune</span><span class="p">)</span>
+        
+        <span class="k">elif</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">role</span> <span class="o">==</span> <span class="s1">&#39;admin&#39;</span><span class="p">:</span>
+            <span class="c1"># Administrateurs : tous les signalements</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        
+        <span class="k">return</span> <span class="kc">False</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="CanUpdateSignalementStatus">
+<a class="viewcode-back" href="../../signalement.html#signalement.permissions.CanUpdateSignalementStatus">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">CanUpdateSignalementStatus</span><span class="p">(</span><span class="n">permissions</span><span class="o">.</span><span class="n">BasePermission</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Permission pour modifier le statut des signalements.</span>
+<span class="sd">    Réservée aux ctd et administrateurs.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="CanUpdateSignalementStatus.has_permission">
+<a class="viewcode-back" href="../../signalement.html#signalement.permissions.CanUpdateSignalementStatus.has_permission">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">has_permission</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">view</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">is_authenticated</span> <span class="ow">and</span> 
+                <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">role</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;ctd&#39;</span><span class="p">,</span> <span class="s1">&#39;admin&#39;</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="CanUpdateSignalementStatus.has_object_permission">
+<a class="viewcode-back" href="../../signalement.html#signalement.permissions.CanUpdateSignalementStatus.has_object_permission">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">has_object_permission</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">view</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">is_authenticated</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+            
+        <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">role</span> <span class="o">==</span> <span class="s1">&#39;admin&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+
+        <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">role</span> <span class="o">==</span> <span class="s1">&#39;ctd&#39;</span><span class="p">:</span>
+            <span class="c1"># CTD : seulement signalements de leur commune</span>
+            <span class="k">return</span> <span class="p">(</span><span class="nb">hasattr</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="p">,</span> <span class="s1">&#39;commune&#39;</span><span class="p">)</span> <span class="ow">and</span>
+                    <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">commune</span> <span class="ow">and</span>
+                    <span class="nb">hasattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s1">&#39;commune&#39;</span><span class="p">)</span> <span class="ow">and</span>
+                    <span class="n">obj</span><span class="o">.</span><span class="n">commune</span> <span class="o">==</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">commune</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="kc">False</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="CanViewSignalement">
+<a class="viewcode-back" href="../../signalement.html#signalement.permissions.CanViewSignalement">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">CanViewSignalement</span><span class="p">(</span><span class="n">permissions</span><span class="o">.</span><span class="n">BasePermission</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Permission pour visualiser les signalements selon le rôle.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="CanViewSignalement.has_permission">
+<a class="viewcode-back" href="../../signalement.html#signalement.permissions.CanViewSignalement.has_permission">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">has_permission</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">view</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">True</span>  <span class="c1"># Autoriser l&#39;accès général</span></div>
+
+
+<div class="viewcode-block" id="CanViewSignalement.has_object_permission">
+<a class="viewcode-back" href="../../signalement.html#signalement.permissions.CanViewSignalement.has_object_permission">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">has_object_permission</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">view</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">is_authenticated</span><span class="p">:</span>
+            <span class="c1"># Utilisateurs non authentifiés : seulement signalements publics</span>
+            <span class="k">return</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s1">&#39;statut&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">obj</span><span class="o">.</span><span class="n">statut</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;en_cours&#39;</span><span class="p">,</span> <span class="s1">&#39;resolu&#39;</span><span class="p">]</span>
+        
+        <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">role</span> <span class="o">==</span> <span class="s1">&#39;citoyen&#39;</span><span class="p">:</span>
+            <span class="c1"># Citoyens : leurs signalements + signalements publics</span>
+            <span class="k">return</span> <span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">utilisateur</span> <span class="o">==</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span> <span class="ow">or</span> 
+                   <span class="p">(</span><span class="nb">hasattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s1">&#39;statut&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">obj</span><span class="o">.</span><span class="n">statut</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;en_cours&#39;</span><span class="p">,</span> <span class="s1">&#39;resolu&#39;</span><span class="p">]))</span>
+        
+        <span class="k">elif</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">role</span> <span class="o">==</span> <span class="s1">&#39;ctd&#39;</span><span class="p">:</span>
+            <span class="c1"># CTD : signalements de leur commune</span>
+            <span class="k">return</span> <span class="p">(</span><span class="nb">hasattr</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="p">,</span> <span class="s1">&#39;commune&#39;</span><span class="p">)</span> <span class="ow">and</span>
+                    <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">commune</span> <span class="ow">and</span>
+                    <span class="nb">hasattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s1">&#39;commune&#39;</span><span class="p">)</span> <span class="ow">and</span>
+                    <span class="n">obj</span><span class="o">.</span><span class="n">commune</span> <span class="o">==</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">commune</span><span class="p">)</span>
+        
+        <span class="k">elif</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">role</span> <span class="o">==</span> <span class="s1">&#39;admin&#39;</span><span class="p">:</span>
+            <span class="c1"># Administrateurs : tous les signalements</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        
+        <span class="k">return</span> <span class="kc">False</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="CanManageComments">
+<a class="viewcode-back" href="../../signalement.html#signalement.permissions.CanManageComments">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">CanManageComments</span><span class="p">(</span><span class="n">permissions</span><span class="o">.</span><span class="n">BasePermission</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Permission pour gérer les commentaires sur les signalements.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="CanManageComments.has_permission">
+<a class="viewcode-back" href="../../signalement.html#signalement.permissions.CanManageComments.has_permission">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">has_permission</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">view</span><span class="p">):</span>
+        <span class="c1"># Lecture autorisée pour tous, écriture pour utilisateurs authentifiés</span>
+        <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">method</span> <span class="ow">in</span> <span class="n">permissions</span><span class="o">.</span><span class="n">SAFE_METHODS</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">is_authenticated</span></div>
+
+
+<div class="viewcode-block" id="CanManageComments.has_object_permission">
+<a class="viewcode-back" href="../../signalement.html#signalement.permissions.CanManageComments.has_object_permission">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">has_object_permission</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">view</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="c1"># Permissions de lecture</span>
+        <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">method</span> <span class="ow">in</span> <span class="n">permissions</span><span class="o">.</span><span class="n">SAFE_METHODS</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        
+        <span class="c1"># Permissions d&#39;écriture/suppression</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">is_authenticated</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+            
+        <span class="c1"># Propriétaire du commentaire</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s1">&#39;auteur&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">obj</span><span class="o">.</span><span class="n">auteur</span> <span class="o">==</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+            
+        <span class="c1"># Administrateurs peuvent tout gérer</span>
+        <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">role</span> <span class="o">==</span> <span class="s1">&#39;admin&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+            
+        <span class="c1"># CTD peuvent gérer les commentaires dans leur commune</span>
+        <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">role</span> <span class="o">==</span> <span class="s1">&#39;ctd&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">(</span><span class="nb">hasattr</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="p">,</span> <span class="s1">&#39;commune&#39;</span><span class="p">)</span> <span class="ow">and</span> 
+                    <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">commune</span> <span class="ow">and</span> 
+                    <span class="nb">hasattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s1">&#39;signalement&#39;</span><span class="p">)</span> <span class="ow">and</span>
+                    <span class="nb">hasattr</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">signalement</span><span class="p">,</span> <span class="s1">&#39;commune&#39;</span><span class="p">)</span> <span class="ow">and</span>
+                    <span class="n">obj</span><span class="o">.</span><span class="n">signalement</span><span class="o">.</span><span class="n">commune</span> <span class="o">==</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">commune</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="kc">False</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="CanAccessStatistics">
+<a class="viewcode-back" href="../../signalement.html#signalement.permissions.CanAccessStatistics">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">CanAccessStatistics</span><span class="p">(</span><span class="n">permissions</span><span class="o">.</span><span class="n">BasePermission</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Permission pour accéder aux statistiques.</span>
+<span class="sd">    Réservée auxctd et administrateurs.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="CanAccessStatistics.has_permission">
+<a class="viewcode-back" href="../../signalement.html#signalement.permissions.CanAccessStatistics.has_permission">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">has_permission</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">view</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">is_authenticated</span> <span class="ow">and</span> 
+                <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">role</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;ctd&#39;</span><span class="p">,</span> <span class="s1">&#39;admin&#39;</span><span class="p">])</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="CanManageUsers">
+<a class="viewcode-back" href="../../signalement.html#signalement.permissions.CanManageUsers">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">CanManageUsers</span><span class="p">(</span><span class="n">permissions</span><span class="o">.</span><span class="n">BasePermission</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Permission pour gérer les utilisateurs.</span>
+<span class="sd">    Réservée aux administrateurs uniquement.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="CanManageUsers.has_permission">
+<a class="viewcode-back" href="../../signalement.html#signalement.permissions.CanManageUsers.has_permission">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">has_permission</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">view</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">is_authenticated</span> <span class="ow">and</span> 
+                <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">role</span> <span class="o">==</span> <span class="s1">&#39;admin&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="CanManageUsers.has_object_permission">
+<a class="viewcode-back" href="../../signalement.html#signalement.permissions.CanManageUsers.has_object_permission">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">has_object_permission</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">view</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">is_authenticated</span> <span class="ow">and</span> 
+                <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">role</span> <span class="o">==</span> <span class="s1">&#39;admin&#39;</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="IsProfileOwnerOrAdmin">
+<a class="viewcode-back" href="../../signalement.html#signalement.permissions.IsProfileOwnerOrAdmin">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">IsProfileOwnerOrAdmin</span><span class="p">(</span><span class="n">permissions</span><span class="o">.</span><span class="n">BasePermission</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Permission pour gérer les profils utilisateurs.</span>
+<span class="sd">    Propriétaire ou administrateur seulement.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="IsProfileOwnerOrAdmin.has_permission">
+<a class="viewcode-back" href="../../signalement.html#signalement.permissions.IsProfileOwnerOrAdmin.has_permission">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">has_permission</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">view</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">is_authenticated</span></div>
+
+
+<div class="viewcode-block" id="IsProfileOwnerOrAdmin.has_object_permission">
+<a class="viewcode-back" href="../../signalement.html#signalement.permissions.IsProfileOwnerOrAdmin.has_object_permission">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">has_object_permission</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">view</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">method</span> <span class="ow">in</span> <span class="n">permissions</span><span class="o">.</span><span class="n">SAFE_METHODS</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        
+        <span class="k">return</span> <span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">user</span> <span class="o">==</span> <span class="n">obj</span> <span class="ow">or</span> 
+                <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">role</span> <span class="o">==</span> <span class="s1">&#39;admin&#39;</span><span class="p">)</span></div>
+</div>
+
+
+
+<span class="c1"># Permissions composées pour des cas d&#39;usage spécifiques</span>
+<div class="viewcode-block" id="SignalementViewPermission">
+<a class="viewcode-back" href="../../signalement.html#signalement.permissions.SignalementViewPermission">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SignalementViewPermission</span><span class="p">(</span><span class="n">permissions</span><span class="o">.</span><span class="n">BasePermission</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Permission composite pour les vues de signalement.</span>
+<span class="sd">    Combine plusieurs logiques selon l&#39;action.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="SignalementViewPermission.has_permission">
+<a class="viewcode-back" href="../../signalement.html#signalement.permissions.SignalementViewPermission.has_permission">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">has_permission</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">view</span><span class="p">):</span>
+        <span class="c1"># Autoriser l&#39;accès général</span>
+        <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">method</span> <span class="ow">in</span> <span class="n">permissions</span><span class="o">.</span><span class="n">SAFE_METHODS</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        
+        <span class="c1"># Création : seulement citoyens</span>
+        <span class="k">if</span> <span class="n">view</span><span class="o">.</span><span class="n">action</span> <span class="o">==</span> <span class="s1">&#39;create&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">is_authenticated</span> <span class="ow">and</span> 
+                    <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">role</span> <span class="o">==</span> <span class="s1">&#39;citoyen&#39;</span><span class="p">)</span>
+        
+        <span class="c1"># Autres actions : utilisateurs authentifiés</span>
+        <span class="k">return</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">is_authenticated</span></div>
+
+
+<div class="viewcode-block" id="SignalementViewPermission.has_object_permission">
+<a class="viewcode-back" href="../../signalement.html#signalement.permissions.SignalementViewPermission.has_object_permission">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">has_object_permission</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">view</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="c1"># Déléguer à CanManageSignalement pour la logique complexe</span>
+        <span class="n">can_manage</span> <span class="o">=</span> <span class="n">CanManageSignalement</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">can_manage</span><span class="o">.</span><span class="n">has_object_permission</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">view</span><span class="p">,</span> <span class="n">obj</span><span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">Ecovert</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Code du module</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2025, Ranelle.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.2.3</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

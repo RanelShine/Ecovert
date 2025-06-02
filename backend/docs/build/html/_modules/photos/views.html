@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+
+<html lang="fr" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>photos.views &#8212; Documentation Ecovert 1.0</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="../../_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=27fed22d" />
+    <script src="../../_static/documentation_options.js?v=7a28dfa3"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/translations.js?v=e6b791cb"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Recherche" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Code source de photos.views</h1><div class="highlight"><pre>
+<span></span><span class="c1">#photos/views.py</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rest_framework.views</span><span class="w"> </span><span class="kn">import</span> <span class="n">APIView</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rest_framework.response</span><span class="w"> </span><span class="kn">import</span> <span class="n">Response</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rest_framework</span><span class="w"> </span><span class="kn">import</span> <span class="n">status</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.http</span><span class="w"> </span><span class="kn">import</span> <span class="n">JsonResponse</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">Photo</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.serializers</span><span class="w"> </span><span class="kn">import</span> <span class="n">PhotoSerializer</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rest_framework.permissions</span><span class="w"> </span><span class="kn">import</span> <span class="n">IsAuthenticated</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rest_framework_simplejwt.authentication</span><span class="w"> </span><span class="kn">import</span> <span class="n">JWTAuthentication</span>
+
+<span class="c1"># POST : Envoie une photo avec lat/lon</span>
+<div class="viewcode-block" id="UploadPhotoView">
+<a class="viewcode-back" href="../../photos.html#photos.views.UploadPhotoView">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">UploadPhotoView</span><span class="p">(</span><span class="n">APIView</span><span class="p">):</span>
+    <span class="n">permission_classes</span> <span class="o">=</span> <span class="p">[</span><span class="n">IsAuthenticated</span><span class="p">]</span>
+    <span class="n">authentication_classes</span> <span class="o">=</span> <span class="p">[</span><span class="n">JWTAuthentication</span><span class="p">]</span>
+
+<div class="viewcode-block" id="UploadPhotoView.post">
+<a class="viewcode-back" href="../../photos.html#photos.views.UploadPhotoView.post">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">post</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="n">serializer</span> <span class="o">=</span> <span class="n">PhotoSerializer</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">serializer</span><span class="o">.</span><span class="n">is_valid</span><span class="p">():</span>
+            <span class="n">photo</span> <span class="o">=</span> <span class="n">serializer</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+            <span class="c1"># Retourne les données du serializer, notamment l&#39;id</span>
+            <span class="k">return</span> <span class="n">Response</span><span class="p">(</span><span class="n">serializer</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">HTTP_201_CREATED</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Erreurs serializer :&quot;</span><span class="p">,</span> <span class="n">serializer</span><span class="o">.</span><span class="n">errors</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Response</span><span class="p">(</span><span class="n">serializer</span><span class="o">.</span><span class="n">errors</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">HTTP_400_BAD_REQUEST</span><span class="p">)</span></div>
+</div>
+
+
+
+<span class="c1"># GET : Liste toutes les photos avec leurs coordonnées</span>
+<div class="viewcode-block" id="photo_locations">
+<a class="viewcode-back" href="../../photos.html#photos.views.photo_locations">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">photo_locations</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="n">photo</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+            <span class="s1">&#39;image_url&#39;</span><span class="p">:</span> <span class="n">request</span><span class="o">.</span><span class="n">build_absolute_uri</span><span class="p">(</span><span class="n">photo</span><span class="o">.</span><span class="n">image</span><span class="o">.</span><span class="n">url</span><span class="p">),</span>
+            <span class="s1">&#39;latitude&#39;</span><span class="p">:</span> <span class="n">photo</span><span class="o">.</span><span class="n">latitude</span><span class="p">,</span>
+            <span class="s1">&#39;longitude&#39;</span><span class="p">:</span> <span class="n">photo</span><span class="o">.</span><span class="n">longitude</span><span class="p">,</span>
+            <span class="s1">&#39;date_uploaded&#39;</span><span class="p">:</span> <span class="n">photo</span><span class="o">.</span><span class="n">date_uploaded</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1"> %H:%M:%S&#39;</span><span class="p">)</span>
+        <span class="p">}</span>
+        <span class="k">for</span> <span class="n">photo</span> <span class="ow">in</span> <span class="n">Photo</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+    <span class="p">]</span>
+    <span class="k">return</span> <span class="n">JsonResponse</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">safe</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PhotoLocationView">
+<a class="viewcode-back" href="../../photos.html#photos.views.PhotoLocationView">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">PhotoLocationView</span><span class="p">(</span><span class="n">APIView</span><span class="p">):</span>
+<div class="viewcode-block" id="PhotoLocationView.get">
+<a class="viewcode-back" href="../../photos.html#photos.views.PhotoLocationView.get">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">{</span>
+                <span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="n">photo</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                <span class="s1">&#39;image_url&#39;</span><span class="p">:</span> <span class="n">request</span><span class="o">.</span><span class="n">build_absolute_uri</span><span class="p">(</span><span class="n">photo</span><span class="o">.</span><span class="n">image</span><span class="o">.</span><span class="n">url</span><span class="p">),</span>
+                <span class="s1">&#39;latitude&#39;</span><span class="p">:</span> <span class="n">photo</span><span class="o">.</span><span class="n">latitude</span><span class="p">,</span>
+                <span class="s1">&#39;longitude&#39;</span><span class="p">:</span> <span class="n">photo</span><span class="o">.</span><span class="n">longitude</span><span class="p">,</span>
+                <span class="s1">&#39;date_uploaded&#39;</span><span class="p">:</span> <span class="n">photo</span><span class="o">.</span><span class="n">date_uploaded</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1"> %H:%M:%S&#39;</span><span class="p">)</span>
+            <span class="p">}</span>
+            <span class="k">for</span> <span class="n">photo</span> <span class="ow">in</span> <span class="n">Photo</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+        <span class="p">]</span>
+        <span class="k">return</span> <span class="n">Response</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">HTTP_200_OK</span><span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">Ecovert</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Code du module</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2025, Ranelle.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.2.3</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+
+<html lang="fr" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>signalement.serializers &#8212; Documentation Ecovert 1.0</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="../../_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=27fed22d" />
+    <script src="../../_static/documentation_options.js?v=7a28dfa3"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/translations.js?v=e6b791cb"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Recherche" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Code source de signalement.serializers</h1><div class="highlight"><pre>
+<span></span><span class="c1">#signalement/serializers.py</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rest_framework</span><span class="w"> </span><span class="kn">import</span> <span class="n">serializers</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">Signalement</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">accounts.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">User</span>
+
+<div class="viewcode-block" id="SignalementSerializer">
+<a class="viewcode-back" href="../../signalement.html#signalement.serializers.SignalementSerializer">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SignalementSerializer</span><span class="p">(</span><span class="n">serializers</span><span class="o">.</span><span class="n">ModelSerializer</span><span class="p">):</span>
+    <span class="n">utilisateur_nom</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="s1">&#39;utilisateur.username&#39;</span><span class="p">,</span> <span class="n">read_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">utilisateur_email</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="s1">&#39;utilisateur.email&#39;</span><span class="p">,</span> <span class="n">read_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">statut_display</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="s1">&#39;get_statut_display&#39;</span><span class="p">,</span> <span class="n">read_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">type_signalement_display</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="s1">&#39;get_type_signalement_display&#39;</span><span class="p">,</span> <span class="n">read_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    
+<div class="viewcode-block" id="SignalementSerializer.Meta">
+<a class="viewcode-back" href="../../signalement.html#signalement.serializers.SignalementSerializer.Meta">[docs]</a>
+    <span class="k">class</span><span class="w"> </span><span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">Signalement</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="s1">&#39;objet&#39;</span><span class="p">,</span> <span class="s1">&#39;description&#39;</span><span class="p">,</span> <span class="s1">&#39;date_signalement&#39;</span><span class="p">,</span> <span class="s1">&#39;date_resolution&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;statut&#39;</span><span class="p">,</span> <span class="s1">&#39;statut_display&#39;</span><span class="p">,</span> <span class="s1">&#39;localisation&#39;</span><span class="p">,</span> <span class="s1">&#39;type_signalement&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;type_signalement_display&#39;</span><span class="p">,</span> <span class="s1">&#39;utilisateur&#39;</span><span class="p">,</span> <span class="s1">&#39;utilisateur_nom&#39;</span><span class="p">,</span> <span class="s1">&#39;utilisateur_email&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;photo_id&#39;</span><span class="p">,</span> <span class="s1">&#39;commune&#39;</span>
+        <span class="p">]</span>
+        <span class="n">read_only_fields</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="s1">&#39;date_signalement&#39;</span><span class="p">,</span> <span class="s1">&#39;utilisateur&#39;</span><span class="p">]</span></div>
+</div>
+
+
+<div class="viewcode-block" id="SignalementCreateSerializer">
+<a class="viewcode-back" href="../../signalement.html#signalement.serializers.SignalementCreateSerializer">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SignalementCreateSerializer</span><span class="p">(</span><span class="n">serializers</span><span class="o">.</span><span class="n">ModelSerializer</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Serializer pour la création de signalements - Accessible à tous les utilisateurs authentifiés&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="SignalementCreateSerializer.Meta">
+<a class="viewcode-back" href="../../signalement.html#signalement.serializers.SignalementCreateSerializer.Meta">[docs]</a>
+    <span class="k">class</span><span class="w"> </span><span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">Signalement</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s1">&#39;objet&#39;</span><span class="p">,</span> <span class="s1">&#39;description&#39;</span><span class="p">,</span> <span class="s1">&#39;localisation&#39;</span><span class="p">,</span> <span class="s1">&#39;type_signalement&#39;</span><span class="p">,</span> <span class="s1">&#39;photo_id&#39;</span><span class="p">,</span> <span class="s1">&#39;commune&#39;</span>
+        <span class="p">]</span></div>
+
+    
+<div class="viewcode-block" id="SignalementCreateSerializer.validate_type_signalement">
+<a class="viewcode-back" href="../../signalement.html#signalement.serializers.SignalementCreateSerializer.validate_type_signalement">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">validate_type_signalement</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="n">valid_types</span> <span class="o">=</span> <span class="p">[</span><span class="n">choice</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">choice</span> <span class="ow">in</span> <span class="n">Signalement</span><span class="o">.</span><span class="n">TYPE_SIGNALLEMENT_CHOICES</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">valid_types</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">serializers</span><span class="o">.</span><span class="n">ValidationError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Type de signalement invalide. Choisissez parmi: </span><span class="si">{</span><span class="n">valid_types</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">value</span></div>
+</div>
+
+
+<div class="viewcode-block" id="SignalementUpdateSerializer">
+<a class="viewcode-back" href="../../signalement.html#signalement.serializers.SignalementUpdateSerializer">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SignalementUpdateSerializer</span><span class="p">(</span><span class="n">serializers</span><span class="o">.</span><span class="n">ModelSerializer</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Serializer pour la modification par les citoyens (propriétaires) - Champs limités&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="SignalementUpdateSerializer.Meta">
+<a class="viewcode-back" href="../../signalement.html#signalement.serializers.SignalementUpdateSerializer.Meta">[docs]</a>
+    <span class="k">class</span><span class="w"> </span><span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">Signalement</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s1">&#39;objet&#39;</span><span class="p">,</span> <span class="s1">&#39;description&#39;</span><span class="p">,</span> <span class="s1">&#39;localisation&#39;</span><span class="p">,</span> <span class="s1">&#39;type_signalement&#39;</span><span class="p">,</span> <span class="s1">&#39;photo_id&#39;</span>
+        <span class="p">]</span></div>
+
+    
+<div class="viewcode-block" id="SignalementUpdateSerializer.validate_type_signalement">
+<a class="viewcode-back" href="../../signalement.html#signalement.serializers.SignalementUpdateSerializer.validate_type_signalement">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">validate_type_signalement</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="n">valid_types</span> <span class="o">=</span> <span class="p">[</span><span class="n">choice</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">choice</span> <span class="ow">in</span> <span class="n">Signalement</span><span class="o">.</span><span class="n">TYPE_SIGNALLEMENT_CHOICES</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">valid_types</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">serializers</span><span class="o">.</span><span class="n">ValidationError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Type de signalement invalide. Choisissez parmi: </span><span class="si">{</span><span class="n">valid_types</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">value</span></div>
+
+    
+<div class="viewcode-block" id="SignalementUpdateSerializer.validate">
+<a class="viewcode-back" href="../../signalement.html#signalement.serializers.SignalementUpdateSerializer.validate">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">validate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attrs</span><span class="p">):</span>
+        <span class="c1"># Les citoyens ne peuvent pas modifier le statut ou la date de résolution</span>
+        <span class="c1"># Ces champs sont automatiquement exclus du Meta.fields</span>
+        <span class="k">return</span> <span class="n">attrs</span></div>
+</div>
+
+
+<div class="viewcode-block" id="SignalementAdminUpdateSerializer">
+<a class="viewcode-back" href="../../signalement.html#signalement.serializers.SignalementAdminUpdateSerializer">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SignalementAdminUpdateSerializer</span><span class="p">(</span><span class="n">serializers</span><span class="o">.</span><span class="n">ModelSerializer</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Serializer pour la modification par les ctdet administrateurs - Tous les champs&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="SignalementAdminUpdateSerializer.Meta">
+<a class="viewcode-back" href="../../signalement.html#signalement.serializers.SignalementAdminUpdateSerializer.Meta">[docs]</a>
+    <span class="k">class</span><span class="w"> </span><span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">Signalement</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s1">&#39;objet&#39;</span><span class="p">,</span> <span class="s1">&#39;description&#39;</span><span class="p">,</span> <span class="s1">&#39;localisation&#39;</span><span class="p">,</span> <span class="s1">&#39;type_signalement&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;statut&#39;</span><span class="p">,</span> <span class="s1">&#39;date_resolution&#39;</span><span class="p">,</span> <span class="s1">&#39;photo_id&#39;</span><span class="p">,</span> <span class="s1">&#39;commune&#39;</span>
+        <span class="p">]</span></div>
+
+    
+<div class="viewcode-block" id="SignalementAdminUpdateSerializer.validate_statut">
+<a class="viewcode-back" href="../../signalement.html#signalement.serializers.SignalementAdminUpdateSerializer.validate_statut">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">validate_statut</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="n">valid_statuts</span> <span class="o">=</span> <span class="p">[</span><span class="n">choice</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">choice</span> <span class="ow">in</span> <span class="n">Signalement</span><span class="o">.</span><span class="n">STATUT_CHOICES</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">valid_statuts</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">serializers</span><span class="o">.</span><span class="n">ValidationError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Statut invalide. Choisissez parmi: </span><span class="si">{</span><span class="n">valid_statuts</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">value</span></div>
+
+    
+<div class="viewcode-block" id="SignalementAdminUpdateSerializer.validate_type_signalement">
+<a class="viewcode-back" href="../../signalement.html#signalement.serializers.SignalementAdminUpdateSerializer.validate_type_signalement">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">validate_type_signalement</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="n">valid_types</span> <span class="o">=</span> <span class="p">[</span><span class="n">choice</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">choice</span> <span class="ow">in</span> <span class="n">Signalement</span><span class="o">.</span><span class="n">TYPE_SIGNALLEMENT_CHOICES</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">valid_types</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">serializers</span><span class="o">.</span><span class="n">ValidationError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Type de signalement invalide. Choisissez parmi: </span><span class="si">{</span><span class="n">valid_types</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">value</span></div>
+
+    
+<div class="viewcode-block" id="SignalementAdminUpdateSerializer.update">
+<a class="viewcode-back" href="../../signalement.html#signalement.serializers.SignalementAdminUpdateSerializer.update">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance</span><span class="p">,</span> <span class="n">validated_data</span><span class="p">):</span>
+        <span class="c1"># Mise à jour automatique de la date de résolution si le statut passe à &quot;traité&quot;</span>
+        <span class="k">if</span> <span class="n">validated_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;statut&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;traite&#39;</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">validated_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;date_resolution&#39;</span><span class="p">):</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">django.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">timezone</span>
+            <span class="n">validated_data</span><span class="p">[</span><span class="s1">&#39;date_resolution&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">timezone</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span> <span class="n">validated_data</span><span class="p">)</span></div>
+</div>
+
+
+<div class="viewcode-block" id="SignalementStatutSerializer">
+<a class="viewcode-back" href="../../signalement.html#signalement.serializers.SignalementStatutSerializer">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SignalementStatutSerializer</span><span class="p">(</span><span class="n">serializers</span><span class="o">.</span><span class="n">ModelSerializer</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Serializer spécialement pour la modification du statut uniquement - ctd et administrateurs&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="SignalementStatutSerializer.Meta">
+<a class="viewcode-back" href="../../signalement.html#signalement.serializers.SignalementStatutSerializer.Meta">[docs]</a>
+    <span class="k">class</span><span class="w"> </span><span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">Signalement</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;statut&#39;</span><span class="p">,</span> <span class="s1">&#39;date_resolution&#39;</span><span class="p">]</span></div>
+
+    
+<div class="viewcode-block" id="SignalementStatutSerializer.validate_statut">
+<a class="viewcode-back" href="../../signalement.html#signalement.serializers.SignalementStatutSerializer.validate_statut">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">validate_statut</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="n">valid_statuts</span> <span class="o">=</span> <span class="p">[</span><span class="n">choice</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">choice</span> <span class="ow">in</span> <span class="n">Signalement</span><span class="o">.</span><span class="n">STATUT_CHOICES</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">valid_statuts</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">serializers</span><span class="o">.</span><span class="n">ValidationError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Statut invalide. Choisissez parmi: </span><span class="si">{</span><span class="n">valid_statuts</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">value</span></div>
+
+    
+<div class="viewcode-block" id="SignalementStatutSerializer.update">
+<a class="viewcode-back" href="../../signalement.html#signalement.serializers.SignalementStatutSerializer.update">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance</span><span class="p">,</span> <span class="n">validated_data</span><span class="p">):</span>
+        <span class="c1"># Si le statut passe à &quot;traité&quot;, on peut automatiquement définir la date de résolution</span>
+        <span class="k">if</span> <span class="n">validated_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;statut&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;traite&#39;</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">validated_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;date_resolution&#39;</span><span class="p">):</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">django.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">timezone</span>
+            <span class="n">validated_data</span><span class="p">[</span><span class="s1">&#39;date_resolution&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">timezone</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span> <span class="n">validated_data</span><span class="p">)</span></div>
+</div>
+
+
+<div class="viewcode-block" id="SignalementListSerializer">
+<a class="viewcode-back" href="../../signalement.html#signalement.serializers.SignalementListSerializer">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SignalementListSerializer</span><span class="p">(</span><span class="n">serializers</span><span class="o">.</span><span class="n">ModelSerializer</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Serializer optimisé pour les listes de signalements&quot;&quot;&quot;</span>
+    <span class="n">utilisateur_nom</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="s1">&#39;utilisateur.username&#39;</span><span class="p">,</span> <span class="n">read_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">statut_display</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="s1">&#39;get_statut_display&#39;</span><span class="p">,</span> <span class="n">read_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">type_signalement_display</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="s1">&#39;get_type_signalement_display&#39;</span><span class="p">,</span> <span class="n">read_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    
+<div class="viewcode-block" id="SignalementListSerializer.Meta">
+<a class="viewcode-back" href="../../signalement.html#signalement.serializers.SignalementListSerializer.Meta">[docs]</a>
+    <span class="k">class</span><span class="w"> </span><span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">Signalement</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="s1">&#39;objet&#39;</span><span class="p">,</span> <span class="s1">&#39;date_signalement&#39;</span><span class="p">,</span> <span class="s1">&#39;statut&#39;</span><span class="p">,</span> <span class="s1">&#39;statut_display&#39;</span><span class="p">,</span> 
+            <span class="s1">&#39;type_signalement&#39;</span><span class="p">,</span> <span class="s1">&#39;type_signalement_display&#39;</span><span class="p">,</span> <span class="s1">&#39;utilisateur_nom&#39;</span><span class="p">,</span> 
+            <span class="s1">&#39;commune&#39;</span><span class="p">,</span> <span class="s1">&#39;localisation&#39;</span>
+        <span class="p">]</span></div>
+</div>
+
+
+<div class="viewcode-block" id="SignalementStatsSerializer">
+<a class="viewcode-back" href="../../signalement.html#signalement.serializers.SignalementStatsSerializer">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SignalementStatsSerializer</span><span class="p">(</span><span class="n">serializers</span><span class="o">.</span><span class="n">Serializer</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Serializer pour les statistiques des signalements&quot;&quot;&quot;</span>
+    <span class="n">total</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">()</span>
+    <span class="n">en_attente</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">()</span>
+    <span class="n">en_cours</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">()</span>
+    <span class="n">traite</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">()</span>
+    <span class="n">rejete</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">()</span>
+    <span class="n">par_type</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">DictField</span><span class="p">()</span>
+    <span class="n">par_commune</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">DictField</span><span class="p">(</span><span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="SignalementFilterSerializer">
+<a class="viewcode-back" href="../../signalement.html#signalement.serializers.SignalementFilterSerializer">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SignalementFilterSerializer</span><span class="p">(</span><span class="n">serializers</span><span class="o">.</span><span class="n">Serializer</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Serializer pour valider les filtres de recherche&quot;&quot;&quot;</span>
+    <span class="n">statut</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span><span class="n">choices</span><span class="o">=</span><span class="n">Signalement</span><span class="o">.</span><span class="n">STATUT_CHOICES</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">type_signalement</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span><span class="n">choices</span><span class="o">=</span><span class="n">Signalement</span><span class="o">.</span><span class="n">TYPE_SIGNALLEMENT_CHOICES</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">commune</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">utilisateur</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span><span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">date_debut</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">DateTimeField</span><span class="p">(</span><span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">date_fin</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">DateTimeField</span><span class="p">(</span><span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">Ecovert</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Code du module</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2025, Ranelle.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.2.3</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

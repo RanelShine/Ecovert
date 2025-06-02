@@ -1,6 +1,34 @@
 <template>
     <div class="space-y-6">
-        <!-- En-tête -->
+        <!-- Liste des projets -->
+        <div class="bg-white rounded-lg shadow">
+            <div class="p-6 border-b">
+                <h2 class="text-lg font-semibold text-gray-900">Projets de la commune</h2>
+            </div>
+            <div class="p-6">
+                <div v-if="loading" class="text-center py-8">
+                    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+                    <p class="mt-4 text-gray-600">Chargement des projets...</p>
+                </div>
+
+                <div v-else-if="projets.length === 0" class="text-center py-8">
+                    <p class="text-gray-500">Aucun projet disponible pour le moment</p>
+                </div>
+
+                <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div v-for="projet in projets" :key="projet.id" class="border rounded-lg p-4">
+                        <h3 class="font-semibold text-lg mb-2">{{ projet.title }}</h3>
+                        <p class="text-gray-600 text-sm mb-4">{{ projet.description }}</p>
+                        <button @click="selectProjet(projet)"
+                            class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
+                            Demander des comptes
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div> 
+
+        <!-- Formulaire de demande -->
         <div class="mb-6">
             <h1 class="text-2xl font-bold text-gray-900">Demande de comptes sur les projets</h1>
             <p class="mt-2 text-sm text-gray-600">Sélectionnez un projet et posez vos questions à la commune</p>
@@ -16,9 +44,10 @@
                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
                         <option value="">Sélectionnez un projet</option>
                         <option v-for="projet in projets" :key="projet.id" :value="projet.id">
-                            {{ projet.nom }}
+                        {{ projet.title }}
                         </option>
                     </select>
+
                 </div>
 
                 <!-- Question/Demande -->
@@ -50,33 +79,6 @@
             </form>
         </div>
 
-        <!-- Liste des projets -->
-        <div class="bg-white rounded-lg shadow">
-            <div class="p-6 border-b">
-                <h2 class="text-lg font-semibold text-gray-900">Projets de la commune</h2>
-            </div>
-            <div class="p-6">
-                <div v-if="loading" class="text-center py-8">
-                    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
-                    <p class="mt-4 text-gray-600">Chargement des projets...</p>
-                </div>
-
-                <div v-else-if="projets.length === 0" class="text-center py-8">
-                    <p class="text-gray-500">Aucun projet disponible pour le moment</p>
-                </div>
-
-                <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <div v-for="projet in projets" :key="projet.id" class="border rounded-lg p-4">
-                        <h3 class="font-semibold text-lg mb-2">{{ projet.nom }}</h3>
-                        <p class="text-gray-600 text-sm mb-4">{{ projet.description }}</p>
-                        <button @click="selectProjet(projet)"
-                            class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
-                            Demander des comptes
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 </template>
 
@@ -89,7 +91,7 @@ const API_BASE_URL = 'http://localhost:8000'
 
 interface Projet {
     id: number
-    nom: string
+    title: string 
     description: string
     statut: string
 }
@@ -101,7 +103,7 @@ const form = ref({
     question: ''
 })
 
-// Charger les projets
+
 const fetchProjets = async () => {
     loading.value = true
     try {
@@ -115,19 +117,30 @@ const fetchProjets = async () => {
         if (!response.ok) throw new Error('Erreur lors du chargement des projets')
 
         const data = await response.json()
-        projets.value = data.results || data
+        if (data && Array.isArray(data.results)) {
+             projets.value = data.results;
+             console.log('Projets chargés (paginé):', projets.value);
+        } else if (data && Array.isArray(data)) {
+             projets.value = data;
+             console.log('Projets chargés (liste directe):', projets.value);
+        } else {
+             console.error('Format de données API inattendu pour les projets:', data);
+             projets.value = [];
+             toast.error('Format de données API inattendu lors du chargement des projets.');
+        }
+
     } catch (error) {
         console.error('Erreur:', error)
         toast.error('Erreur lors du chargement des projets')
+        projets.value = [];
     } finally {
         loading.value = false
     }
 }
 
-// Sélectionner un projet pour la demande
+
 const selectProjet = (projet: Projet) => {
-    form.value.projetId = projet.id
-    // Faire défiler jusqu'au formulaire
+    form.value.projetId = String(projet.id)
     document.querySelector('#projet')?.scrollIntoView({ behavior: 'smooth' })
 }
 
@@ -142,12 +155,16 @@ const submitDemande = async () => {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                project: form.value.projetId,
+                project: form.value.projetId, 
                 question: form.value.question
             })
         })
 
-        if (!response.ok) throw new Error('Erreur lors de l\'envoi de la demande')
+        if (!response.ok) {
+             const errorData = await response.json(); 
+             console.error('Erreur lors de l\'envoi de la demande:', response.status, response.statusText, errorData);
+             throw new Error(`Erreur lors de l\'envoi de la demande: ${response.status} ${response.statusText} - ${JSON.stringify(errorData)}`);
+        }
 
         toast.success('Votre demande a été envoyée avec succès')
         // Réinitialiser le formulaire
@@ -157,7 +174,11 @@ const submitDemande = async () => {
         }
     } catch (error) {
         console.error('Erreur:', error)
-        toast.error('Erreur lors de l\'envoi de la demande')
+        if (error instanceof Error && error.message.includes('Erreur lors de l\'envoi de la demande:')) {
+             toast.error(error.message);
+        } else {
+             toast.error('Erreur lors de l\'envoi de la demande');
+        }
     } finally {
         loading.value = false
     }

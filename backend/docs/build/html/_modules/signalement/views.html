@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+
+<html lang="fr" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>signalement.views &#8212; Documentation Ecovert 1.0</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="../../_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=27fed22d" />
+    <script src="../../_static/documentation_options.js?v=7a28dfa3"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/translations.js?v=e6b791cb"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Recherche" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Code source de signalement.views</h1><div class="highlight"><pre>
+<span></span><span class="c1"># signalement/views.py</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.http</span><span class="w"> </span><span class="kn">import</span> <span class="n">JsonResponse</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">timezone</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rest_framework.decorators</span><span class="w"> </span><span class="kn">import</span> <span class="n">api_view</span><span class="p">,</span> <span class="n">permission_classes</span><span class="p">,</span> <span class="n">authentication_classes</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rest_framework.response</span><span class="w"> </span><span class="kn">import</span> <span class="n">Response</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rest_framework.permissions</span><span class="w"> </span><span class="kn">import</span> <span class="n">IsAuthenticated</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rest_framework_simplejwt.authentication</span><span class="w"> </span><span class="kn">import</span> <span class="n">JWTAuthentication</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rest_framework</span><span class="w"> </span><span class="kn">import</span> <span class="n">status</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">photos.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">Photo</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">Signalement</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.serializers</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">SignalementSerializer</span><span class="p">,</span> 
+    <span class="n">SignalementCreateSerializer</span><span class="p">,</span> 
+    <span class="n">SignalementUpdateSerializer</span><span class="p">,</span>
+    <span class="n">SignalementStatutSerializer</span><span class="p">,</span>
+    <span class="n">SignalementAdminUpdateSerializer</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.permissions</span><span class="w"> </span><span class="kn">import</span> <span class="n">IsAdminOrReadOnly</span><span class="p">,</span> <span class="n">IsOwnerOrReadOnly</span><span class="p">,</span> <span class="n">IsAdminOrOwner</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">accounts.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">User</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">traceback</span>
+
+<span class="c1"># CREATE - Création d&#39;un signalement</span>
+<div class="viewcode-block" id="create_signalement">
+<a class="viewcode-back" href="../../signalement.html#signalement.views.create_signalement">[docs]</a>
+<span class="nd">@api_view</span><span class="p">([</span><span class="s1">&#39;POST&#39;</span><span class="p">])</span>
+<span class="nd">@permission_classes</span><span class="p">([</span><span class="n">IsAuthenticated</span><span class="p">])</span>
+<span class="nd">@authentication_classes</span><span class="p">([</span><span class="n">JWTAuthentication</span><span class="p">])</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">create_signalement</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">serializer</span> <span class="o">=</span> <span class="n">SignalementCreateSerializer</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">serializer</span><span class="o">.</span><span class="n">is_valid</span><span class="p">():</span>
+            <span class="n">photo_id</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;photo_id&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">photo_id</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">Photo</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="n">photo_id</span><span class="p">)</span>
+                <span class="k">except</span> <span class="n">Photo</span><span class="o">.</span><span class="n">DoesNotExist</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">Response</span><span class="p">({</span><span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="s1">&#39;Photo non trouvée&#39;</span><span class="p">},</span> <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">HTTP_400_BAD_REQUEST</span><span class="p">)</span>
+            
+            
+            <span class="n">commune_user</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="p">,</span> <span class="s1">&#39;commune&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            
+            <span class="c1"># Créer le signalement avec utilisateur et commune si disponible</span>
+            <span class="n">signalement</span> <span class="o">=</span> <span class="n">serializer</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">utilisateur</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="p">,</span> <span class="n">commune</span><span class="o">=</span><span class="n">commune_user</span><span class="p">)</span>
+            
+            <span class="n">response_serializer</span> <span class="o">=</span> <span class="n">SignalementSerializer</span><span class="p">(</span><span class="n">signalement</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">Response</span><span class="p">({</span>
+                <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="s1">&#39;Signalement créé avec succès&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;signalement&#39;</span><span class="p">:</span> <span class="n">response_serializer</span><span class="o">.</span><span class="n">data</span>
+            <span class="p">},</span> <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">HTTP_201_CREATED</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Response</span><span class="p">({</span><span class="s1">&#39;errors&#39;</span><span class="p">:</span> <span class="n">serializer</span><span class="o">.</span><span class="n">errors</span><span class="p">},</span> <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">HTTP_400_BAD_REQUEST</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">traceback</span><span class="o">.</span><span class="n">print_exc</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">Response</span><span class="p">({</span><span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)},</span> <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">HTTP_500_INTERNAL_SERVER_ERROR</span><span class="p">)</span></div>
+
+
+
+<span class="c1"># READ - Liste de tous les signalements</span>
+<div class="viewcode-block" id="list_signalements">
+<a class="viewcode-back" href="../../signalement.html#signalement.views.list_signalements">[docs]</a>
+<span class="nd">@api_view</span><span class="p">([</span><span class="s1">&#39;GET&#39;</span><span class="p">])</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">list_signalements</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Lister les signalements avec filtres selon le rôle de l&#39;utilisateur&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">signalements</span> <span class="o">=</span> <span class="n">Signalement</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+        
+        <span class="c1"># Filtrage selon le rôle de l&#39;utilisateur</span>
+        <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">is_authenticated</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">role</span> <span class="o">==</span> <span class="s1">&#39;citoyen&#39;</span><span class="p">:</span>
+                <span class="c1"># Les citoyens ne voient que leurs propres signalements</span>
+                <span class="n">signalements</span> <span class="o">=</span> <span class="n">signalements</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">utilisateur</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">role</span> <span class="o">==</span> <span class="s1">&#39;ctd&#39;</span><span class="p">:</span>
+                <span class="c1"># Les ctd municipaux voient les signalements de leur commune</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="p">,</span> <span class="s1">&#39;commune&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">commune</span><span class="p">:</span>
+                    <span class="n">signalements</span> <span class="o">=</span> <span class="n">signalements</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">commune</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">commune</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># Si le CTD n&#39;a pas de commune assignée, retourner une liste vide</span>
+                    <span class="n">signalements</span> <span class="o">=</span> <span class="n">signalements</span><span class="o">.</span><span class="n">none</span><span class="p">()</span>
+            <span class="k">elif</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">role</span> <span class="o">==</span> <span class="s1">&#39;admin&#39;</span><span class="p">:</span>
+                <span class="c1"># Les administrateurs voient tous les signalements (pas de filtre)</span>
+                <span class="k">pass</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Rôle non reconnu - traiter comme un utilisateur non authentifié</span>
+                <span class="n">signalements</span> <span class="o">=</span> <span class="n">signalements</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">statut</span><span class="o">=</span><span class="s1">&#39;en_cours&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Utilisateurs non authentifiés : signalements publics seulement</span>
+            <span class="n">signalements</span> <span class="o">=</span> <span class="n">signalements</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">statut</span><span class="o">=</span><span class="s1">&#39;en_cours&#39;</span><span class="p">)</span>
+        
+        <span class="c1"># Filtres optionnels</span>
+        <span class="n">statut</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;statut&#39;</span><span class="p">)</span>
+        <span class="n">type_signalement</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;type&#39;</span><span class="p">)</span>
+        <span class="n">utilisateur_id</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;utilisateur&#39;</span><span class="p">)</span>
+        <span class="n">commune</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;commune&#39;</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">statut</span><span class="p">:</span>
+            <span class="n">signalements</span> <span class="o">=</span> <span class="n">signalements</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">statut</span><span class="o">=</span><span class="n">statut</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">type_signalement</span><span class="p">:</span>
+            <span class="n">signalements</span> <span class="o">=</span> <span class="n">signalements</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">type_signalement</span><span class="o">=</span><span class="n">type_signalement</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">utilisateur_id</span> <span class="ow">and</span> <span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">is_authenticated</span> <span class="ow">and</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">role</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;admin&#39;</span><span class="p">,</span> <span class="s1">&#39;ctd&#39;</span><span class="p">]):</span>
+            <span class="n">signalements</span> <span class="o">=</span> <span class="n">signalements</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">utilisateur_id</span><span class="o">=</span><span class="n">utilisateur_id</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">commune</span> <span class="ow">and</span> <span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">is_authenticated</span> <span class="ow">and</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">role</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;admin&#39;</span><span class="p">,</span> <span class="s1">&#39;ctd&#39;</span><span class="p">]):</span>
+            <span class="n">signalements</span> <span class="o">=</span> <span class="n">signalements</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">commune</span><span class="o">=</span><span class="n">commune</span><span class="p">)</span>
+            
+        <span class="n">serializer</span> <span class="o">=</span> <span class="n">SignalementSerializer</span><span class="p">(</span><span class="n">signalements</span><span class="p">,</span> <span class="n">many</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Response</span><span class="p">({</span>
+            <span class="s1">&#39;count&#39;</span><span class="p">:</span> <span class="n">signalements</span><span class="o">.</span><span class="n">count</span><span class="p">(),</span>
+            <span class="s1">&#39;signalements&#39;</span><span class="p">:</span> <span class="n">serializer</span><span class="o">.</span><span class="n">data</span>
+        <span class="p">},</span> <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">HTTP_200_OK</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Response</span><span class="p">({</span><span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)},</span> <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">HTTP_500_INTERNAL_SERVER_ERROR</span><span class="p">)</span></div>
+
+
+<span class="c1"># READ - Détails d&#39;un signalement spécifique</span>
+<div class="viewcode-block" id="detail_signalement">
+<a class="viewcode-back" href="../../signalement.html#signalement.views.detail_signalement">[docs]</a>
+<span class="nd">@api_view</span><span class="p">([</span><span class="s1">&#39;GET&#39;</span><span class="p">])</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">detail_signalement</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="nb">id</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Obtenir les détails d&#39;un signalement selon les permissions de rôle&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">signalement</span> <span class="o">=</span> <span class="n">Signalement</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pk</span><span class="o">=</span><span class="nb">id</span><span class="p">)</span>
+        
+        <span class="c1"># Vérification des permissions de lecture</span>
+        <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">is_authenticated</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">role</span> <span class="o">==</span> <span class="s1">&#39;citoyen&#39;</span><span class="p">:</span>
+                <span class="c1"># Les citoyens ne peuvent voir que leurs propres signalements</span>
+                <span class="k">if</span> <span class="n">signalement</span><span class="o">.</span><span class="n">utilisateur</span> <span class="o">!=</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">Response</span><span class="p">({</span><span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="s1">&#39;Accès non autorisé&#39;</span><span class="p">},</span> <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">HTTP_403_FORBIDDEN</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">role</span> <span class="o">==</span> <span class="s1">&#39;ctd&#39;</span><span class="p">:</span>
+                <span class="c1"># Les ctd peuvent voir les signalements de leur commune</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="p">,</span> <span class="s1">&#39;commune&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">commune</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">signalement</span><span class="o">.</span><span class="n">commune</span> <span class="o">!=</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">commune</span><span class="p">:</span>
+                        <span class="k">return</span> <span class="n">Response</span><span class="p">({</span><span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="s1">&#39;Accès non autorisé&#39;</span><span class="p">},</span> <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">HTTP_403_FORBIDDEN</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">Response</span><span class="p">({</span><span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="s1">&#39;Aucune commune assignée&#39;</span><span class="p">},</span> <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">HTTP_403_FORBIDDEN</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">role</span> <span class="o">==</span> <span class="s1">&#39;admin&#39;</span><span class="p">:</span>
+                <span class="c1"># Les administrateurs peuvent voir tous les signalements</span>
+                <span class="k">pass</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Rôle non reconnu - traiter comme un utilisateur non authentifié</span>
+                <span class="k">if</span> <span class="n">signalement</span><span class="o">.</span><span class="n">statut</span> <span class="o">!=</span> <span class="s1">&#39;en_cours&#39;</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">Response</span><span class="p">({</span><span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="s1">&#39;Accès non autorisé&#39;</span><span class="p">},</span> <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">HTTP_403_FORBIDDEN</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Utilisateurs non authentifiés : seulement les signalements publics</span>
+            <span class="k">if</span> <span class="n">signalement</span><span class="o">.</span><span class="n">statut</span> <span class="o">!=</span> <span class="s1">&#39;en_cours&#39;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">Response</span><span class="p">({</span><span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="s1">&#39;Accès non autorisé&#39;</span><span class="p">},</span> <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">HTTP_403_FORBIDDEN</span><span class="p">)</span>
+        
+        <span class="n">serializer</span> <span class="o">=</span> <span class="n">SignalementSerializer</span><span class="p">(</span><span class="n">signalement</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Response</span><span class="p">(</span><span class="n">serializer</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">HTTP_200_OK</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">Signalement</span><span class="o">.</span><span class="n">DoesNotExist</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Response</span><span class="p">({</span><span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="s1">&#39;Signalement non trouvé&#39;</span><span class="p">},</span> <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">HTTP_404_NOT_FOUND</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Response</span><span class="p">({</span><span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)},</span> <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">HTTP_500_INTERNAL_SERVER_ERROR</span><span class="p">)</span></div>
+
+
+<span class="c1"># UPDATE - Modification complète d&#39;un signalement</span>
+<div class="viewcode-block" id="update_signalement">
+<a class="viewcode-back" href="../../signalement.html#signalement.views.update_signalement">[docs]</a>
+<span class="nd">@api_view</span><span class="p">([</span><span class="s1">&#39;PUT&#39;</span><span class="p">])</span>
+<span class="nd">@permission_classes</span><span class="p">([</span><span class="n">IsAuthenticated</span><span class="p">])</span>
+<span class="nd">@authentication_classes</span><span class="p">([</span><span class="n">JWTAuthentication</span><span class="p">])</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">update_signalement</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="nb">id</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Modifier un signalement selon les permissions de rôle&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">signalement</span> <span class="o">=</span> <span class="n">Signalement</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pk</span><span class="o">=</span><span class="nb">id</span><span class="p">)</span>
+        
+        <span class="c1"># Vérification des permissions selon le rôle</span>
+        <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">role</span> <span class="o">==</span> <span class="s1">&#39;citoyen&#39;</span><span class="p">:</span>
+            <span class="c1"># Les citoyens ne peuvent modifier que leurs propres signalements et seulement certains champs</span>
+            <span class="k">if</span> <span class="n">signalement</span><span class="o">.</span><span class="n">utilisateur</span> <span class="o">!=</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">Response</span><span class="p">({</span><span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="s1">&#39;Vous n</span><span class="se">\&#39;</span><span class="s1">êtes pas autorisé à modifier ce signalement&#39;</span><span class="p">},</span> 
+                              <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">HTTP_403_FORBIDDEN</span><span class="p">)</span>
+            <span class="c1"># Utiliser le serializer limité pour les citoyens</span>
+            <span class="n">serializer</span> <span class="o">=</span> <span class="n">SignalementUpdateSerializer</span><span class="p">(</span><span class="n">signalement</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">partial</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">role</span> <span class="o">==</span> <span class="s1">&#39;ctd&#39;</span><span class="p">:</span>
+            <span class="c1"># Les ctd peuvent modifier les signalements de leur commune</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="p">,</span> <span class="s1">&#39;commune&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">commune</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">signalement</span><span class="o">.</span><span class="n">commune</span> <span class="o">!=</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">commune</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">Response</span><span class="p">({</span><span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="s1">&#39;Vous n</span><span class="se">\&#39;</span><span class="s1">êtes pas autorisé à modifier ce signalement&#39;</span><span class="p">},</span> 
+                                  <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">HTTP_403_FORBIDDEN</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">Response</span><span class="p">({</span><span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="s1">&#39;Aucune commune assignée&#39;</span><span class="p">},</span> <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">HTTP_403_FORBIDDEN</span><span class="p">)</span>
+            <span class="c1"># Utiliser le serializer avec plus de permissions</span>
+            <span class="n">serializer</span> <span class="o">=</span> <span class="n">SignalementAdminUpdateSerializer</span><span class="p">(</span><span class="n">signalement</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">partial</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">role</span> <span class="o">==</span> <span class="s1">&#39;admin&#39;</span><span class="p">:</span>
+            <span class="c1"># Les administrateurs peuvent tout modifier</span>
+            <span class="n">serializer</span> <span class="o">=</span> <span class="n">SignalementAdminUpdateSerializer</span><span class="p">(</span><span class="n">signalement</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">partial</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Response</span><span class="p">({</span><span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="s1">&#39;Rôle non autorisé&#39;</span><span class="p">},</span> <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">HTTP_403_FORBIDDEN</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">serializer</span><span class="o">.</span><span class="n">is_valid</span><span class="p">():</span>
+            <span class="c1"># Vérifier la photo si fournie</span>
+            <span class="n">photo_id</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;photo_id&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">photo_id</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">Photo</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="n">photo_id</span><span class="p">)</span>
+                <span class="k">except</span> <span class="n">Photo</span><span class="o">.</span><span class="n">DoesNotExist</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">Response</span><span class="p">({</span><span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="s1">&#39;Photo non trouvée&#39;</span><span class="p">},</span> <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">HTTP_400_BAD_REQUEST</span><span class="p">)</span>
+            
+            <span class="n">signalement</span> <span class="o">=</span> <span class="n">serializer</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+            <span class="n">response_serializer</span> <span class="o">=</span> <span class="n">SignalementSerializer</span><span class="p">(</span><span class="n">signalement</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">Response</span><span class="p">({</span>
+                <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="s1">&#39;Signalement modifié avec succès&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;signalement&#39;</span><span class="p">:</span> <span class="n">response_serializer</span><span class="o">.</span><span class="n">data</span>
+            <span class="p">},</span> <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">HTTP_200_OK</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Response</span><span class="p">({</span><span class="s1">&#39;errors&#39;</span><span class="p">:</span> <span class="n">serializer</span><span class="o">.</span><span class="n">errors</span><span class="p">},</span> <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">HTTP_400_BAD_REQUEST</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">Signalement</span><span class="o">.</span><span class="n">DoesNotExist</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Response</span><span class="p">({</span><span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="s1">&#39;Signalement non trouvé&#39;</span><span class="p">},</span> <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">HTTP_404_NOT_FOUND</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">traceback</span><span class="o">.</span><span class="n">print_exc</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">Response</span><span class="p">({</span><span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)},</span> <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">HTTP_500_INTERNAL_SERVER_ERROR</span><span class="p">)</span></div>
+
+
+<span class="c1"># UPDATE - Modification du statut uniquement</span>
+<div class="viewcode-block" id="update_signalement_statut">
+<a class="viewcode-back" href="../../signalement.html#signalement.views.update_signalement_statut">[docs]</a>
+<span class="nd">@api_view</span><span class="p">([</span><span class="s1">&#39;PATCH&#39;</span><span class="p">])</span>
+<span class="nd">@permission_classes</span><span class="p">([</span><span class="n">IsAuthenticated</span><span class="p">])</span>
+<span class="nd">@authentication_classes</span><span class="p">([</span><span class="n">JWTAuthentication</span><span class="p">])</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">update_signalement_statut</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="nb">id</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Modifier le statut d&#39;un signalement - Réservé aux ctd et administrateurs&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">signalement</span> <span class="o">=</span> <span class="n">Signalement</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pk</span><span class="o">=</span><span class="nb">id</span><span class="p">)</span>
+        
+        <span class="c1"># Vérification des permissions - Seuls les CTD et administrateurs peuvent modifier le statut</span>
+        <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">role</span> <span class="o">==</span> <span class="s1">&#39;citoyen&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Response</span><span class="p">({</span><span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="s1">&#39;Vous n</span><span class="se">\&#39;</span><span class="s1">êtes pas autorisé à modifier le statut&#39;</span><span class="p">},</span> 
+                          <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">HTTP_403_FORBIDDEN</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">role</span> <span class="o">==</span> <span class="s1">&#39;ctd&#39;</span><span class="p">:</span>
+            <span class="c1"># Les ctd peuvent modifier les signalements de leur commune</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="p">,</span> <span class="s1">&#39;commune&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">commune</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">signalement</span><span class="o">.</span><span class="n">commune</span> <span class="o">!=</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">commune</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">Response</span><span class="p">({</span><span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="s1">&#39;Vous n</span><span class="se">\&#39;</span><span class="s1">êtes pas autorisé à modifier ce signalement&#39;</span><span class="p">},</span> 
+                                  <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">HTTP_403_FORBIDDEN</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">Response</span><span class="p">({</span><span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="s1">&#39;Aucune commune assignée&#39;</span><span class="p">},</span> <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">HTTP_403_FORBIDDEN</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">role</span> <span class="o">==</span> <span class="s1">&#39;admin&#39;</span><span class="p">:</span>
+            <span class="c1"># Les administrateurs peuvent modifier tous les statuts</span>
+            <span class="k">pass</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Response</span><span class="p">({</span><span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="s1">&#39;Rôle non autorisé&#39;</span><span class="p">},</span> <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">HTTP_403_FORBIDDEN</span><span class="p">)</span>
+        
+        <span class="n">serializer</span> <span class="o">=</span> <span class="n">SignalementStatutSerializer</span><span class="p">(</span><span class="n">signalement</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">partial</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">serializer</span><span class="o">.</span><span class="n">is_valid</span><span class="p">():</span>
+            <span class="n">signalement</span> <span class="o">=</span> <span class="n">serializer</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+            <span class="n">response_serializer</span> <span class="o">=</span> <span class="n">SignalementSerializer</span><span class="p">(</span><span class="n">signalement</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">Response</span><span class="p">({</span>
+                <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="s1">&#39;Statut modifié avec succès&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;signalement&#39;</span><span class="p">:</span> <span class="n">response_serializer</span><span class="o">.</span><span class="n">data</span>
+            <span class="p">},</span> <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">HTTP_200_OK</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Response</span><span class="p">({</span><span class="s1">&#39;errors&#39;</span><span class="p">:</span> <span class="n">serializer</span><span class="o">.</span><span class="n">errors</span><span class="p">},</span> <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">HTTP_400_BAD_REQUEST</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">Signalement</span><span class="o">.</span><span class="n">DoesNotExist</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Response</span><span class="p">({</span><span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="s1">&#39;Signalement non trouvé&#39;</span><span class="p">},</span> <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">HTTP_404_NOT_FOUND</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Response</span><span class="p">({</span><span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)},</span> <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">HTTP_500_INTERNAL_SERVER_ERROR</span><span class="p">)</span></div>
+
+
+<span class="c1"># DELETE - Suppression d&#39;un signalement</span>
+<div class="viewcode-block" id="delete_signalement">
+<a class="viewcode-back" href="../../signalement.html#signalement.views.delete_signalement">[docs]</a>
+<span class="nd">@api_view</span><span class="p">([</span><span class="s1">&#39;DELETE&#39;</span><span class="p">])</span>
+<span class="nd">@permission_classes</span><span class="p">([</span><span class="n">IsAuthenticated</span><span class="p">])</span>
+<span class="nd">@authentication_classes</span><span class="p">([</span><span class="n">JWTAuthentication</span><span class="p">])</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">delete_signalement</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="nb">id</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Supprimer un signalement selon les permissions de rôle&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">signalement</span> <span class="o">=</span> <span class="n">Signalement</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pk</span><span class="o">=</span><span class="nb">id</span><span class="p">)</span>
+        
+        <span class="c1"># Vérification des permissions selon le rôle</span>
+        <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">role</span> <span class="o">==</span> <span class="s1">&#39;citoyen&#39;</span><span class="p">:</span>
+            <span class="c1"># Les citoyens ne peuvent supprimer que leurs propres signalements</span>
+            <span class="k">if</span> <span class="n">signalement</span><span class="o">.</span><span class="n">utilisateur</span> <span class="o">!=</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">Response</span><span class="p">({</span><span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="s1">&#39;Vous n</span><span class="se">\&#39;</span><span class="s1">êtes pas autorisé à supprimer ce signalement&#39;</span><span class="p">},</span> 
+                              <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">HTTP_403_FORBIDDEN</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">role</span> <span class="o">==</span> <span class="s1">&#39;ctd&#39;</span><span class="p">:</span>
+            <span class="c1"># Les ctd peuvent supprimer les signalements de leur commune</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="p">,</span> <span class="s1">&#39;commune&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">commune</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">signalement</span><span class="o">.</span><span class="n">commune</span> <span class="o">!=</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">commune</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">Response</span><span class="p">({</span><span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="s1">&#39;Vous n</span><span class="se">\&#39;</span><span class="s1">êtes pas autorisé à supprimer ce signalement&#39;</span><span class="p">},</span> 
+                                  <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">HTTP_403_FORBIDDEN</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">Response</span><span class="p">({</span><span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="s1">&#39;Aucune commune assignée&#39;</span><span class="p">},</span> <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">HTTP_403_FORBIDDEN</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">role</span> <span class="o">==</span> <span class="s1">&#39;admin&#39;</span><span class="p">:</span>
+            <span class="c1"># Les administrateurs peuvent supprimer tous les signalements</span>
+            <span class="k">pass</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Response</span><span class="p">({</span><span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="s1">&#39;Rôle non autorisé&#39;</span><span class="p">},</span> <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">HTTP_403_FORBIDDEN</span><span class="p">)</span>
+        
+        <span class="n">signalement</span><span class="o">.</span><span class="n">delete</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">Response</span><span class="p">({</span><span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="s1">&#39;Signalement supprimé avec succès&#39;</span><span class="p">},</span> 
+                       <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">HTTP_200_OK</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">Signalement</span><span class="o">.</span><span class="n">DoesNotExist</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Response</span><span class="p">({</span><span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="s1">&#39;Signalement non trouvé&#39;</span><span class="p">},</span> <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">HTTP_404_NOT_FOUND</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Response</span><span class="p">({</span><span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)},</span> <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">HTTP_500_INTERNAL_SERVER_ERROR</span><span class="p">)</span></div>
+
+
+<span class="c1"># Endpoint pour obtenir les choix disponibles</span>
+<div class="viewcode-block" id="get_signalement_choices">
+<a class="viewcode-back" href="../../signalement.html#signalement.views.get_signalement_choices">[docs]</a>
+<span class="nd">@api_view</span><span class="p">([</span><span class="s1">&#39;GET&#39;</span><span class="p">])</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_signalement_choices</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Obtenir les choix disponibles pour les types et statuts&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">Response</span><span class="p">({</span>
+        <span class="s1">&#39;types_signalement&#39;</span><span class="p">:</span> <span class="p">[{</span><span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="n">choice</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="n">choice</span><span class="p">[</span><span class="mi">1</span><span class="p">]}</span> <span class="k">for</span> <span class="n">choice</span> <span class="ow">in</span> <span class="n">Signalement</span><span class="o">.</span><span class="n">TYPE_SIGNALLEMENT_CHOICES</span><span class="p">],</span>
+        <span class="s1">&#39;statuts&#39;</span><span class="p">:</span> <span class="p">[{</span><span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="n">choice</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="n">choice</span><span class="p">[</span><span class="mi">1</span><span class="p">]}</span> <span class="k">for</span> <span class="n">choice</span> <span class="ow">in</span> <span class="n">Signalement</span><span class="o">.</span><span class="n">STATUT_CHOICES</span><span class="p">]</span>
+    <span class="p">},</span> <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">HTTP_200_OK</span><span class="p">)</span></div>
+
+
+<span class="c1"># READ - Signalements de l&#39;utilisateur connecté</span>
+<div class="viewcode-block" id="mes_signalements">
+<a class="viewcode-back" href="../../signalement.html#signalement.views.mes_signalements">[docs]</a>
+<span class="nd">@api_view</span><span class="p">([</span><span class="s1">&#39;GET&#39;</span><span class="p">])</span>
+<span class="nd">@permission_classes</span><span class="p">([</span><span class="n">IsAuthenticated</span><span class="p">])</span>
+<span class="nd">@authentication_classes</span><span class="p">([</span><span class="n">JWTAuthentication</span><span class="p">])</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">mes_signalements</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Lister les signalements de l&#39;utilisateur connecté&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">signalements</span> <span class="o">=</span> <span class="n">Signalement</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">utilisateur</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="p">)</span>
+        
+        <span class="c1"># Filtres optionnels</span>
+        <span class="n">statut</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;statut&#39;</span><span class="p">)</span>
+        <span class="n">type_signalement</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;type&#39;</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">statut</span><span class="p">:</span>
+            <span class="n">signalements</span> <span class="o">=</span> <span class="n">signalements</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">statut</span><span class="o">=</span><span class="n">statut</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">type_signalement</span><span class="p">:</span>
+            <span class="n">signalements</span> <span class="o">=</span> <span class="n">signalements</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">type_signalement</span><span class="o">=</span><span class="n">type_signalement</span><span class="p">)</span>
+            
+        <span class="n">serializer</span> <span class="o">=</span> <span class="n">SignalementSerializer</span><span class="p">(</span><span class="n">signalements</span><span class="p">,</span> <span class="n">many</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Response</span><span class="p">({</span>
+            <span class="s1">&#39;count&#39;</span><span class="p">:</span> <span class="n">signalements</span><span class="o">.</span><span class="n">count</span><span class="p">(),</span>
+            <span class="s1">&#39;signalements&#39;</span><span class="p">:</span> <span class="n">serializer</span><span class="o">.</span><span class="n">data</span>
+        <span class="p">},</span> <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">HTTP_200_OK</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Response</span><span class="p">({</span><span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)},</span> <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">HTTP_500_INTERNAL_SERVER_ERROR</span><span class="p">)</span></div>
+
+
+<span class="c1"># READ - Signalements par commune (pour les ctd)</span>
+<div class="viewcode-block" id="signalements_commune">
+<a class="viewcode-back" href="../../signalement.html#signalement.views.signalements_commune">[docs]</a>
+<span class="nd">@api_view</span><span class="p">([</span><span class="s1">&#39;GET&#39;</span><span class="p">])</span>
+<span class="nd">@permission_classes</span><span class="p">([</span><span class="n">IsAuthenticated</span><span class="p">])</span>
+<span class="nd">@authentication_classes</span><span class="p">([</span><span class="n">JWTAuthentication</span><span class="p">])</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">signalements_commune</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Lister les signalements d&#39;une commune - Réservé aux ctd et administrateurs&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">role</span> <span class="o">==</span> <span class="s1">&#39;citoyen&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Response</span><span class="p">({</span><span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="s1">&#39;Accès non autorisé&#39;</span><span class="p">},</span> <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">HTTP_403_FORBIDDEN</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">role</span> <span class="o">==</span> <span class="s1">&#39;ctd&#39;</span><span class="p">:</span>
+            <span class="c1"># Les ctd voient les signalements de leur commune</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">hasattr</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="p">,</span> <span class="s1">&#39;commune&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">commune</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">Response</span><span class="p">({</span><span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="s1">&#39;Aucune commune assignée&#39;</span><span class="p">},</span> <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">HTTP_400_BAD_REQUEST</span><span class="p">)</span>
+            <span class="n">signalements</span> <span class="o">=</span> <span class="n">Signalement</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">commune</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">commune</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">role</span> <span class="o">==</span> <span class="s1">&#39;admin&#39;</span><span class="p">:</span>
+            <span class="c1"># Les administrateurs peuvent spécifier une commune ou voir tous</span>
+            <span class="n">commune</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;commune&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">commune</span><span class="p">:</span>
+                <span class="n">signalements</span> <span class="o">=</span> <span class="n">Signalement</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">commune</span><span class="o">=</span><span class="n">commune</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">signalements</span> <span class="o">=</span> <span class="n">Signalement</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Response</span><span class="p">({</span><span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="s1">&#39;Rôle non autorisé&#39;</span><span class="p">},</span> <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">HTTP_403_FORBIDDEN</span><span class="p">)</span>
+        
+        <span class="c1"># Filtres optionnels</span>
+        <span class="n">statut</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;statut&#39;</span><span class="p">)</span>
+        <span class="n">type_signalement</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;type&#39;</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">statut</span><span class="p">:</span>
+            <span class="n">signalements</span> <span class="o">=</span> <span class="n">signalements</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">statut</span><span class="o">=</span><span class="n">statut</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">type_signalement</span><span class="p">:</span>
+            <span class="n">signalements</span> <span class="o">=</span> <span class="n">signalements</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">type_signalement</span><span class="o">=</span><span class="n">type_signalement</span><span class="p">)</span>
+            
+        <span class="n">serializer</span> <span class="o">=</span> <span class="n">SignalementSerializer</span><span class="p">(</span><span class="n">signalements</span><span class="p">,</span> <span class="n">many</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Response</span><span class="p">({</span>
+            <span class="s1">&#39;count&#39;</span><span class="p">:</span> <span class="n">signalements</span><span class="o">.</span><span class="n">count</span><span class="p">(),</span>
+            <span class="s1">&#39;signalements&#39;</span><span class="p">:</span> <span class="n">serializer</span><span class="o">.</span><span class="n">data</span>
+        <span class="p">},</span> <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">HTTP_200_OK</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Response</span><span class="p">({</span><span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)},</span> <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">HTTP_500_INTERNAL_SERVER_ERROR</span><span class="p">)</span></div>
+
+
+<span class="c1"># READ - Statistiques des signalements (pour les administrateurs et ctd)</span>
+<div class="viewcode-block" id="statistiques_signalements">
+<a class="viewcode-back" href="../../signalement.html#signalement.views.statistiques_signalements">[docs]</a>
+<span class="nd">@api_view</span><span class="p">([</span><span class="s1">&#39;GET&#39;</span><span class="p">])</span>
+<span class="nd">@permission_classes</span><span class="p">([</span><span class="n">IsAuthenticated</span><span class="p">])</span>
+<span class="nd">@authentication_classes</span><span class="p">([</span><span class="n">JWTAuthentication</span><span class="p">])</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">statistiques_signalements</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Obtenir les statistiques des signalements selon le rôle&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">role</span> <span class="o">==</span> <span class="s1">&#39;citoyen&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Response</span><span class="p">({</span><span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="s1">&#39;Accès non autorisé&#39;</span><span class="p">},</span> <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">HTTP_403_FORBIDDEN</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">role</span> <span class="o">==</span> <span class="s1">&#39;ctd&#39;</span><span class="p">:</span>
+            <span class="c1"># Statistiques pour la commune du ctd</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">hasattr</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="p">,</span> <span class="s1">&#39;commune&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">commune</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">Response</span><span class="p">({</span><span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="s1">&#39;Aucune commune assignée&#39;</span><span class="p">},</span> <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">HTTP_400_BAD_REQUEST</span><span class="p">)</span>
+            <span class="n">signalements</span> <span class="o">=</span> <span class="n">Signalement</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">commune</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">commune</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">role</span> <span class="o">==</span> <span class="s1">&#39;admin&#39;</span><span class="p">:</span>
+            <span class="c1"># Statistiques globales</span>
+            <span class="n">signalements</span> <span class="o">=</span> <span class="n">Signalement</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Response</span><span class="p">({</span><span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="s1">&#39;Rôle non autorisé&#39;</span><span class="p">},</span> <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">HTTP_403_FORBIDDEN</span><span class="p">)</span>
+        
+        <span class="c1"># Calcul des statistiques</span>
+        <span class="n">stats</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;total&#39;</span><span class="p">:</span> <span class="n">signalements</span><span class="o">.</span><span class="n">count</span><span class="p">(),</span>
+            <span class="s1">&#39;en_attente&#39;</span><span class="p">:</span> <span class="n">signalements</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">statut</span><span class="o">=</span><span class="s1">&#39;en_attente&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">count</span><span class="p">(),</span>
+            <span class="s1">&#39;en_cours&#39;</span><span class="p">:</span> <span class="n">signalements</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">statut</span><span class="o">=</span><span class="s1">&#39;en_cours&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">count</span><span class="p">(),</span>
+            <span class="s1">&#39;traite&#39;</span><span class="p">:</span> <span class="n">signalements</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">statut</span><span class="o">=</span><span class="s1">&#39;traite&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">count</span><span class="p">(),</span>
+            <span class="s1">&#39;rejete&#39;</span><span class="p">:</span> <span class="n">signalements</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">statut</span><span class="o">=</span><span class="s1">&#39;rejete&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">count</span><span class="p">(),</span>
+        <span class="p">}</span>
+        
+        <span class="c1"># Statistiques par type</span>
+        <span class="n">types_stats</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">type_choice</span> <span class="ow">in</span> <span class="n">Signalement</span><span class="o">.</span><span class="n">TYPE_SIGNALLEMENT_CHOICES</span><span class="p">:</span>
+            <span class="n">type_code</span> <span class="o">=</span> <span class="n">type_choice</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">types_stats</span><span class="p">[</span><span class="n">type_code</span><span class="p">]</span> <span class="o">=</span> <span class="n">signalements</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">type_signalement</span><span class="o">=</span><span class="n">type_code</span><span class="p">)</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+        
+        <span class="n">stats</span><span class="p">[</span><span class="s1">&#39;par_type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">types_stats</span>
+        
+        <span class="k">return</span> <span class="n">Response</span><span class="p">(</span><span class="n">stats</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">HTTP_200_OK</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Response</span><span class="p">({</span><span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)},</span> <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">HTTP_500_INTERNAL_SERVER_ERROR</span><span class="p">)</span></div>
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">Ecovert</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Code du module</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2025, Ranelle.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.2.3</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

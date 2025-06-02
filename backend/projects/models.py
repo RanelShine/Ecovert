@@ -49,6 +49,11 @@ class Project(models.Model):
         null=True,
         blank=True
     )
+    avancement = models.PositiveIntegerField(
+        verbose_name="Avancement (%)",
+        default=0,
+        help_text="Pourcentage d'avancement du projet (0–100)."
+    )
     image = models.ImageField(
         upload_to='projects/',
         verbose_name="Image du projet",
@@ -78,6 +83,7 @@ class Project(models.Model):
 
     def __str__(self):
         return f"{self.title} ({self.commune.nom})"
+
 
 class Accountability(models.Model):
     """
@@ -142,10 +148,10 @@ class Accountability(models.Model):
         verbose_name_plural = "Demandes de comptes"
 
     def __str__(self):
-        return f"Demande sur {self.project.title} par {self.citizen.username}"
+        return f"Demande sur « {self.project.title} » par {self.citizen.get_full_name() or self.citizen.email}"
 
     def save(self, *args, **kwargs):
         if self.response and not self.responded_at:
             self.responded_at = timezone.now()
             self.status = 'ANSWERED'
-        super().save(*args, **kwargs) 
+        super().save(*args, **kwargs)

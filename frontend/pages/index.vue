@@ -5,10 +5,6 @@
           <div class="relative z-10 pb-8 bg-green-600 sm:pb-16 md:pb-20 lg:max-w-2xl lg:w-full lg:pb-28 xl:pb-32">
             <div class="pt-10 sm:pt-16 lg:pt-8 xl:pt-16">
               <div class="sm:text-center lg:text-left">
-                <h1 class="text-4xl tracking-tight font-extrabold text-white sm:text-5xl md:text-6xl">
-                  <span class="block">Plateforme de</span>
-                  <span class="block text-green-200">Redevabilité Verte</span>
-                </h1>
                 <p class="mt-3 text-base text-green-100 sm:mt-5 sm:text-lg sm:max-w-xl sm:mx-auto md:mt-5 md:text-xl lg:mx-0">
                   Une plateforme collaborative où citoyens, administrations locales, entreprises et ONG peuvent interagir pour contribuer à une gestion plus responsable de l'environnement.
                 </p>
@@ -19,9 +15,9 @@
                     </NuxtLink>
                   </div>
                   <div class="mt-3 sm:mt-0 sm:ml-3">
-                    <NuxtLink to="/about" class="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-green-500 hover:bg-green-400 md:py-4 md:text-lg md:px-10">
+                    <a href="http://www.cipcre.org" class="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-green-500 hover:bg-green-400 md:py-4 md:text-lg md:px-10">
                       En savoir plus
-                    </NuxtLink>
+                    </a>
                   </div>
                 </div>
               </div>

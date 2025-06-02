@@ -3,8 +3,10 @@
     <!-- Header avec bouton d'ajout -->
     <div class="flex justify-between items-center">
       <h1 class="text-3xl font-bold text-gray-900">Gestion des Projets</h1>
-      <button @click="showAddModal = true"
-        class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors">
+      <button
+        @click="openAddModal"
+        class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-medium transition-colors"
+      >
         + Nouveau Projet
       </button>
     </div>
@@ -29,6 +31,34 @@
       </div>
     </div>
 
+    <!-- Filtres et Tri -->
+    <div class="bg-white p-4 rounded-lg shadow mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <!-- Recherche -->
+            <div class="relative">
+                <input type="text" v-model="searchQuery" placeholder="Rechercher un projet..."
+                    class="w-full pl-10 pr-4 py-2 border rounded-lg">
+
+            </div>
+
+            <!-- Filtre par statut -->
+            <select v-model="statusFilter" class="w-full py-2 px-4 border rounded-lg">
+                <option value="">Tous les statuts</option>
+                <option v-for="status in projectStatuses" :key="status" :value="status">
+                    {{ getStatutLabel(status) }}
+                </option>
+            </select>
+
+            <!-- Tri -->
+            <select v-model="sortBy" class="w-full py-2 px-4 border rounded-lg">
+                <option value="created_at">Plus récents</option>
+                <option value="-created_at">Plus anciens</option>
+                <option value="title">Ordre alphabétique</option>
+            </select>
+        </div>
+    </div>
+
+
     <!-- Liste des projets -->
     <div class="bg-white rounded-lg shadow-md">
       <div class="p-6 border-b">
@@ -40,37 +70,59 @@
           <p class="mt-4 text-gray-600">Chargement des projets...</p>
         </div>
 
-        <div v-else-if="projets.length === 0" class="text-center py-8">
-          <p class="text-gray-500">Aucun projet trouvé</p>
+        <div v-else-if="!loading && projets.length === 0" class="text-center py-8">
+          <h3 class="mt-2 text-sm font-medium text-gray-900">Aucun projet</h3>
+          <p class="mt-1 text-sm text-gray-500">
+              Commencez par créer votre premier projet.
+          </p>
+           <div class="mt-6">
+                <button @click="openAddModal"
+                    class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200">
+                    Créer un projet
+                </button>
+            </div>
         </div>
 
         <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div v-for="projet in projets" :key="projet.id"
+          <div
+            v-for="projet in projets"
+            :key="projet.id"
             class="border rounded-lg p-4 hover:shadow-lg transition-shadow cursor-pointer"
-            @click="selectProjet(projet)">
+            @click="selectProjet(projet)"
+          >
             <div v-if="projet.image" class="mb-4">
-              <img :src="projet.image" :alt="projet.nom" class="w-full h-48 object-cover rounded-lg" />
+              <img
+                :src="projet.image"
+                alt="Image du projet"
+                class="w-full h-48 object-cover rounded-lg"
+              />
             </div>
             <div class="space-y-2">
-              <h3 class="font-semibold text-lg">{{ projet.nom }}</h3>
+              <h3 class="font-semibold text-lg">{{ projet.title }}</h3>
               <p class="text-gray-600 text-sm line-clamp-2">{{ projet.description }}</p>
               <div class="flex justify-between items-center">
-                <span :class="{
-                  'bg-green-100 text-green-800': projet.statut === 'termine',
-                  'bg-yellow-100 text-yellow-800': projet.statut === 'en_cours',
-                  'bg-blue-100 text-blue-800': projet.statut === 'planifie',
-                  'bg-red-100 text-red-800': projet.statut === 'suspendu'
-                }" class="px-2 py-1 rounded-full text-xs font-medium">
-                  {{ getStatutLabel(projet.statut) }}
+                <span
+                  :class="statusClass(projet.status)"
+                  class="px-2 py-1 rounded-full text-xs font-medium"
+                >
+                  {{ getStatutLabel(projet.status) }}
                 </span>
-                <span class="text-sm text-gray-500">{{ formatDate(projet.dateCreation) }}</span>
+                <span class="text-sm text-gray-500">{{ formatDate(projet.start_date) }}</span>
               </div>
               <div class="mt-2">
                 <div class="w-full bg-gray-200 rounded-full h-2">
-                  <div class="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                    :style="{ width: `${projet.avancement}%` }"></div>
+                  <div
+                    class="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                    :style="{ width: (projet.avancement || 0) + '%' }"
+                  ></div>
                 </div>
-                <p class="text-xs text-gray-500 mt-1">{{ projet.avancement }}% terminé</p>
+                <p class="text-xs text-gray-500 mt-1">{{ projet.avancement || 0 }}% terminé</p>
+              </div>
+              <div class="mt-2">
+                <p class="text-xs text-gray-500">
+                  Début : {{ formatDate(projet.start_date) }}<br />
+                  Fin prévue : {{ projet.end_date ? formatDate(projet.end_date) : '—' }}
+                </p>
               </div>
             </div>
           </div>
@@ -78,44 +130,64 @@
       </div>
     </div>
 
-    <!-- Modal d'ajout de projet -->
-    <div v-if="showAddModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <!-- Pagination -->
+    <div v-if="totalPages > 1" class="mt-6 flex justify-center">
+        <nav class="flex items-center gap-2">
+            <button @click="page--" :disabled="page === 1" class="px-3 py-1 rounded border"
+                :class="page === 1 ? 'text-gray-400 cursor-not-allowed' : 'hover:bg-gray-100'">
+                Précédent
+            </button>
+
+            <span class="px-3 py-1">
+                Page {{ page }} sur {{ totalPages }}
+            </span>
+
+            <button @click="page++" :disabled="page === totalPages" class="px-3 py-1 rounded border"
+                :class="page === totalPages ? 'text-gray-400 cursor-not-allowed' : 'hover:bg-gray-100'">
+                Suivant
+            </button>
+        </nav>
+    </div>
+
+
+    <!-- Modal d'ajout / modification -->
+    <div
+      v-if="showAddModal"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+    >
       <div class="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <div class="flex justify-between items-center mb-6">
-          <h2 class="text-2xl font-bold">{{ selectedProjet ? 'Modifier le Projet' : 'Nouveau Projet' }}</h2>
+          <h2 class="text-2xl font-bold">
+            {{ selectedProjet ? 'Modifier le Projet' : 'Nouveau Projet' }}
+          </h2>
           <button @click="closeModal" class="text-gray-500 hover:text-gray-700">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
 
         <form @submit.prevent="submitProjet" class="space-y-4">
+          <input v-model="form.id" type="hidden" />
+
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Nom du projet</label>
-            <input v-model="form.title" type="text" required
-              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Nom du projet" />
+            <label class="block text-sm font-medium text-gray-700 mb-1">Titre du projet</label>
+            <input v-model="form.title" type="text" required class="input" />
           </div>
 
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
-            <textarea v-model="form.description" required rows="3"
-              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Description du projet"></textarea>
+            <textarea v-model="form.description" required rows="3" class="input"></textarea>
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Budget</label>
-              <input v-model="form.budget" type="number" required
-                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Budget en FCFA" />
+              <label class="block text-sm font-medium text-gray-700 mb-1">Budget (XOF)</label>
+              <input v-model.number="form.budget" type="number" required min="0" class="input" />
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Statut</label>
-              <select v-model="form.status"
-                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <select v-model="form.status" required class="input">
                 <option value="PLANNED">Planifié</option>
                 <option value="IN_PROGRESS">En cours</option>
                 <option value="COMPLETED">Terminé</option>
@@ -127,43 +199,28 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Date de début</label>
-              <input v-model="form.start_date" type="date" required
-                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              <input v-model="form.start_date" type="date" required class="input" />
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Date de fin prévue</label>
-              <input v-model="form.end_date" type="date" required
-                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              <input v-model="form.end_date" type="date" class="input" />
             </div>
           </div>
 
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Avancement (%)</label>
-            <input v-model="form.progress" type="number" min="0" max="100"
-              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Pourcentage d'avancement" />
+            <input v-model.number="form.avancement" type="number" min="0" max="100" required class="input" />
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Image du projet</label>
-            <input @change="handleImageUpload" type="file" accept="image/*"
-              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Document du projet</label>
-            <input @change="handleFileUpload" type="file" accept=".pdf,.doc,.docx,.xls,.xlsx"
-              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <label class="block text-sm font-medium text-gray-700 mb-1">Image</label>
+            <input @change="handleImageUpload" type="file" accept="image/*" class="input" />
           </div>
 
           <div class="flex justify-end space-x-3 pt-4">
-            <button type="button" @click="closeModal"
-              class="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors">
-              Annuler
-            </button>
-            <button type="submit" :disabled="submitting"
-              class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50">
-              {{ submitting ? 'Enregistrement...' : (selectedProjet ? 'Modifier' : 'Créer') }}
+            <button type="button" @click="closeModal" class="btn-cancel">Annuler</button>
+            <button type="submit" :disabled="submitting" class="btn-primary">
+              {{ submitting ? 'Enregistrement...' : 'Enregistrer' }}
             </button>
           </div>
         </form>
@@ -173,240 +230,374 @@
 </template>
 
 <script setup lang="ts">
-/// <reference lib="dom" />
-import { ref, onMounted, reactive } from 'vue'
-import { useRuntimeConfig } from '#app'
+import { ref, reactive, onMounted, watch } from 'vue';
+import axios from 'axios';
+import { useToast } from 'vue-toastification';
 
-// Types
-type FormDataType = typeof FormData
+const toast = useToast();
 
 interface Projet {
-  id: number
-  nom: string
-  description: string
-  budget: number
-  statut: 'planifie' | 'en_cours' | 'termine' | 'suspendu'
-  dateDebut: string
-  dateFin: string
-  avancement: number
-  image?: string
-  document?: string
-  dateCreation: string
-  [key: string]: any  // Add index signature
+  id: number;
+  title: string;
+  description: string;
+  status: 'PLANNED' | 'IN_PROGRESS' | 'COMPLETED' | 'SUSPENDED';
+  start_date: string;
+  end_date: string | null;
+  budget: number;
+  avancement: number;
+  image: string | null; 
+  created_at?: string;
 }
 
-interface Stats {
-  total: number
-  enCours: number
-  termines: number
-  budgetTotal: number
+interface ProjetForm extends Partial<Projet> {
+    imageFile?: File | null; 
 }
 
-// État réactif
-const projets = ref<Projet[]>([])
-const stats = ref<Stats>({
+
+// Données réactives
+const projets = ref<Projet[]>([]);
+const selectedProjet = ref<Projet | null>(null);
+const showAddModal = ref(false);
+const loading = ref(false);
+const submitting = ref(false);
+
+const searchQuery = ref('');
+const statusFilter = ref<Projet['status'] | ''>(''); 
+const sortBy = ref('created_at');
+const page = ref(1);
+const totalPages = ref(1);
+const PAGE_SIZE = 12;
+
+const stats = reactive({
   total: 0,
   enCours: 0,
   termines: 0,
-  budgetTotal: 0
-})
-const loading = ref(false)
-const showAddModal = ref(false)
-const selectedProjet = ref<Projet | null>(null)
-const submitting = ref(false)
+  budgetTotal: 0,
+});
 
-// Formulaire
-const form = reactive<{
-  title: string
-  description: string
-  budget: number
-  status: 'PLANNED' | 'IN_PROGRESS' | 'COMPLETED' | 'SUSPENDED'
-  start_date: string
-  end_date: string
-  progress: number
-  image: File | null
-  document: File | null
-}>({
+// Utiliser le nouveau type ProjetForm
+const form = reactive<ProjetForm>({
+  id: undefined,
   title: '',
   description: '',
   budget: 0,
   status: 'PLANNED',
   start_date: '',
   end_date: '',
-  progress: 0,
-  image: null,
-  document: null
-})
+  avancement: 0,
+  image: null, 
+  imageFile: null, 
+});
 
-// Configuration de l'API
-const config = useRuntimeConfig()
-const API_BASE_URL = 'http://localhost:8000'
+const projectStatuses: Projet['status'][] = ['PLANNED', 'IN_PROGRESS', 'COMPLETED', 'SUSPENDED'];
+
+
+// Fonction pour charger les projets
+const fetchProjects = async () => {
+  loading.value = true;
+  try {
+    const params = {
+      page: page.value,
+      page_size: PAGE_SIZE,
+      search: searchQuery.value,
+      status: statusFilter.value,
+      ordering: sortBy.value,
+    };
+
+    const token = localStorage.getItem('authToken');
+
+    const response = await axios.get('http://127.0.0.1:8000/api/projects/', {
+      params,
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    
+    if (response.data) {
+        let projectsData: Projet[] = [];
+        let totalCount = 0;
+
+        if (Array.isArray(response.data)) {
+            // Format liste directe 
+            projectsData = response.data;
+            totalCount = response.data.length; 
+            totalPages.value = 1; 
+            console.warn('API renvoie une liste non paginée pour les projets.');
+        } else if (Array.isArray(response.data.results) && typeof response.data.count === 'number') {
+            // Format paginé (DRF par défaut)
+            projectsData = response.data.results;
+            totalCount = response.data.count;
+            totalPages.value = Math.ceil(totalCount / PAGE_SIZE);
+        } else {
+            console.error('Format de données API inattendu pour les projets:', response.data);
+            toast.error('Format de données API inattendu lors du chargement des projets.');
+        }
+
+        projets.value = projectsData;
+        updateStats(); 
+
+    } else {
+        console.error('Réponse API vide lors du chargement des projets.');
+        projets.value = [];
+        totalPages.value = 0;
+        updateStats();
+        toast.error('Réponse API vide lors du chargement des projets.');
+    }
+
+  } catch (error) {
+    console.error('Erreur lors du chargement des projets:', error);
+    projets.value = [];
+    totalPages.value = 0;
+    updateStats();
+    toast.error('Une erreur est survenue lors du chargement des projets');
+  } finally {
+    loading.value = false;
+  }
+};
+
+onMounted(() => {
+  fetchProjects();
+});
+
+watch([searchQuery, statusFilter, sortBy, page], () => {
+  fetchProjects();
+});
+
 
 // Fonctions utilitaires
-const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat('fr-FR', {
-    style: 'currency',
-    currency: 'XOF',
-    minimumFractionDigits: 0
-  }).format(amount)
+const formatCurrency = (value: number) =>
+  new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'XOF' }).format(value);
+
+const formatDate = (date: string) => {
+    if (!date) return '—';
+    const dateObj = new Date(date);
+    if (isNaN(dateObj.getTime())) {
+        console.warn('Date invalide reçue:', date);
+        return 'Date invalide';
+    }
+    return dateObj.toLocaleDateString('fr-FR');
 }
 
-const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString('fr-FR')
-}
 
-const getStatutLabel = (status: string) => {
-  const labels: Record<string, string> = {
+const getStatutLabel = (status: Projet['status']) => {
+  const labels: Record<Projet['status'], string> = {
     'PLANNED': 'Planifié',
     'IN_PROGRESS': 'En cours',
     'COMPLETED': 'Terminé',
     'SUSPENDED': 'Suspendu'
+  };
+  return labels[status] || status;
+};
+
+const statusClass = (status: Projet['status']) => {
+  switch (status) {
+    case 'PLANNED':
+      return 'bg-gray-200 text-gray-700';
+    case 'IN_PROGRESS':
+      return 'bg-yellow-200 text-yellow-800';
+    case 'COMPLETED':
+      return 'bg-green-200 text-green-800';
+    case 'SUSPENDED':
+      return 'bg-red-200 text-red-800';
+    default:
+        return 'bg-gray-200 text-gray-700';
   }
-  return labels[status] || status
-}
+};
 
-// Gestion des fichiers
-const handleImageUpload = (event: Event) => {
-  const file = (event.target as HTMLInputElement).files?.[0]
-  if (file) {
-    form.image = file
-  }
-}
-
-const handleFileUpload = (event: Event) => {
-  const file = (event.target as HTMLInputElement).files?.[0]
-  if (file) {
-    form.document = file
-  }
-}
-
-// API calls
-const getAuthHeaders = () => {
-  const token = localStorage.getItem('authToken')
-  return {
-    'Authorization': `Bearer ${token}`,
-    'Content-Type': 'application/json'
-  }
-}
-
-const fetchProjets = async () => {
-  loading.value = true
-  try {
-    const response = await fetch(`${API_BASE_URL}/api/projects/`, {
-      headers: getAuthHeaders()
-    })
-    if (response.ok) {
-      const data = await response.json()
-      projets.value = data.results || data
-      calculateStats()
-    }
-  } catch (error) {
-    console.error('Erreur lors du chargement des projets:', error)
-    toast.error('Erreur lors du chargement des projets')
-  } finally {
-    loading.value = false
-  }
-}
-
-const calculateStats = () => {
-  stats.value = {
-    total: projets.value.length,
-    enCours: projets.value.filter(p => p.statut === 'en_cours').length,
-    termines: projets.value.filter(p => p.statut === 'termine').length,
-    budgetTotal: projets.value.reduce((sum, p) => sum + p.budget, 0)
-  }
-}
-
-const submitProjet = async () => {
-  submitting.value = true
-  try {
-    const formData = new (FormData as any)()
-
-    // Ajouter les données du formulaire
-    formData.append('title', form.title)
-    formData.append('description', form.description)
-    formData.append('status', form.status)
-    formData.append('budget', String(form.budget))
-    formData.append('start_date', form.start_date)
-    formData.append('end_date', form.end_date)
-    formData.append('progress', String(form.progress))
-
-    // Ajouter les fichiers
-    if (form.image) {
-      formData.append('image', form.image)
-    }
-    if (form.document) {
-      formData.append('document', form.document)
-    }
-
-    const url = selectedProjet.value
-      ? `${API_BASE_URL}/api/projects/${selectedProjet.value.id}/update/`
-      : `${API_BASE_URL}/api/projects/create/`
-
-    const method = selectedProjet.value ? 'PUT' : 'POST'
-
-    const response = await fetch(url, {
-      method,
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-      },
-      body: formData
-    })
-
-    if (!response.ok) {
-      const error = await response.json()
-      throw new Error(error.detail || 'Erreur lors de l\'enregistrement')
-    }
-
-    await fetchProjets()
-    closeModal()
-    toast.success(selectedProjet.value ? 'Projet modifié avec succès' : 'Projet créé avec succès')
-  } catch (error) {
-    console.error('Erreur:', error)
-    toast.error(error.message || 'Erreur lors de l\'enregistrement du projet')
-  } finally {
-    submitting.value = false
-  }
-}
-
-const selectProjet = (projet: Projet) => {
-  selectedProjet.value = projet as Projet
-  // Remplir le formulaire avec les données du projet
-  (Object.keys(form) as Array<keyof Projet>).forEach((key) => {
-    if (key !== 'image' && key !== 'document' && projet[key] !== undefined) {
-      form[key] = projet[key]
-    }
-  })
-  showAddModal.value = true
-}
+// Méthodes
+const openAddModal = () => {
+  selectedProjet.value = null;
+  Object.assign(form, {
+    id: undefined,
+    title: '',
+    description: '',
+    budget: 0,
+    status: 'PLANNED',
+    start_date: '',
+    end_date: '',
+    avancement: 0,
+    image: null,
+    imageFile: null, 
+  });
+  showAddModal.value = true;
+};
 
 const closeModal = () => {
-  showAddModal.value = false
-  selectedProjet.value = null
-  // Réinitialiser le formulaire
-  Object.keys(form).forEach(key => {
-    if (typeof form[key] === 'string') {
-      form[key] = ''
-    } else if (typeof form[key] === 'number') {
-      form[key] = 0
-    } else {
-      form[key] = null
-    }
-  })
-  form.status = 'PLANNED'
-}
+  showAddModal.value = false;
+  selectedProjet.value = null;
+};
 
-// Lifecycle
-onMounted(() => {
-  fetchProjets()
-})
+const handleImageUpload = (event: Event) => {
+  const file = (event.target as HTMLInputElement).files?.[0];
+  if (file) {
+    form.imageFile = file;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      form.image = e.target?.result as string; 
+    };
+    reader.readAsDataURL(file);
+  } else {
+    form.imageFile = null;
+    if (form.id === undefined) {
+        form.image = null;
+    }
+  }
+};
+
+const selectProjet = (projet: Projet) => {
+  selectedProjet.value = projet;
+  const formattedProjet = {
+      ...projet,
+      start_date: projet.start_date ? projet.start_date.split('T')[0] : '',
+      end_date: projet.end_date ? projet.end_date.split('T')[0] : '',
+      image: projet.image, 
+  };
+  Object.assign(form, formattedProjet);
+  form.imageFile = null; 
+  showAddModal.value = true;
+};
+
+
+const submitProjet = async () => {
+  submitting.value = true;
+  try {
+    const formData = new FormData();
+    Object.keys(form).forEach(key => {
+        if (key === 'image' || key === 'imageFile') return;
+
+        const value = form[key as keyof ProjetForm]; 
+        if (key === 'id' && value === undefined) return;
+
+        if (value !== null && value !== undefined) {
+             if (key === 'start_date' || key === 'end_date') {
+                 if (value instanceof Date) {
+                     formData.append(key, value.toISOString().split('T')[0]);
+                 } else if (typeof value === 'string' && value) {
+                      formData.append(key, value);
+                 }
+             }
+             else {
+                formData.append(key, value.toString());
+             }
+        }
+    });
+
+    if (form.imageFile instanceof File) {
+        formData.append('image', form.imageFile);
+    }
+
+
+    let response: any;
+    const token = localStorage.getItem('authToken');
+
+    if (form.id !== undefined) {
+      response = await axios.patch(`http://127.0.0.1:8000/api/projects/${form.id}/update/`, formData, {
+           headers: {
+                'Authorization': `Bearer ${token}`,
+           },
+      });
+      const index = projets.value.findIndex(p => p.id === response.data.id);
+      if (index !== -1) {
+        projets.value[index] = { ...projets.value[index], ...response.data };
+      }
+      toast.success('Le projet a été modifié avec succès');
+
+    } else {
+      response = await axios.post('http://127.0.0.1:8000/api/projects/create/', formData, {
+           headers: {
+                'Authorization': `Bearer ${token}`,
+
+           },
+      });
+
+      projets.value.push(response.data);
+      toast.success('Le projet a été créé avec succès');
+    }
+
+    closeModal();
+    fetchProjects();
+
+  } catch (error) {
+    console.error("Erreur lors de la soumission du projet:", error);
+    if (axios.isAxiosError(error) && error.response) {
+        console.error("Détails de l'erreur API:", error.response.data);
+        let errorMessage = 'Erreur lors de l\'enregistrement: ';
+        if (error.response.data) {
+            try {
+                errorMessage += JSON.stringify(error.response.data);
+            } catch (e) {
+                errorMessage += 'Détails non disponibles.';
+            }
+        }
+        toast.error(errorMessage);
+    } else {
+        toast.error("Une erreur est survenue lors de l'enregistrement du projet");
+    }
+  } finally {
+    submitting.value = false;
+  }
+};
+
+const updateStats = () => {
+  stats.total = projets.value.length; 
+  stats.enCours = projets.value.filter(p => p.status === 'IN_PROGRESS').length;
+  stats.termines = projets.value.filter(p => p.status === 'COMPLETED').length;
+  stats.budgetTotal = projets.value.reduce((sum, p) => sum + (p.budget || 0), 0);
+};
+
 </script>
 
+
+
+
 <style scoped>
-.line-clamp-2 {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+.input {
+  width: 100%;
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  outline: none;
+  transition: box-shadow 0.2s;
+}
+.input:focus {
+  box-shadow: 0 0 0 2px #3b82f6;
+  border-color: #3b82f6;
+}
+
+.btn-cancel {
+  padding-left: 1rem;
+  padding-right: 1rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  color: #374151;
+  background-color: #e5e7eb;
+  border-radius: 0.375rem;
+  transition: background-color 0.2s;
+}
+.btn-cancel:hover {
+  background-color: #d1d5db;
+}
+
+.btn-primary {
+  padding-left: 1rem;
+  padding-right: 1rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  background-color: #2563eb;
+  color: #fff;
+  border-radius: 0.375rem;
+  transition: background-color 0.2s, opacity 0.2s;
+}
+.btn-primary:hover {
+  background-color: #1d4ed8;
+}
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 </style>
