@@ -487,6 +487,11 @@ const loadSignalements = async () => {
         description: signalement.description || signalement.objet
       };
     });
+    console.log('Coordonnées des signalements traités:', processedSignalements.map(s => ({
+  id: s.id,
+  latitude: s.latitude,
+  longitude: s.longitude
+  })));
     
     // Filtrer les signalements sans coordonnées valides
     signalements.value = processedSignalements.filter(s => {
@@ -498,7 +503,7 @@ const loadSignalements = async () => {
     });
     
     console.log(`\n📊 Résultat final: ${signalements.value.length}/${processedSignalements.length} signalements avec coordonnées valides`);
-    
+    console.log('Signalements chargés:', signalements.value);
     // 4. Afficher les signalements sur la carte
     console.log('🗺️ Affichage des signalements sur la carte...');
     
@@ -522,6 +527,7 @@ const loadSignalements = async () => {
   } finally {
     loading.value = false;
   }
+
 };
 
 // Fonction pour ajuster la vue de la carte pour voir tous les signalements
