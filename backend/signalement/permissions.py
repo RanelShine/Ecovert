@@ -99,12 +99,12 @@ class CanManageSignalement(permissions.BasePermission):
         if request.method in permissions.SAFE_METHODS:
             if not request.user.is_authenticated:
                 # Utilisateurs non authentifiés : seulement signalements publics
-                return hasattr(obj, 'statut') and obj.statut in ['en_cours', 'resolu']
+                return hasattr(obj, 'statut') and obj.statut in ['en_cours', 'en_attente', 'traite', 'rejeté', 'suspendu']
             
             elif request.user.role == 'citoyen':
                 # Citoyens : seulement leurs signalements ou signalements publics
-                return (obj.utilisateur == request.user or 
-                       (hasattr(obj, 'statut') and obj.statut in ['en_cours', 'resolu']))
+                return (obj.utilisateur == request.user or
+                       (hasattr(obj, 'statut') and obj.statut in ['en_cours', 'en_attente', 'traite', 'rejeté', 'suspendu']))
 
             elif request.user.role == 'ctd':
                 # CTD : signalements de leur commune
@@ -125,7 +125,7 @@ class CanManageSignalement(permissions.BasePermission):
             # Citoyens : seulement leurs signalements et seulement modification limitée
             return (obj.utilisateur == request.user and 
                    hasattr(obj, 'statut') and 
-                   obj.statut in ['en_attente', 'en_cours'])
+                   obj.statut in ['en_cours', 'en_attente', 'traite', 'rejeté', 'suspendu'])
         
         elif request.user.role == 'ctd':
             #ctd : signalements de leur commune
@@ -177,12 +177,11 @@ class CanViewSignalement(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         if not request.user.is_authenticated:
             # Utilisateurs non authentifiés : seulement signalements publics
-            return hasattr(obj, 'statut') and obj.statut in ['en_cours', 'resolu']
+            return hasattr(obj, 'statut') and obj.statut in ['en_cours', 'en_attente', 'traite', 'rejeté', 'suspendu']
         
         if request.user.role == 'citoyen':
-            # Citoyens : leurs signalements + signalements publics
-            return (obj.utilisateur == request.user or 
-                   (hasattr(obj, 'statut') and obj.statut in ['en_cours', 'resolu']))
+            # Citoyens : tous leurs signalements
+            return obj.utilisateur == request.user
         
         elif request.user.role == 'ctd':
             # CTD : signalements de leur commune

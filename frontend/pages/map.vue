@@ -7,7 +7,6 @@
 
 <script setup>
 import { onMounted } from 'vue'
-
 const loadMap = () => {
   return new Promise((resolve) => {
     if (window.google) return resolve(window.google)

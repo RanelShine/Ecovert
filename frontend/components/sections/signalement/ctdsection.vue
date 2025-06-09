@@ -79,10 +79,6 @@
                 class="bg-blue-500 text-white px-2 py-1 rounded text-xs mr-1 hover:bg-blue-600">
                 Détails
               </button>
-              <button @click="supprimerSignalement(s.id)"
-                class="bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600">
-                Supprimer
-              </button>
             </td>
           </tr>
           <tr v-if="tousSignalements.length === 0">
@@ -116,7 +112,6 @@
         <div v-if="selectedSignalement.date_resolution">
           <strong>Date de résolution :</strong> {{ formatDate(selectedSignalement.date_resolution) }}
         </div>
-        <div><strong>Utilisateur :</strong> {{ selectedSignalement.utilisateur_nom }}</div>
       </div>
     </div>
   </div>
@@ -291,31 +286,6 @@ const changerStatut = async (signalementId: number, nouveauStatut: string) => {
   }
 }
 
-// Supprimer un signalement
-const supprimerSignalement = async (signalementId: number) => {
-  if (!confirm('Êtes-vous sûr de vouloir supprimer ce signalement ?')) {
-    return
-  }
-
-  try {
-    const response = await fetch(`http://localhost:8000/api/signalements/delete/${signalementId}/`, {
-      method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      }
-    })
-
-    if (response.ok) {
-      alert('Signalement supprimé avec succès !')
-      await chargerTousSignalements()
-    } else {
-      throw new Error('Erreur lors de la suppression')
-    }
-  } catch (error) {
-    alert('Erreur: ' + error)
-  }
-}
 
 // Voir les détails
 const voirDetails = async (signalement: Signalement) => {
@@ -369,8 +339,13 @@ onMounted(async () => {
   console.log('🔑 Token présent:', !!token)
   console.log('🔑 Token value:', token ? token.substring(0, 20) + '...' : 'null')
 
-  await chargerChoix()
-  await chargerTousSignalements()
+  if (!token) {
+    console.warn('🔐 Aucun token trouvé. Redirection possible...')
+    router.push('/auth/login') 
+  } else {
+    chargerTousSignalements()
+    chargerChoix()
+  }
 
   console.log('✅ Initialisation terminée')
 })

@@ -14,6 +14,8 @@ class Signalement(models.Model):
         ('en_attente', 'En attente'),
         ('en_cours', 'En cours'),
         ('traite', 'Traité'),
+        ('rejeté', 'Rejeté'),
+        ('suspendu', 'Suspendu'),
     ]
     
     objet = models.CharField(max_length=255)

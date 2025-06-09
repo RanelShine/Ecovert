@@ -43,7 +43,7 @@ class Project(models.Model):
         blank=True
     )
     budget = models.DecimalField(
-        max_digits=12,
+        max_digits=20,
         decimal_places=2,
         verbose_name="Budget alloué",
         null=True,
@@ -54,9 +54,9 @@ class Project(models.Model):
         default=0,
         help_text="Pourcentage d'avancement du projet (0–100)."
     )
-    image = models.ImageField(
-        upload_to='projects/',
-        verbose_name="Image du projet",
+    file = models.FileField(
+        upload_to='projects/files/',
+        verbose_name="Fichier du projet (image, PDF, doc, ppt, etc.)",
         null=True,
         blank=True
     )

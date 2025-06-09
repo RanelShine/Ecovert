@@ -27,8 +27,8 @@ class ProjectListSerializer(serializers.ModelSerializer):
             'start_date',
             'end_date',
             'budget',
-            'avancement',           # ← champ avancement ajouté
-            'image',
+            'avancement',           
+            'file',
             'created_at',
             'created_by',
             'accountability_count'

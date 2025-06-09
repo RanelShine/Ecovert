@@ -38,7 +38,6 @@
             <div class="relative">
                 <input type="text" v-model="searchQuery" placeholder="Rechercher un projet..."
                     class="w-full pl-10 pr-4 py-2 border rounded-lg">
-
             </div>
 
             <!-- Filtre par statut -->
@@ -57,7 +56,6 @@
             </select>
         </div>
     </div>
-
 
     <!-- Liste des projets -->
     <div class="bg-white rounded-lg shadow-md">
@@ -85,21 +83,15 @@
 
         <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <div
-            v-for="projet in projets"
+            v-for="projet in filteredAndSortedProjects"
             :key="projet.id"
             class="border rounded-lg p-4 hover:shadow-lg transition-shadow cursor-pointer"
             @click="selectProjet(projet)"
           >
-            <div v-if="projet.image" class="mb-4">
-              <img
-                :src="projet.image"
-                alt="Image du projet"
-                class="w-full h-48 object-cover rounded-lg"
-              />
-            </div>
             <div class="space-y-2">
               <h3 class="font-semibold text-lg">{{ projet.title }}</h3>
               <p class="text-gray-600 text-sm line-clamp-2">{{ projet.description }}</p>
+              
               <div class="flex justify-between items-center">
                 <span
                   :class="statusClass(projet.status)"
@@ -109,6 +101,7 @@
                 </span>
                 <span class="text-sm text-gray-500">{{ formatDate(projet.start_date) }}</span>
               </div>
+              
               <div class="mt-2">
                 <div class="w-full bg-gray-200 rounded-full h-2">
                   <div
@@ -118,11 +111,25 @@
                 </div>
                 <p class="text-xs text-gray-500 mt-1">{{ projet.avancement || 0 }}% terminé</p>
               </div>
+              
               <div class="mt-2">
                 <p class="text-xs text-gray-500">
                   Début : {{ formatDate(projet.start_date) }}<br />
                   Fin prévue : {{ projet.end_date ? formatDate(projet.end_date) : '—' }}
                 </p>
+              </div>
+
+              <!-- Bouton de téléchargement -->
+              <div v-if="projet.file" class="mt-3">
+                <button
+                  @click.stop="downloadFile(projet.file, projet.title)"
+                  class="w-full bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center"
+                >
+                  <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  Télécharger
+                </button>
               </div>
             </div>
           </div>
@@ -148,7 +155,6 @@
             </button>
         </nav>
     </div>
-
 
     <!-- Modal d'ajout / modification -->
     <div
@@ -182,7 +188,7 @@
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Budget (XOF)</label>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Budget (FCFA)</label>
               <input v-model.number="form.budget" type="number" required min="0" class="input" />
             </div>
             <div>
@@ -212,13 +218,18 @@
             <input v-model.number="form.avancement" type="number" min="0" max="100" required class="input" />
           </div>
 
+          <!-- Champ fichier modifié pour accepter tous les types -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Image</label>
-            <input @change="handleImageUpload" type="file" accept="image/*" class="input" />
+            <label class="block text-sm font-medium text-gray-700 mb-1">Fichier joint</label>
+            <input @change="handleFileUpload" type="file" class="input" />
+            <p class="text-xs text-gray-500 mt-1">Tous types de fichiers acceptés (images, documents, etc.)</p>
           </div>
 
           <div class="flex justify-end space-x-3 pt-4">
             <button type="button" @click="closeModal" class="btn-cancel">Annuler</button>
+            <button v-if="selectedProjet" type="button"  @click="deleteProjet" class="btn-delete bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium" :disabled="submitting">
+              {{ submitting ? 'Suppression...' : 'Supprimer' }}
+            </button>
             <button type="submit" :disabled="submitting" class="btn-primary">
               {{ submitting ? 'Enregistrement...' : 'Enregistrer' }}
             </button>
@@ -230,9 +241,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, watch } from 'vue';
+import { ref, reactive, onMounted, watch, computed } from 'vue';
 import axios from 'axios';
 import { useToast } from 'vue-toastification';
+
 
 const toast = useToast();
 
@@ -245,14 +257,13 @@ interface Projet {
   end_date: string | null;
   budget: number;
   avancement: number;
-  image: string | null; 
+  file: string | null; // Changé de 'file_url' à 'file' pour correspondre à votre API
   created_at?: string;
 }
 
 interface ProjetForm extends Partial<Projet> {
-    imageFile?: File | null; 
+    uploadedFile?: File | null;
 }
-
 
 // Données réactives
 const projets = ref<Projet[]>([]);
@@ -275,7 +286,6 @@ const stats = reactive({
   budgetTotal: 0,
 });
 
-// Utiliser le nouveau type ProjetForm
 const form = reactive<ProjetForm>({
   id: undefined,
   title: '',
@@ -285,12 +295,47 @@ const form = reactive<ProjetForm>({
   start_date: '',
   end_date: '',
   avancement: 0,
-  image: null, 
-  imageFile: null, 
+  file: null, // Changé de 'file_url' à 'file'
+  uploadedFile: null,
 });
 
 const projectStatuses: Projet['status'][] = ['PLANNED', 'IN_PROGRESS', 'COMPLETED', 'SUSPENDED'];
 
+// Nouvelles fonctions utilitaires pour les fichiers
+const isImage = (fileUrl: string): boolean => {
+  const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.svg'];
+  return imageExtensions.some(ext => fileUrl.toLowerCase().includes(ext));
+};
+
+const getFileName = (fileUrl: string): string => {
+  return fileUrl.split('/').pop() || 'Fichier';
+};
+
+const downloadFile = async (fileUrl: string, projectTitle: string) => {
+  try {
+    const response = await fetch(fileUrl);
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    
+    // Générer un nom de fichier basé sur le titre du projet
+    const fileName = getFileName(fileUrl);
+    const extension = fileName.includes('.') ? fileName.split('.').pop() : '';
+    const cleanTitle = projectTitle.replace(/[^a-zA-Z0-9]/g, '_');
+    link.download = extension ? `${cleanTitle}.${extension}` : `${cleanTitle}_${fileName}`;
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+    
+    toast.success('Téléchargement démarré');
+  } catch (error) {
+    console.error('Erreur lors du téléchargement:', error);
+    toast.error('Erreur lors du téléchargement du fichier');
+  }
+};
 
 // Fonction pour charger les projets
 const fetchProjects = async () => {
@@ -313,19 +358,16 @@ const fetchProjects = async () => {
       },
     });
 
-    
     if (response.data) {
         let projectsData: Projet[] = [];
         let totalCount = 0;
 
         if (Array.isArray(response.data)) {
-            // Format liste directe 
             projectsData = response.data;
             totalCount = response.data.length; 
             totalPages.value = 1; 
             console.warn('API renvoie une liste non paginée pour les projets.');
         } else if (Array.isArray(response.data.results) && typeof response.data.count === 'number') {
-            // Format paginé (DRF par défaut)
             projectsData = response.data.results;
             totalCount = response.data.count;
             totalPages.value = Math.ceil(totalCount / PAGE_SIZE);
@@ -364,7 +406,6 @@ watch([searchQuery, statusFilter, sortBy, page], () => {
   fetchProjects();
 });
 
-
 // Fonctions utilitaires
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'XOF' }).format(value);
@@ -378,7 +419,6 @@ const formatDate = (date: string) => {
     }
     return dateObj.toLocaleDateString('fr-FR');
 }
-
 
 const getStatutLabel = (status: Projet['status']) => {
   const labels: Record<Projet['status'], string> = {
@@ -417,8 +457,8 @@ const openAddModal = () => {
     start_date: '',
     end_date: '',
     avancement: 0,
-    image: null,
-    imageFile: null, 
+    file: null, // Changé de 'file_url' à 'file'
+    uploadedFile: null,
   });
   showAddModal.value = true;
 };
@@ -428,20 +468,27 @@ const closeModal = () => {
   selectedProjet.value = null;
 };
 
-const handleImageUpload = (event: Event) => {
+// Fonction modifiée pour gérer tous types de fichiers
+const handleFileUpload = (event: Event) => {
   const file = (event.target as HTMLInputElement).files?.[0];
   if (file) {
-    form.imageFile = file;
+    form.uploadedFile = file;
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      form.image = e.target?.result as string; 
-    };
-    reader.readAsDataURL(file);
+    // Pour les images, on peut toujours afficher un aperçu
+    if (isImage(file.name)) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        form.file = e.target?.result as string; // Changé de 'file_url' à 'file'
+      };
+      reader.readAsDataURL(file);
+    } else {
+      // Pour les autres fichiers, on stocke juste le nom
+      form.file = file.name; // Changé de 'file_url' à 'file'
+    }
   } else {
-    form.imageFile = null;
+    form.uploadedFile = null;
     if (form.id === undefined) {
-        form.image = null;
+        form.file = null; // Changé de 'file_url' à 'file'
     }
   }
 };
@@ -452,20 +499,19 @@ const selectProjet = (projet: Projet) => {
       ...projet,
       start_date: projet.start_date ? projet.start_date.split('T')[0] : '',
       end_date: projet.end_date ? projet.end_date.split('T')[0] : '',
-      image: projet.image, 
+      file: projet.file, // Changé de 'file_url' à 'file'
   };
   Object.assign(form, formattedProjet);
-  form.imageFile = null; 
+  form.uploadedFile = null;
   showAddModal.value = true;
 };
-
 
 const submitProjet = async () => {
   submitting.value = true;
   try {
     const formData = new FormData();
     Object.keys(form).forEach(key => {
-        if (key === 'image' || key === 'imageFile') return;
+        if (key === 'file' || key === 'uploadedFile') return; 
 
         const value = form[key as keyof ProjetForm]; 
         if (key === 'id' && value === undefined) return;
@@ -484,10 +530,9 @@ const submitProjet = async () => {
         }
     });
 
-    if (form.imageFile instanceof File) {
-        formData.append('image', form.imageFile);
+    if (form.uploadedFile instanceof File) {
+        formData.append('file', form.uploadedFile);
     }
-
 
     let response: any;
     const token = localStorage.getItem('authToken');
@@ -508,7 +553,6 @@ const submitProjet = async () => {
       response = await axios.post('http://127.0.0.1:8000/api/projects/create/', formData, {
            headers: {
                 'Authorization': `Bearer ${token}`,
-
            },
       });
 
@@ -547,10 +591,65 @@ const updateStats = () => {
   stats.budgetTotal = projets.value.reduce((sum, p) => sum + (p.budget || 0), 0);
 };
 
+const deleteProjet = async () => {
+  if (!form.id) return;
+
+  if (!confirm("Êtes-vous sûr de vouloir supprimer ce projet ?")) {
+    return;
+  }
+
+  submitting.value = true;
+
+  try {
+
+    const token = localStorage.getItem('authToken');
+   await axios.delete(`/api/projects/${selectedProjet.value?.id}/delete/`, {
+  headers: {
+    Authorization: `Bearer ${token}`,
+  },
+});
+
+
+    // Retirer le projet supprimé de la liste
+    projets.value = projets.value.filter(p => p.id !== form.id);
+
+    toast.success("Projet supprimé avec succès.");
+    closeModal();
+  } catch (error) {
+    console.error(error);
+    toast.error("Erreur lors de la suppression du projet.");
+  } finally {
+    submitting.value = false;
+  }
+};
+
+const filteredAndSortedProjects = computed(() => {
+  let result = [...projets.value]
+
+    switch (sortBy.value) {
+    case 'created_at':
+      result.sort((a, b) => {
+        const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
+        const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
+        return dateB - dateA;
+      });
+      break
+    case '-created_at':
+      result.sort((a, b) => {
+        const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
+        const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
+        return dateA - dateB;
+      });
+      break
+    case 'title':
+      result.sort((a, b) => a.title.localeCompare(b.title))
+      break
+  }
+
+  return result
+})
+
 </script>
-
-
-
 
 <style scoped>
 .input {
@@ -599,5 +698,12 @@ const updateStats = () => {
 .btn-primary:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 </style>

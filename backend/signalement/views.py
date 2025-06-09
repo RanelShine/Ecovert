@@ -106,6 +106,8 @@ def list_signalements(request):
 
 # READ - Détails d'un signalement spécifique
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([JWTAuthentication])
 def detail_signalement(request, id):
     """Obtenir les détails d'un signalement selon les permissions de rôle"""
     try:
@@ -114,16 +116,21 @@ def detail_signalement(request, id):
         # Vérification des permissions de lecture
         if request.user.is_authenticated:
             if request.user.role == 'citoyen':
-                # Les citoyens ne peuvent voir que leurs propres signalements
+                # Autoriser un citoyen à voir uniquement ses propres signalements
                 if signalement.utilisateur != request.user:
                     return Response({'error': 'Accès non autorisé'}, status=status.HTTP_403_FORBIDDEN)
+    
             elif request.user.role == 'ctd':
-                # Les ctd peuvent voir les signalements de leur commune
+                # CORRECTION: Un CTD peut voir les signalements de sa commune ET ses propres signalements
                 if hasattr(request.user, 'commune') and request.user.commune:
-                    if signalement.commune != request.user.commune:
+                    # Autoriser si c'est un signalement de sa commune OU son propre signalement
+                    if signalement.commune != request.user.commune and signalement.utilisateur != request.user:
                         return Response({'error': 'Accès non autorisé'}, status=status.HTTP_403_FORBIDDEN)
                 else:
-                    return Response({'error': 'Aucune commune assignée'}, status=status.HTTP_403_FORBIDDEN)
+                    # Si le CTD n'a pas de commune, il peut au moins voir ses propres signalements
+                    if signalement.utilisateur != request.user:
+                        return Response({'error': 'Aucune commune assignée'}, status=status.HTTP_403_FORBIDDEN)
+            
             elif request.user.role == 'admin':
                 # Les administrateurs peuvent voir tous les signalements
                 pass
@@ -148,43 +155,50 @@ def detail_signalement(request, id):
 @permission_classes([IsAuthenticated])
 @authentication_classes([JWTAuthentication])
 def update_signalement(request, id):
-    """Modifier un signalement selon les permissions de rôle"""
+    """Modifier un signalement selon les permissions de rôle."""
     try:
         signalement = Signalement.objects.get(pk=id)
-        
-        # Vérification des permissions selon le rôle
-        if request.user.role == 'citoyen':
-            # Les citoyens ne peuvent modifier que leurs propres signalements et seulement certains champs
+
+        # Cas 1 : Utilisateur CTD
+        if request.user.role == 'ctd':
             if signalement.utilisateur != request.user:
-                return Response({'error': 'Vous n\'êtes pas autorisé à modifier ce signalement'}, 
-                              status=status.HTTP_403_FORBIDDEN)
-            # Utiliser le serializer limité pour les citoyens
+                return Response(
+                    {'error': 'Vous n\'êtes pas autorisé à modifier ce signalement'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
             serializer = SignalementUpdateSerializer(signalement, data=request.data, partial=True)
-        elif request.user.role == 'ctd':
-            # Les ctd peuvent modifier les signalements de leur commune
-            if hasattr(request.user, 'commune') and request.user.commune:
-                if signalement.commune != request.user.commune:
-                    return Response({'error': 'Vous n\'êtes pas autorisé à modifier ce signalement'}, 
-                                  status=status.HTTP_403_FORBIDDEN)
-            else:
-                return Response({'error': 'Aucune commune assignée'}, status=status.HTTP_403_FORBIDDEN)
-            # Utiliser le serializer avec plus de permissions
-            serializer = SignalementAdminUpdateSerializer(signalement, data=request.data, partial=True)
+
+        # Cas 2 : Utilisateur citoyen
+        elif request.user.role == 'citoyen':
+            if signalement.utilisateur != request.user:
+                return Response(
+                    {'error': 'Vous n\'êtes pas autorisé à modifier ce signalement'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+            if not hasattr(request.user, 'commune') or not request.user.commune:
+                return Response(
+                    {'error': 'Aucune commune assignée à cet utilisateur'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+            serializer = SignalementUpdateSerializer(signalement, data=request.data, partial=True)
+
+        # Cas 3 : Administrateur
         elif request.user.role == 'admin':
-            # Les administrateurs peuvent tout modifier
             serializer = SignalementAdminUpdateSerializer(signalement, data=request.data, partial=True)
+
+        # Cas 4 : Rôle inconnu
         else:
             return Response({'error': 'Rôle non autorisé'}, status=status.HTTP_403_FORBIDDEN)
-        
+
+        # Vérification des données
         if serializer.is_valid():
-            # Vérifier la photo si fournie
             photo_id = request.data.get('photo_id')
             if photo_id:
                 try:
                     Photo.objects.get(id=photo_id)
                 except Photo.DoesNotExist:
                     return Response({'error': 'Photo non trouvée'}, status=status.HTTP_400_BAD_REQUEST)
-            
+
             signalement = serializer.save()
             response_serializer = SignalementSerializer(signalement)
             return Response({
@@ -193,6 +207,7 @@ def update_signalement(request, id):
             }, status=status.HTTP_200_OK)
         else:
             return Response({'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
     except Signalement.DoesNotExist:
         return Response({'error': 'Signalement non trouvé'}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
@@ -241,38 +256,21 @@ def update_signalement_statut(request, id):
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-# DELETE - Suppression d'un signalement
+# DELETE - Suppression d’un signalement
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([JWTAuthentication])
 def delete_signalement(request, id):
-    """Supprimer un signalement selon les permissions de rôle"""
     try:
         signalement = Signalement.objects.get(pk=id)
-        
-        # Vérification des permissions selon le rôle
-        if request.user.role == 'citoyen':
-            # Les citoyens ne peuvent supprimer que leurs propres signalements
-            if signalement.utilisateur != request.user:
-                return Response({'error': 'Vous n\'êtes pas autorisé à supprimer ce signalement'}, 
-                              status=status.HTTP_403_FORBIDDEN)
-        elif request.user.role == 'ctd':
-            # Les ctd peuvent supprimer les signalements de leur commune
-            if hasattr(request.user, 'commune') and request.user.commune:
-                if signalement.commune != request.user.commune:
-                    return Response({'error': 'Vous n\'êtes pas autorisé à supprimer ce signalement'}, 
-                                  status=status.HTTP_403_FORBIDDEN)
-            else:
-                return Response({'error': 'Aucune commune assignée'}, status=status.HTTP_403_FORBIDDEN)
-        elif request.user.role == 'admin':
-            # Les administrateurs peuvent supprimer tous les signalements
-            pass
-        else:
-            return Response({'error': 'Rôle non autorisé'}, status=status.HTTP_403_FORBIDDEN)
-        
+
+        # Seul le propriétaire ou l'admin peut supprimer
+        if request.user != signalement.utilisateur and request.user.role != 'admin':
+            return Response({'error': 'Vous n\'êtes pas autorisé à supprimer ce signalement'}, status=status.HTTP_403_FORBIDDEN)
+
         signalement.delete()
-        return Response({'message': 'Signalement supprimé avec succès'}, 
-                       status=status.HTTP_200_OK)
+        return Response({'message': 'Signalement supprimé avec succès'}, status=status.HTTP_204_NO_CONTENT)
+
     except Signalement.DoesNotExist:
         return Response({'error': 'Signalement non trouvé'}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:

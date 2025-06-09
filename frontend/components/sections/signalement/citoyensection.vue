@@ -104,11 +104,13 @@
               </span>
             </td>
             <td class="p-2 border">
-              <button 
-                @click="voirDetails(s)" 
-                class="bg-blue-500 text-white px-2 py-1 rounded text-xs mr-2 hover:bg-blue-600"
-              >
+              <button @click="voirDetails(s)"
+                class="bg-blue-500 text-white px-2 py-1 rounded text-xs mr-1 hover:bg-blue-600">
                 Détails
+              </button>
+              <button @click="supprimerSignalement(s.id)"
+                class="bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600">
+                Supprimer
               </button>
             </td>
           </tr>
@@ -409,19 +411,62 @@ const submitSignalement = async () => {
   }
 }
 
-// Voir les détails
-const voirDetails = async (signalement: Signalement) => {
+// Supprimer un signalement
+const supprimerSignalement = async (signalementId: number) => {
+  if (!confirm('Êtes-vous sûr de vouloir supprimer ce signalement ?')) {
+    return
+  }
+
   try {
-    const response = await fetch(`http://localhost:8000/api/signalements/detail/${signalement.id}/`)
+    const response = await fetch(`http://localhost:8000/api/signalements/delete/${signalementId}/`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    })
+
     if (response.ok) {
-      const data = await response.json()
-      selectedSignalement.value = data
-      showDetails.value = true
+      alert('Signalement supprimé avec succès !')
+      await chargerMesSignalements()
+    } else {
+      throw new Error('Erreur lors de la suppression')
     }
   } catch (error) {
-    console.error('Erreur lors du chargement des détails:', error)
+    alert('Erreur: ' + error)
   }
 }
+
+// Voir les détails
+const voirDetails = async (signalement: Signalement) => {
+  const token = localStorage.getItem('authToken')
+  if (!token) {
+    console.error('Aucun token trouvé.')
+    return
+  }
+
+  try {
+    const response = await fetch(`http://localhost:8000/api/signalements/detail/${signalement.id}/`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('Erreur lors de la récupération du détail:', errorData);
+      return;
+    }
+
+    const data = await response.json();
+    selectedSignalement.value = data;
+    showDetails.value = true;
+  } catch (error) {
+    console.error('Erreur réseau:', error);
+  }
+};
+
 
 // Utilitaires
 const formatDate = (dateStr: string) => {
