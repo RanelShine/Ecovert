@@ -33,14 +33,7 @@ urlpatterns = [
     path('api/projects/', include('projects.urls')),
 ]
 
+# Servir les fichiers médias en développement
 if settings.DEBUG:
-    from django.views.static import serve
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-    
-    urlpatterns += [
-        re_path(
-            r'^docs/(?P<path>.*)$',
-            serve,
-            {'document_root': os.path.join(settings.BASE_DIR, 'docs', 'build', 'html')}
-        ),
-    ]
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

@@ -1,6 +1,6 @@
 <!-- MapSection.vue - Template modifié -->
 <template>
-  <div class="map-container">
+  <div class="map-container ">
     <!-- Indicateur de géolocalisation -->
     <div v-if="locationStatus" class="location-status" :class="locationStatus.type">
       <span>{{ locationStatus.message }}</span>

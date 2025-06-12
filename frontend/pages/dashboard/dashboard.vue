@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-6xl mx-auto py-8 px-4">
+  <div class="max-w-6xl mx-auto py-8 px-4 dark:gray-900">
     <!-- Debug info détaillé (à retirer en production) -->
     <!-- <div class="mb-4 p-4 bg-gray-100 rounded text-sm space-y-2">
       <div><strong>Debug Info:</strong></div>

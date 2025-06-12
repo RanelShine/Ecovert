@@ -9,6 +9,7 @@ urlpatterns = [
     path('<int:id>/', views.project_detail, name='project-detail'),
     path('<int:id>/update/', views.update_project, name='project-update'),
     path('<int:id>/delete/', views.delete_project, name='project-delete'),
+    path('<int:id>/download/', views.download_project_file, name='download-project-file'),
     
     # Accountability routes
     path('accountability/', views.list_accountability, name='accountability-list'),

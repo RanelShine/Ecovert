@@ -31,7 +31,7 @@ DEBUG = True
 ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
-    '192.168.99.20',  
+    '192.168.173.20',  
 ]
 
 
@@ -143,14 +143,25 @@ USE_I18N = True
 USE_TZ = True
 
 
+# Configuration des fichiers médias
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Configuration des fichiers statiques
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# Ajoutez ces headers pour CORS si nécessaire
+CORS_ALLOW_ALL_ORIGINS = True  # Pour le développement uniquement
+CORS_ALLOW_CREDENTIALS = True
+
+# Configuration des types de fichiers autorisés
+FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB
+DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024   # 10MB
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -161,19 +172,17 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
-    "http://192.168.99.20:8000",
+    "http://192.168.173.20:8000",
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:3000", "http://127.0.0.1:3000", "http://192.168.99.20:8000"
+    "http://localhost:3000", "http://127.0.0.1:3000", "http://192.168.173.20:8000"
 ]
 # CSRF_COOKIE_AGE = 60*60*24*14
 # CSRF_USE_SESSIONS = False
 # CSRF_COOKIE_SECURE = False
 # CSRF_COOKIE_HTTPONLY = False
 # CORS settings
-CORS_ALLOW_ALL_ORIGINS = True
-CORS_ALLOW_CREDENTIALS = True
 
 # Custom user model
 AUTH_USER_MODEL = 'accounts.User'

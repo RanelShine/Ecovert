@@ -1,0 +1,89 @@
+/* assets/css/theme.css */
+
+/* Variables CSS pour le thème clair */
+:root {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --text-primary: #1f2937;
+  --text-secondary: #6b7280;
+  --border-color: #e5e7eb;
+  --accent-color: #3b82f6;
+  --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+/* Variables CSS pour le thème sombre */
+.dark {
+  --bg-primary: #111827;
+  --bg-secondary: #1f2937;
+  --text-primary: #f9fafb;
+  --text-secondary: #d1d5db;
+  --border-color: #374151;
+  --accent-color: #60a5fa;
+  --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
+}
+
+/* Styles de base utilisant les variables */
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Classes utilitaires pour les thèmes */
+.bg-primary {
+  background-color: var(--bg-primary);
+}
+
+.bg-secondary {
+  background-color: var(--bg-secondary);
+}
+
+.text-primary {
+  color: var(--text-primary);
+}
+
+.text-secondary {
+  color: var(--text-secondary);
+}
+
+.border-color {
+  border-color: var(--border-color);
+}
+
+.card {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow);
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.btn {
+  background-color: var(--accent-color);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn:hover {
+  filter: brightness(110%);
+  transform: translateY(-1px);
+}
+
+/* Animation de transition pour le changement de thème */
+* {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Prévenir le flash lors du chargement */
+html {
+  color-scheme: light;
+}
+
+html.dark {
+  color-scheme: dark;
+}

@@ -1,64 +1,74 @@
 <!-- section ctdsection -->
 <template>
+  <div class="flex justify-between mb-6 items-center">
+      <h1 class="text-3xl font-bold text-green-700 dark:text-green-600">Gestion des Signalements</h1>
+  </div>
   <!-- Filtres -->
-  <div class="bg-white rounded-lg shadow p-4 mb-6">
-    <div class="flex justify-between items-center mb-4">
+  <div class="bg-white rounded-lg shadow p-3 sm:p-4 mb-4 sm:mb-6 dark:bg-gray-600 dark:text-gray-200">
+    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 gap-3 sm:gap-0">
       <h3 class="text-lg font-semibold">Filtres</h3>
       <!-- Nouveau bouton pour la carte -->
       <button @click="navigateToMap"
-        class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center gap-2">
+        class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center justify-center gap-2 text-sm sm:text-base w-full sm:w-auto">
         <Icon name="mdi:map" class="text-xl" />
-        Voir sur la carte
+        <span class="hidden xs:inline">Voir sur la carte</span>
+        <span class="xs:hidden">Carte</span>
       </button>
     </div>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <select v-model="filtreStatut" @change="chargerTousSignalements" class="border rounded p-2">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 ">
+      <select v-model="filtreStatut" @change="chargerTousSignalements" 
+        class="border rounded p-2 text-sm sm:text-base w-full">
         <option value="">Tous les statuts</option>
         <option v-for="statut in statutChoices" :key="statut.value" :value="statut.value">
           {{ statut.label }}
         </option>
       </select>
-      <select v-model="filtreType" @change="chargerTousSignalements" class="border rounded p-2">
+      <select v-model="filtreType" @change="chargerTousSignalements" 
+        class="border rounded p-2 text-sm sm:text-base w-full">
         <option value="">Tous les types</option>
         <option v-for="type in typeChoices" :key="type.value" :value="type.value">
           {{ type.label }}
         </option>
       </select>
-      <button @click="resetFiltres" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
+      <button @click="resetFiltres" 
+        class="bg-gray-500 text-white px-4 py-2 rounded dark:hover:bg-gray-700 dark:bg-gray-900 hover:bg-gray-600 text-sm sm:text-base sm:col-span-2 lg:col-span-1">
         Réinitialiser
       </button>
     </div>
   </div>
 
   <!-- Tous les signalements -->
-  <div class="bg-white rounded-lg shadow">
-    <div class="bg-green-600 text-white p-4 font-semibold rounded-t-lg flex justify-between items-center">
-      <span>Tous les signalements ({{ tousSignalements.length }})</span>
-      <button @click="chargerTousSignalements" class="bg-green-700 px-3 py-1 rounded text-sm hover:bg-green-800">
+  <div class="bg-white rounded-lg shadow overflow-hidden dark:bg-gray-400  ">
+    <div class="bg-green-600 text-white p-3 sm:p-4 font-semibold flex flex-col xs:flex-row xs:justify-between xs:items-center gap-2 xs:gap-0 dark:bg-green-600">
+      <span class="text-sm sm:text-base">Tous les signalements ({{ tousSignalements.length }})</span>
+      <button @click="chargerTousSignalements" 
+        class="bg-green-700 px-3 py-1 rounded text-xs sm:text-sm hover:bg-green-800 w-full xs:w-auto">
         Actualiser
       </button>
     </div>
-    <div class="p-4 bg-gray-50 overflow-x-auto">
-      <table class="w-full text-left border border-collapse">
-        <thead class="bg-green-100">
+    
+    <!-- Version desktop/tablette (masquée sur mobile) -->
+    <div class="hidden md:block p-4 bg-gray-50 overflow-x-auto dark:bg-gray-600">
+      <table class="w-full text-left border border-collapse min-w-full">
+        <thead class="bg-green-100 dark:bg-green-600">
           <tr>
-            <th class="p-2 border">Objet</th>
-            <th class="p-2 border">Type</th>
-            <!-- <th class="p-2 border">Utilisateur</th> -->
-            <th class="p-2 border">Date</th>
-            <th class="p-2 border">Statut</th>
-            <th class="p-2 border">Changer statut</th>
-            <th class="p-2 border">Actions</th>
+            <th class="p-2 border text-sm lg:text-base">Objet</th>
+            <th class="p-2 border text-sm lg:text-base">Type</th>
+            <th class="p-2 border text-sm lg:text-base">Date</th>
+            <th class="p-2 border text-sm lg:text-base">Statut</th>
+            <th class="p-2 border text-sm lg:text-base">Changer statut</th>
+            <th class="p-2 border text-sm lg:text-base">Actions</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="s in tousSignalements" :key="s.id" class="bg-white hover:bg-gray-50">
-            <td class="p-2 border">{{ s.objet }}</td>
-            <td class="p-2 border capitalize">{{ s.type_signalement_display }}</td>
-            <!-- <td class="p-2 border">{{ s.utilisateur_nom }}</td> -->
-            <td class="p-2 border">{{ formatDate(s.date_signalement) }}</td>
+          <tr v-for="s in tousSignalements" :key="s.id" class="bg-white dark:bg-gray-800 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600">
+            <td class="p-2 border text-sm lg:text-base">
+              <div class="max-w-xs truncate " :title="s.objet">{{ s.objet }}</div>
+            </td>
+            <td class="p-2 border capitalize text-sm lg:text-base">{{ s.type_signalement_display }}</td>
+            <td class="p-2 border text-sm lg:text-base whitespace-nowrap">{{ formatDate(s.date_signalement) }}</td>
             <td class="p-2 border">
-              <span :class="statusClass(s.statut)">
+              <span :class="statusClass(s.statut)" class="text-xs lg:text-sm">
                 {{ s.statut_display }}
               </span>
             </td>
@@ -68,7 +78,7 @@
                 if (target && target.value) {
                   changerStatut(s.id, target.value);
                 }
-              }" class="border p-1 rounded text-sm">
+              }" class="border p-1 rounded text-xs lg:text-sm w-full">
                 <option v-for="statut in statutChoices" :key="statut.value" :value="statut.value">
                   {{ statut.label }}
                 </option>
@@ -76,42 +86,120 @@
             </td>
             <td class="p-2 border">
               <button @click="voirDetails(s)"
-                class="bg-blue-500 text-white px-2 py-1 rounded text-xs mr-1 hover:bg-blue-600">
+                class="bg-blue-500 text-white px-2 py-1 rounded text-xs hover:bg-blue-600 w-full">
                 Détails
               </button>
             </td>
           </tr>
           <tr v-if="tousSignalements.length === 0">
-            <td colspan="7" class="p-4 text-center text-gray-500">Aucun signalement trouvé.</td>
+            <td colspan="6" class="p-4 text-center text-gray-500 text-sm lg:text-base">Aucun signalement trouvé.</td>
           </tr>
         </tbody>
       </table>
     </div>
+
+    <!-- Version mobile (masquée sur desktop/tablette) -->
+    <div class="md:hidden">
+      <div v-for="s in tousSignalements" :key="s.id" 
+        class="border-b border-gray-200 p-4 hover:bg-gray-50">
+        
+        <!-- En-tête de la card mobile -->
+        <div class="flex justify-between items-start mb-3">
+          <div class="flex-1 min-w-0">
+            <h4 class="font-semibold text-sm text-gray-900 truncate mb-1" :title="s.objet">
+              {{ s.objet }}
+            </h4>
+            <div class="flex flex-wrap gap-2 text-xs">
+              <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                {{ s.type_signalement_display }}
+              </span>
+              <span :class="statusClass(s.statut) + ' px-2 py-1 rounded-full bg-gray-100'">
+                {{ s.statut_display }}
+              </span>
+            </div>
+          </div>
+          <button @click="voirDetails(s)"
+            class="bg-blue-500 text-white px-3 py-1 rounded text-xs hover:bg-blue-600 ml-2 flex-shrink-0">
+            Détails
+          </button>
+        </div>
+
+        <!-- Informations supplémentaires -->
+        <div class="text-xs text-gray-600 mb-3">
+          <div>{{ formatDateMobile(s.date_signalement) }}</div>
+        </div>
+
+        <!-- Changer statut sur mobile -->
+        <div class="flex items-center gap-2">
+          <label class="text-xs font-medium text-gray-700 flex-shrink-0">Statut:</label>
+          <select :value="s.statut" @change="(event) => {
+            const target = event.target as HTMLSelectElement;
+            if (target && target.value) {
+              changerStatut(s.id, target.value);
+            }
+          }" class="border rounded p-1 text-xs flex-1">
+            <option v-for="statut in statutChoices" :key="statut.value" :value="statut.value">
+              {{ statut.label }}
+            </option>
+          </select>
+        </div>
+      </div>
+      
+      <div v-if="tousSignalements.length === 0" class="p-8 text-center text-gray-500 text-sm">
+        Aucun signalement trouvé.
+      </div>
+    </div>
   </div>
 
-  <!-- Modal Détails -->
+  <!-- Modal Détails - Responsive -->
   <div v-if="showDetails && selectedSignalement"
-    class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-    <div class="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+    class="fixed inset-0 bg-black  bg-opacity-75 flex items-center justify-center z-50 p-2 sm:p-4">
+    <div class="bg-white dark:bg-gray-800 rounded-lg p-4 sm:p-6 w-full max-w-2xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-start mb-4">
-        <h3 class="text-xl font-semibold">Détails du signalement</h3>
-        <button @click="showDetails = false" class="text-gray-500 hover:text-gray-700">✕</button>
+        <h3 class="text-lg sm:text-xl font-semibold dark:text-white pr-4">Détails du signalement</h3>
+        <button @click="showDetails = false" 
+          class="text-gray-500 hover:text-gray-700 text-xl sm:text-2xl flex-shrink-0">✕</button>
       </div>
 
-      <div class="space-y-3">
-        <div><strong>Objet :</strong> {{ selectedSignalement.objet }}</div>
-        <div><strong>Type :</strong> {{ selectedSignalement.type_signalement_display }}</div>
-        <div><strong>Description :</strong> {{ selectedSignalement.description }}</div>
-        <div><strong>Localisation :</strong> {{ selectedSignalement.localisation }}</div>
-        <div><strong>Statut :</strong>
-          <span :class="statusClass(selectedSignalement.statut)">
+      <div class="space-y-3 sm:space-y-4 text-sm sm:text-base">
+        <div class="border-b pb-2">
+          <strong class="block text-gray-700 dark:text-green-600 mb-1">Objet :</strong> 
+          <span class="break-words">{{ selectedSignalement.objet }}</span>
+        </div>
+        <div class="border-b pb-2">
+          <strong class="block text-gray-700 dark:text-green-600 mb-1">Type :</strong> 
+          <span class="capitalize">{{ selectedSignalement.type_signalement_display }}</span>
+        </div>
+        <div class="border-b pb-2">
+          <strong class="block text-gray-700 dark:text-green-600 mb-1">Description :</strong> 
+          <span class="break-words">{{ selectedSignalement.description }}</span>
+        </div>
+        <div class="border-b pb-2">
+          <strong class="block text-gray-700 dark:text-green-600 mb-1">Localisation :</strong> 
+          <span class="break-words">{{ selectedSignalement.localisation }}</span>
+        </div>
+        <div class="border-b pb-2">
+          <strong class="block text-gray-700 dark:text-green-600 mb-1">Statut :</strong>
+          <span :class="statusClass(selectedSignalement.statut) + ' px-2 py-1 rounded bg-gray-100'">
             {{ selectedSignalement.statut_display }}
           </span>
         </div>
-        <div><strong>Date de signalement :</strong> {{ formatDate(selectedSignalement.date_signalement) }}</div>
-        <div v-if="selectedSignalement.date_resolution">
-          <strong>Date de résolution :</strong> {{ formatDate(selectedSignalement.date_resolution) }}
+        <div class="border-b pb-2">
+          <strong class="block text-gray-700 dark:text-green-600 mb-1">Date de signalement :</strong> 
+          <span>{{ formatDate(selectedSignalement.date_signalement) }}</span>
         </div>
+        <div v-if="selectedSignalement.date_resolution" class="border-b pb-2">
+          <strong class="block text-gray-700 dark:text-green-600 mb-1">Date de résolution :</strong> 
+          <span>{{ formatDate(selectedSignalement.date_resolution) }}</span>
+        </div>
+      </div>
+      
+      <!-- Bouton de fermeture en bas sur mobile -->
+      <div class="mt-6 sm:hidden">
+        <button @click="showDetails = false" 
+          class="w-full bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-600">
+          Fermer
+        </button>
       </div>
     </div>
   </div>
@@ -286,7 +374,6 @@ const changerStatut = async (signalementId: number, nouveauStatut: string) => {
   }
 }
 
-
 // Voir les détails
 const voirDetails = async (signalement: Signalement) => {
   try {
@@ -314,6 +401,17 @@ const formatDate = (dateStr: string) => {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+}
+
+// Format de date plus compact pour mobile
+const formatDateMobile = (dateStr: string) => {
+  return new Date(dateStr).toLocaleDateString('fr-FR', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
     hour: '2-digit',
     minute: '2-digit'
   })
@@ -350,3 +448,41 @@ onMounted(async () => {
   console.log('✅ Initialisation terminée')
 })
 </script>
+
+<style scoped>
+/* Ajout de classes personnalisées pour extra small screens */
+@media (min-width: 475px) {
+  .xs\:inline { display: inline; }
+  .xs\:hidden { display: none; }
+  .xs\:flex-row { flex-direction: row; }
+  .xs\:justify-between { justify-content: space-between; }
+  .xs\:items-center { align-items: center; }
+  .xs\:w-auto { width: auto; }
+}
+
+@media (max-width: 474px) {
+  .xs\:inline { display: none; }
+  .xs\:hidden { display: inline; }
+}
+
+/* Amélioration de l'affichage des longues chaînes */
+.break-words {
+  word-wrap: break-word;
+  word-break: break-word;
+  hyphens: auto;
+}
+
+/* Styles pour les sélecteurs sur mobile */
+@media (max-width: 768px) {
+  select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0.5rem center;
+    background-repeat: no-repeat;
+    background-size: 1.5em 1.5em;
+    padding-right: 2.5rem;
+  }
+}
+</style>

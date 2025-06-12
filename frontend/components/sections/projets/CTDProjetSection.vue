@@ -1,8 +1,9 @@
+<!-- CTDProjetSection -->
 <template>
   <div class="space-y-6">
     <!-- Header avec bouton d'ajout -->
     <div class="flex justify-between items-center">
-      <h1 class="text-3xl font-bold text-gray-900">Gestion des Projets</h1>
+      <h1 class="text-3xl font-bold text-green-700 dark:text-green-600">Gestion des Projets</h1>
       <button
         @click="openAddModal"
         class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-medium transition-colors"
@@ -13,26 +14,26 @@
 
     <!-- Statistiques -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-      <div class="bg-white p-6 rounded-lg shadow-md">
-        <h3 class="text-sm font-medium text-gray-500">Total Projets</h3>
+      <div class="bg-white p-6 rounded-lg shadow-md dark:bg-gray-600">
+        <h3 class="text-sm font-medium text-gray-500 dark:text-green-400">Total Projets</h3>
         <p class="text-3xl font-bold text-blue-600">{{ stats.total }}</p>
       </div>
-      <div class="bg-white p-6 rounded-lg shadow-md">
-        <h3 class="text-sm font-medium text-gray-500">En Cours</h3>
+      <div class="bg-white p-6 rounded-lg shadow-md dark:bg-gray-600">
+        <h3 class="text-sm font-medium text-gray-500 dark:text-green-400">En Cours</h3>
         <p class="text-3xl font-bold text-yellow-600">{{ stats.enCours }}</p>
       </div>
-      <div class="bg-white p-6 rounded-lg shadow-md">
-        <h3 class="text-sm font-medium text-gray-500">Terminés</h3>
-        <p class="text-3xl font-bold text-green-600">{{ stats.termines }}</p>
+      <div class="bg-white p-6 rounded-lg shadow-md dark:bg-gray-600">
+        <h3 class="text-sm font-medium text-gray-500 dark:text-green-400">Terminés</h3>
+        <p class="text-3xl font-bold text-pink-600">{{ stats.termines }}</p>
       </div>
-      <div class="bg-white p-6 rounded-lg shadow-md">
-        <h3 class="text-sm font-medium text-gray-500">Budget Total</h3>
+      <div class="bg-white p-6 rounded-lg shadow-md dark:bg-gray-600 ">
+        <h3 class="text-sm font-medium text-gray-500 dark:text-green-400">Budget Total</h3>
         <p class="text-3xl font-bold text-purple-600">{{ formatCurrency(stats.budgetTotal) }}</p>
       </div>
     </div>
 
     <!-- Filtres et Tri -->
-    <div class="bg-white p-4 rounded-lg shadow mb-6">
+    <div class="bg-white p-4 rounded-lg shadow mb-6 dark:bg-gray-600">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <!-- Recherche -->
             <div class="relative">
@@ -58,9 +59,9 @@
     </div>
 
     <!-- Liste des projets -->
-    <div class="bg-white rounded-lg shadow-md">
+    <div class="bg-white rounded-lg shadow-md dark:bg-gray-600">
       <div class="p-6 border-b">
-        <h2 class="text-xl font-semibold">Mes Projets</h2>
+        <h2 class="text-3xl font-semibold text-center text-green-700 dark:text-green-600">Liste des Projets</h2>
       </div>
       <div class="p-6">
         <div v-if="loading" class="text-center py-8">
@@ -85,35 +86,35 @@
           <div
             v-for="projet in filteredAndSortedProjects"
             :key="projet.id"
-            class="border rounded-lg p-4 hover:shadow-lg transition-shadow cursor-pointer"
+            class="border rounded-lg p-4 hover:shadow-lg dark:bg-gray-800 transition-shadow cursor-pointer"
             @click="selectProjet(projet)"
           >
             <div class="space-y-2">
               <h3 class="font-semibold text-lg">{{ projet.title }}</h3>
-              <p class="text-gray-600 text-sm line-clamp-2">{{ projet.description }}</p>
+              <p class="text-gray-600 dark:text-white text-sm line-clamp-2">{{ projet.description }}</p>
               
               <div class="flex justify-between items-center">
                 <span
                   :class="statusClass(projet.status)"
-                  class="px-2 py-1 rounded-full text-xs font-medium"
+                  class="px-2 py-1 rounded-full text-xs font-medium "
                 >
                   {{ getStatutLabel(projet.status) }}
                 </span>
-                <span class="text-sm text-gray-500">{{ formatDate(projet.start_date) }}</span>
+                <span class="text-sm text-gray-500 dark:text-white">{{ formatDate(projet.start_date) }}</span>
               </div>
               
               <div class="mt-2">
                 <div class="w-full bg-gray-200 rounded-full h-2">
                   <div
-                    class="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                    class="bg-blue-600 h-2 rounded-full transition-all duration-300 dark:text-white"
                     :style="{ width: (projet.avancement || 0) + '%' }"
                   ></div>
                 </div>
-                <p class="text-xs text-gray-500 mt-1">{{ projet.avancement || 0 }}% terminé</p>
+                <p class="text-xs text-gray-500 mt-1 dark:text-white">{{ projet.avancement || 0 }}% terminé</p>
               </div>
               
               <div class="mt-2">
-                <p class="text-xs text-gray-500">
+                <p class="text-xs text-gray-500 dark:text-white">
                   Début : {{ formatDate(projet.start_date) }}<br />
                   Fin prévue : {{ projet.end_date ? formatDate(projet.end_date) : '—' }}
                 </p>
@@ -122,7 +123,7 @@
               <!-- Bouton de téléchargement -->
               <div v-if="projet.file" class="mt-3">
                 <button
-                  @click.stop="downloadFile(projet.file, projet.title)"
+                  @click.stop="downloadFile(projet.id, projet.title)"
                   class="w-full bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center"
                 >
                   <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -161,9 +162,9 @@
       v-if="showAddModal"
       class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
     >
-      <div class="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+      <div class="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <div class="flex justify-between items-center mb-6">
-          <h2 class="text-2xl font-bold">
+          <h2 class="text-2xl font-bold dark:text-green-600">
             {{ selectedProjet ? 'Modifier le Projet' : 'Nouveau Projet' }}
           </h2>
           <button @click="closeModal" class="text-gray-500 hover:text-gray-700">
@@ -177,22 +178,22 @@
           <input v-model="form.id" type="hidden" />
 
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Titre du projet</label>
+            <label class="block text-sm dark:text-white font-medium text-gray-700 mb-1">Titre du projet</label>
             <input v-model="form.title" type="text" required class="input" />
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+            <label class="block text-sm font-medium dark:text-white text-gray-700 mb-1">Description</label>
             <textarea v-model="form.description" required rows="3" class="input"></textarea>
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Budget (FCFA)</label>
+              <label class="block text-sm dark:text-white font-medium text-gray-700 mb-1">Budget (FCFA)</label>
               <input v-model.number="form.budget" type="number" required min="0" class="input" />
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Statut</label>
+              <label class="block text-sm font-medium dark:text-white text-gray-700 mb-1">Statut</label>
               <select v-model="form.status" required class="input">
                 <option value="PLANNED">Planifié</option>
                 <option value="IN_PROGRESS">En cours</option>
@@ -204,23 +205,23 @@
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Date de début</label>
+              <label class="block text-sm font-medium dark:text-white text-gray-700 mb-1">Date de début</label>
               <input v-model="form.start_date" type="date" required class="input" />
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Date de fin prévue</label>
+              <label class="block text-sm font-medium dark:text-white text-gray-700 mb-1">Date de fin prévue</label>
               <input v-model="form.end_date" type="date" class="input" />
             </div>
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Avancement (%)</label>
+            <label class="block text-sm font-medium dark:text-white text-gray-700 mb-1">Avancement (%)</label>
             <input v-model.number="form.avancement" type="number" min="0" max="100" required class="input" />
           </div>
 
           <!-- Champ fichier modifié pour accepter tous les types -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Fichier joint</label>
+            <label class="block text-sm font-medium dark:text-white text-gray-700 mb-1">Fichier joint</label>
             <input @change="handleFileUpload" type="file" class="input" />
             <p class="text-xs text-gray-500 mt-1">Tous types de fichiers acceptés (images, documents, etc.)</p>
           </div>
@@ -257,7 +258,7 @@ interface Projet {
   end_date: string | null;
   budget: number;
   avancement: number;
-  file: string | null; // Changé de 'file_url' à 'file' pour correspondre à votre API
+  file: string | null;
   created_at?: string;
 }
 
@@ -311,19 +312,37 @@ const getFileName = (fileUrl: string): string => {
   return fileUrl.split('/').pop() || 'Fichier';
 };
 
-const downloadFile = async (fileUrl: string, projectTitle: string) => {
+const downloadFile = async (projectId: number, projectTitle: string) => {
   try {
-    const response = await fetch(fileUrl);
+    const token = localStorage.getItem('authToken');
+    
+    const response = await fetch(`http://127.0.0.1:8000/api/projects/${projectId}/download/`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    // Récupérer le nom du fichier depuis les headers
+    const contentDisposition = response.headers.get('Content-Disposition');
+    let fileName = `${projectTitle.replace(/[^a-zA-Z0-9]/g, '_')}_document`;
+    
+    if (contentDisposition) {
+      const fileNameMatch = contentDisposition.match(/filename="(.+)"/);
+      if (fileNameMatch) {
+        fileName = fileNameMatch[1];
+      }
+    }
+    
     const blob = await response.blob();
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    
-    // Générer un nom de fichier basé sur le titre du projet
-    const fileName = getFileName(fileUrl);
-    const extension = fileName.includes('.') ? fileName.split('.').pop() : '';
-    const cleanTitle = projectTitle.replace(/[^a-zA-Z0-9]/g, '_');
-    link.download = extension ? `${cleanTitle}.${extension}` : `${cleanTitle}_${fileName}`;
+    link.download = fileName;
     
     document.body.appendChild(link);
     link.click();

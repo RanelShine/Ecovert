@@ -1,7 +1,7 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 import process from 'node:process';
 export default defineNuxtConfig({
-  css: ['@/assets/css/tailwind.css'],
+  css: ['@/assets/css/tailwind.css', '~/assets/css/theme.css'],
   compatibilityDate: '2024-11-01',
   devtools: {
     enabled: true
