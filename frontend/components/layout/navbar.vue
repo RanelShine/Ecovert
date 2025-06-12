@@ -62,7 +62,7 @@
  import { ref, onMounted } from 'vue'
  import { useRouter } from 'vue-router'
  import UserProfileModal from '~/components/layout/UserProfileModal.vue'
- import ThemeSwitcher from "~/components/elements/ThemeSwitcher.vue";
+
 
 const showProfile = ref(false)
  

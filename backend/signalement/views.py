@@ -15,7 +15,6 @@ from .serializers import (
     SignalementStatutSerializer,
     SignalementAdminUpdateSerializer
 )
-from .permissions import IsAdminOrReadOnly, IsOwnerOrReadOnly, IsAdminOrOwner
 from accounts.models import User
 import traceback
 
@@ -106,8 +105,6 @@ def list_signalements(request):
 
 # READ - Détails d'un signalement spécifique
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
-@authentication_classes([JWTAuthentication])
 def detail_signalement(request, id):
     """Obtenir les détails d'un signalement selon les permissions de rôle"""
     try:
@@ -115,13 +112,14 @@ def detail_signalement(request, id):
         
         # Vérification des permissions de lecture
         if request.user.is_authenticated:
-            if request.user.role == 'citoyen':
-                # Autoriser un citoyen à voir uniquement ses propres signalements
-                if signalement.utilisateur != request.user:
+            if request.user.role == 'Citoyens':
+                # Les citoyens peuvent voir tous les signalements publics (statut 'en_cours')
+                # ET leurs propres signalements (peu importe le statut)
+                if signalement.utilisateur != request.user and signalement.statut != 'en_cours':
                     return Response({'error': 'Accès non autorisé'}, status=status.HTTP_403_FORBIDDEN)
     
             elif request.user.role == 'ctd':
-                # CORRECTION: Un CTD peut voir les signalements de sa commune ET ses propres signalements
+                # Un CTD peut voir les signalements de sa commune ET ses propres signalements
                 if hasattr(request.user, 'commune') and request.user.commune:
                     # Autoriser si c'est un signalement de sa commune OU son propre signalement
                     if signalement.commune != request.user.commune and signalement.utilisateur != request.user:
@@ -149,7 +147,7 @@ def detail_signalement(request, id):
         return Response({'error': 'Signalement non trouvé'}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
+    
 # UPDATE - Modification complète d'un signalement
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
