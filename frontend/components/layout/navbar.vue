@@ -1,5 +1,5 @@
 <template>
-    <header class="bg-white shadow px-4 py-2 flex justify-between items-center dark:bg-gray-800">
+    <header class="bg-white shadow px-4 py-2 flex justify-between items-center dark:bg-gray-900">
      <div class="flex items-center space-x-4">
   <h1 class="flex items-center text-lg font-semibold text-green-800 dark:text-green-600 ">
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" class="mr-2">

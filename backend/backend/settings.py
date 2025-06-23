@@ -51,7 +51,8 @@ INSTALLED_APPS = [
     'communes',
     'photos',
     'signalement',
-    'projects'
+    'projects',
+    'meteo',
 ]
 
 MIDDLEWARE = [

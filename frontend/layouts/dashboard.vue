@@ -4,7 +4,7 @@
   
       <div class="flex-1 flex flex-col">
         <Navbar />
-        <main class="flex-1 p-4 overflow-auto bg-gray-100">
+        <main class="flex-1 overflow-auto bg-gray-100">
           <slot />
         </main>
         <Footer />

@@ -1,4 +1,4 @@
-<!-- MapSection.vue - Template modifié -->
+<!-- MapSection.vue-->
 <template>
   <div class="map-container ">
     <!-- Indicateur de géolocalisation -->
@@ -114,7 +114,7 @@
 <script>
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { onMounted, ref, computed, onUnmounted } from 'vue';
+import { onMounted, ref, computed, onUnmounted, watch, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
 
 export default {
@@ -125,15 +125,22 @@ export default {
     const userMarker = ref(null);
     const userLocation = ref(null);
     const signalements = ref([]);
-    const signalementMarkers = ref([]);
+    const signalementMarkersGroup = ref(null);
     const selectedType = ref('');
     const selectedStatus = ref('');
     const isMobile = ref(window.innerWidth <= 768);
     const loading = ref(false);
     const locationStatus = ref(null);
     const token = localStorage.getItem('authToken');
-    
-    // Choix disponibles (correspondent à votre API)
+
+    // Configuration des types de signalements avec couleurs
+    const signalementTypes = ref([
+      { name: 'pollution', label: 'Pollution', color: '#FF6B6B', active: true },
+      { name: 'dechets', label: 'Déchets', color: '#FFD93D', active: true },
+      { name: 'climat', label: 'Climat', color: '#6BCF7F', active: true }
+    ]);
+
+    // Choix disponibles pour les filtres
     const typeChoices = ref([
       { value: 'pollution', label: 'Pollution' },
       { value: 'dechets', label: 'Déchets' },
@@ -145,19 +152,48 @@ export default {
       { value: 'en_cours', label: 'En cours' },
       { value: 'traite', label: 'Traité' }
     ]);
-    
-    const signalementTypes = ref([
-      { name: 'pollution', label: 'Pollution', color: '#FF6B6B', active: true },
-      { name: 'dechets', label: 'Déchets', color: '#FFD93D', active: true },
-      { name: 'climat', label: 'Climat', color: '#6BCF7F', active: true }
-    ]);
 
+    // Fonction pour obtenir le nombre de signalements par type
     const getCountByType = (type) => {
       return signalements.value.filter(s => s.type_signalement === type).length;
     };
 
+    // Statistiques calculées
+    const statistics = computed(() => {
+      const total = signalements.value.length;
+      const byType = {
+        pollution: signalements.value.filter(s => s.type_signalement === 'pollution').length,
+        dechets: signalements.value.filter(s => s.type_signalement === 'dechets').length,
+        climat: signalements.value.filter(s => s.type_signalement === 'climat').length
+      };
+      const byStatus = {
+        en_attente: signalements.value.filter(s => s.statut === 'en_attente').length,
+        en_cours: signalements.value.filter(s => s.statut === 'en_cours').length,
+        traite: signalements.value.filter(s => s.statut === 'traite').length
+      };
+      
+      return { total, byType, byStatus };
+    });
+
+    // Computed pour les signalements filtrés
+    const filteredSignalements = computed(() => {
+      return signalements.value.filter(signalement => {
+        const typeMatch = !selectedType.value || signalement.type_signalement === selectedType.value;
+        const statusMatch = !selectedStatus.value || signalement.statut === selectedStatus.value;
+        const typeActive = signalementTypes.value.find(t => t.name === signalement.type_signalement)?.active !== false;
+        const hasCoordinates = signalement.latitude && signalement.longitude;
+        
+        return typeMatch && statusMatch && typeActive && hasCoordinates;
+      });
+    });
+
+    // Watcher pour réafficher les signalements quand les filtres changent
+    watch([filteredSignalements, () => signalementTypes.value.map(t => t.active)], () => {
+      displaySignalementsOnMap();
+    }, { deep: true });
+
     const initMap = () => {
-      // Centre sur Yaoundé, Cameroun
+      console.log('🗺️ Initialisation de la carte...');
       const yaoundeCenter = [3.8480, 11.5021];
 
       map.value = L.map('map', {
@@ -173,6 +209,10 @@ export default {
         minZoom: 8
       }).addTo(map.value);
 
+      // Groupe pour les marqueurs des signalements
+      signalementMarkersGroup.value = new L.FeatureGroup();
+      map.value.addLayer(signalementMarkersGroup.value);
+
       // Limite de la vue à la zone du Cameroun
       const cameroonBounds = L.latLngBounds(
         L.latLng(1.6546, 8.4948), // Sud-Ouest
@@ -180,18 +220,20 @@ export default {
       );
       map.value.setMaxBounds(cameroonBounds);
 
-      // Obtenir la position de l'utilisateur automatiquement
+      console.log('✅ Carte initialisée avec succès');
+
+      // Obtenir la position de l'utilisateur
       setTimeout(() => {
         getUserLocation();
       }, 1000);
     };
 
     const getUserLocation = () => {
-      console.log('Tentative de géolocalisation...');
+      console.log('📍 Tentative de géolocalisation...');
       locationStatus.value = { type: 'info', message: 'Recherche de votre position...' };
 
       if (!navigator.geolocation) {
-        console.error('Géolocalisation non supportée');
+        console.error('❌ Géolocalisation non supportée');
         locationStatus.value = { 
           type: 'error', 
           message: 'Géolocalisation non supportée par ce navigateur' 
@@ -207,7 +249,7 @@ export default {
 
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          console.log('Position obtenue:', position.coords);
+          console.log('✅ Position obtenue:', position.coords);
           const { latitude, longitude, accuracy } = position.coords;
           const userPosition = [latitude, longitude];
           
@@ -218,7 +260,7 @@ export default {
             map.value.removeLayer(userMarker.value);
           }
 
-          // Créer le marqueur utilisateur avec le SVG bleu
+          // Créer le marqueur utilisateur
           const userIcon = L.divIcon({
             className: 'user-location-marker',
             html: `
@@ -230,17 +272,17 @@ export default {
               </div>
             `,
             iconSize: [32, 32],
-            iconAnchor: [16, 30] // Point d'ancrage en bas du marqueur
+            iconAnchor: [16, 30]
           });
 
           userMarker.value = L.marker(userPosition, { 
             icon: userIcon,
-            zIndexOffset: 1000 // S'assurer que le marqueur utilisateur est au-dessus
+            zIndexOffset: 1000
           }).addTo(map.value);
 
           userMarker.value.bindPopup(`
             <div class="user-popup">
-              <strong>Ma position</strong><br>
+              <strong>📍 Ma position</strong><br>
               <small>Précision: ±${Math.round(accuracy)}m</small><br>
               <small>Lat: ${latitude.toFixed(6)}</small><br>
               <small>Lng: ${longitude.toFixed(6)}</small>
@@ -252,15 +294,14 @@ export default {
             message: `Position trouvée (±${Math.round(accuracy)}m)` 
           };
 
-          // Masquer le message après 3 secondes
           setTimeout(() => {
             locationStatus.value = null;
           }, 3000);
 
-          console.log('Marqueur utilisateur ajouté à la carte');
+          console.log('✅ Marqueur utilisateur ajouté à la carte');
         },
         (error) => {
-          console.error('Erreur de géolocalisation:', error);
+          console.error('❌ Erreur de géolocalisation:', error);
           let errorMessage = 'Impossible d\'obtenir votre position';
           
           switch(error.code) {
@@ -281,21 +322,21 @@ export default {
       );
     };
 
-    // Fonction pour extraire latitude et longitude de la localisation
+    // Fonction pour parser la localisation
     const parseLocation = (localisation) => {
       if (!localisation) return null;
       
       try {
         // Format: "lat,lng"
-        if (localisation.includes(',')) {
+        if (typeof localisation === 'string' && localisation.includes(',')) {
           const [lat, lng] = localisation.split(',').map(coord => parseFloat(coord.trim()));
           if (!isNaN(lat) && !isNaN(lng)) {
             return { latitude: lat, longitude: lng };
           }
         }
         
-        // Format JSON: {"lat": x, "lng": y} ou {"latitude": x, "longitude": y}
-        if (localisation.startsWith('{')) {
+        // Format JSON
+        if (typeof localisation === 'string' && localisation.startsWith('{')) {
           const parsed = JSON.parse(localisation);
           if (parsed.lat && parsed.lng) {
             return { latitude: parsed.lat, longitude: parsed.lng };
@@ -305,382 +346,385 @@ export default {
           }
         }
         
-        // Si c'est juste du texte, générer des coordonnées aléatoires autour de Yaoundé
-        const baseLatitude = 3.8480;
-        const baseLongitude = 11.5021;
-        const randomOffset = 0.05;
-        
-        return {
-          latitude: baseLatitude + (Math.random() - 0.5) * randomOffset,
-          longitude: baseLongitude + (Math.random() - 0.5) * randomOffset
-        };
+        return null;
       } catch (error) {
-        console.error('Erreur parsing localisation:', error);
+        console.error('❌ Erreur parsing localisation:', error);
         return null;
       }
     };
 
-  // Correction de l'URL de l'API et amélioration de la fonction loadSignalements
-const loadSignalements = async () => {
-  if (!token) {
-    console.error('Token d\'authentification manquant');
-    await loadDemoData();
-    return;
-  }
-  
-  loading.value = true;
-  console.log('🔍 Début du chargement des signalements...');
-  
-  try {
-    // 1. D'abord, récupérer les signalements
-    let url = 'http://localhost:8000/api/signalements/liste/';
-    const params = new URLSearchParams();
-    if (selectedStatus.value) params.append('statut', selectedStatus.value);
-    if (selectedType.value) params.append('type', selectedType.value);
-    if (params.toString()) {
-      url += '?' + params.toString();
-    }
-    
-    console.log('📡 Requête API signalements vers:', url);
-    const signalementResponse = await fetch(url, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
+    // Fonction principale de chargement des signalements depuis le backend
+    const loadSignalements = async () => {
+      if (!token) {
+        console.error('❌ Token d\'authentification manquant');
+        return;
       }
-    });
-    
-    if (!signalementResponse.ok) {
-      console.error('❌ Erreur HTTP:', signalementResponse.status, signalementResponse.statusText);
-      throw new Error('Erreur lors du chargement des signalements');
-    }
-    
-    const signalementData = await signalementResponse.json();
-    console.log('✅ Données des signalements reçues:', signalementData);
-    
-    // Déterminer l'array de signalements selon la structure de réponse
-    let signalementsArray = [];
-    if (signalementData.signalements) {
-      signalementsArray = signalementData.signalements;
-    } else if (Array.isArray(signalementData)) {
-      signalementsArray = signalementData;
-    } else if (signalementData.results) {
-      signalementsArray = signalementData.results;
-    }
-    
-    console.log(`📊 Nombre de signalements récupérés: ${signalementsArray.length}`);
-    
-    // Afficher les informations sur les photo_id des signalements
-    const photoIds = signalementsArray
-      .filter(s => s.photo_id)
-      .map(s => s.photo_id);
-    
-    console.log(`🖼️ Signalements avec photo_id: ${photoIds.length}/${signalementsArray.length}`);
-    
-    // 2. Récupérer les coordonnées des photos - CORRIGER L'URL ICI
-    console.log('🔍 Récupération des coordonnées de photos...');
-    const photoLocationsResponse = await fetch('http://localhost:8000/api/photos/locations/', {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      }
-    });
-    
-    if (!photoLocationsResponse.ok) {
-      console.error('❌ Erreur lors de la récupération des coordonnées de photos:', 
-        photoLocationsResponse.status, photoLocationsResponse.statusText);
-      throw new Error('Erreur lors du chargement des coordonnées');
-    }
-    
-    const photoLocationsData = await photoLocationsResponse.json();
-    console.log('✅ Données des coordonnées reçues:', photoLocationsData);
-    
-    // Créer un map des coordonnées par ID de photo
-    const photoCoordinatesMap = {};
-    
-    // Adapter en fonction de la structure de votre API
-    if (Array.isArray(photoLocationsData)) {
-      photoLocationsData.forEach(photo => {
-        if (photo.id && (photo.latitude !== undefined && photo.longitude !== undefined)) {
-          photoCoordinatesMap[photo.id] = {
-            latitude: parseFloat(photo.latitude),
-            longitude: parseFloat(photo.longitude)
-          };
-        }
-      });
-    } else if (photoLocationsData.photos) {
-      photoLocationsData.photos.forEach(photo => {
-        if (photo.id && (photo.latitude !== undefined && photo.longitude !== undefined)) {
-          photoCoordinatesMap[photo.id] = {
-            latitude: parseFloat(photo.latitude),
-            longitude: parseFloat(photo.longitude)
-          };
-        }
-      });
-    } else {
-      // Explorer la structure pour trouver les coordonnées
-      console.log('⚠️ Structure inconnue, exploration des données...');
       
-      // Essayer de parcourir toutes les propriétés pour trouver des coordonnées
-      Object.entries(photoLocationsData).forEach(([key, value]) => {
-        if (Array.isArray(value)) {
-          console.log(`📑 Trouvé un tableau dans la propriété "${key}" avec ${value.length} éléments`);
-          value.forEach((item, index) => {
-            if (item.id && (item.latitude !== undefined && item.longitude !== undefined)) {
-              photoCoordinatesMap[item.id] = {
-                latitude: parseFloat(item.latitude),
-                longitude: parseFloat(item.longitude)
-              };
-              console.log(`  ✅ Item #${index} a des coordonnées valides`);
+      loading.value = true;
+      console.log('🔍 Début du chargement des signalements depuis le backend...');
+      
+      try {
+        // 1. Construction de l'URL avec filtres
+        let url = 'http://localhost:8000/api/signalements/liste/';
+        const params = new URLSearchParams();
+        if (selectedStatus.value) params.append('statut', selectedStatus.value);
+        if (selectedType.value) params.append('type_signalement', selectedType.value);
+        if (params.toString()) {
+          url += '?' + params.toString();
+        }
+        
+        console.log('📡 Requête vers:', url);
+        
+        // 2. Requête des signalements
+        const signalementResponse = await fetch(url, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (!signalementResponse.ok) {
+          throw new Error(`Erreur HTTP: ${signalementResponse.status} - ${signalementResponse.statusText}`);
+        }
+        
+        const signalementData = await signalementResponse.json();
+        console.log('✅ Données des signalements reçues:', signalementData);
+        
+        // 3. Extraction des signalements selon la structure de la réponse
+        let signalementsArray = [];
+        if (signalementData.signalements && Array.isArray(signalementData.signalements)) {
+          signalementsArray = signalementData.signalements;
+        } else if (Array.isArray(signalementData)) {
+          signalementsArray = signalementData;
+        } else if (signalementData.results && Array.isArray(signalementData.results)) {
+          signalementsArray = signalementData.results;
+        } else if (signalementData.data && Array.isArray(signalementData.data)) {
+          signalementsArray = signalementData.data;
+        }
+        
+        console.log(`📊 ${signalementsArray.length} signalements récupérés du backend`);
+
+        // 4. Récupération des coordonnées des photos en parallèle
+        let photoCoordinatesMap = {};
+        try {
+          console.log('🖼️ Récupération des coordonnées des photos...');
+          const photoLocationsResponse = await fetch('http://localhost:8000/api/photos/locations/', {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
             }
           });
+          
+          if (photoLocationsResponse.ok) {
+            const photoLocationsData = await photoLocationsResponse.json();
+            console.log('✅ Coordonnées des photos reçues:', photoLocationsData);
+            
+            // Créer le mapping des coordonnées
+            if (Array.isArray(photoLocationsData)) {
+              photoLocationsData.forEach(photo => {
+                if (photo.id && photo.latitude !== undefined && photo.longitude !== undefined) {
+                  photoCoordinatesMap[photo.id] = {
+                    latitude: parseFloat(photo.latitude),
+                    longitude: parseFloat(photo.longitude)
+                  };
+                }
+              });
+            }
+            
+            console.log(`🗺️ ${Object.keys(photoCoordinatesMap).length} coordonnées de photos chargées`);
+          }
+        } catch (photoError) {
+          console.warn('⚠️ Erreur lors de la récupération des coordonnées des photos:', photoError);
         }
-      });
-    }
-    
-    console.log('🗺️ Map des coordonnées par ID de photo:', photoCoordinatesMap);
-    console.log(`📊 Nombre d'entrées dans le map: ${Object.keys(photoCoordinatesMap).length}`);
-    
-    // 3. Associer les coordonnées aux signalements
-    const processedSignalements = signalementsArray.map(signalement => {
-      console.log(`\n📝 Traitement du signalement ID ${signalement.id}:`);
-      console.log(`  - Type: ${signalement.type_signalement}`);
-      console.log(`  - Photo ID: ${signalement.photo_id || 'Aucun'}`);
-      
-      // D'abord vérifier si le signalement a un photo_id et si on a des coordonnées pour cette photo
-      let coords = null;
-      
-      if (signalement.photo_id && photoCoordinatesMap[signalement.photo_id]) {
-        coords = photoCoordinatesMap[signalement.photo_id];
-        console.log(`  ✅ Coordonnées trouvées via photo_id ${signalement.photo_id}:`, coords);
-      } else {
-        if (signalement.photo_id) {
-          console.log(`  ⚠️ Photo ID ${signalement.photo_id} présent mais pas de coordonnées correspondantes`);
-        }
+
+        // 5. Traitement et enrichissement des signalements
+        const processedSignalements = signalementsArray.map(signalement => {
+          let coords = null;
+          
+          // Priorité 1: Coordonnées directes du signalement
+          if (signalement.latitude && signalement.longitude) {
+            const lat = parseFloat(signalement.latitude);
+            const lng = parseFloat(signalement.longitude);
+            if (!isNaN(lat) && !isNaN(lng)) {
+              coords = { latitude: lat, longitude: lng };
+            }
+          }
+          
+          // Priorité 2: Coordonnées de la photo associée
+          if (!coords && signalement.photo_id && photoCoordinatesMap[signalement.photo_id]) {
+            coords = photoCoordinatesMap[signalement.photo_id];
+          }
+          
+          // Priorité 3: Parser la localisation textuelle
+          if (!coords && signalement.localisation) {
+            coords = parseLocation(signalement.localisation);
+          }
+          
+          // Validation finale des coordonnées
+          if (coords && coords.latitude && coords.longitude) {
+            const lat = parseFloat(coords.latitude);
+            const lng = parseFloat(coords.longitude);
+            
+            // Vérifier que les coordonnées sont valides et dans les limites du Cameroun
+            if (!isNaN(lat) && !isNaN(lng) && 
+                lat >= 1.6 && lat <= 13.1 && 
+                lng >= 8.4 && lng <= 16.2) {
+              coords.latitude = lat;
+              coords.longitude = lng;
+            } else {
+              coords = null;
+            }
+          }
+          
+          return {
+            ...signalement,
+            latitude: coords?.latitude || null,
+            longitude: coords?.longitude || null,
+            // Normalisation des champs
+            type: signalement.type_signalement,
+            status: signalement.statut,
+            title: signalement.objet || signalement.titre || 'Sans titre',
+            description: signalement.description || 'Aucune description',
+            author: signalement.utilisateur_nom || signalement.auteur || 'Utilisateur anonyme',
+            date: signalement.date_signalement || signalement.created_at || new Date().toISOString(),
+            location: signalement.localisation || 'Localisation non précisée'
+          };
+        });
         
-        // Essayer d'extraire les coordonnées de la localisation
-        coords = parseLocation(signalement.localisation);
-        console.log(`  🔄 Utilisation du fallback parseLocation: ${signalement.localisation} -> `, coords);
-      }
-      
-      // Vérifier que les coordonnées sont dans des plages valides
-      if (coords && coords.latitude && coords.longitude) {
-        // Vérifier que les coordonnées sont numériques et dans des plages valides
-        const lat = parseFloat(coords.latitude);
-        const lng = parseFloat(coords.longitude);
+        // 6. Filtrer les signalements avec coordonnées valides
+        const validSignalements = processedSignalements.filter(s => s.latitude && s.longitude);
+        signalements.value = validSignalements;
         
-        if (isNaN(lat) || isNaN(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
-          console.error(`  ❌ Coordonnées invalides: ${lat}, ${lng}`);
-          coords = null;
-        } else {
-          coords.latitude = lat;
-          coords.longitude = lng;
-          console.log(`  ✅ Coordonnées validées: ${lat}, ${lng}`);
-        }
+        console.log(`✅ ${signalements.value.length} signalements avec coordonnées valides chargés`);
+        console.log('📈 Statistiques:', statistics.value);
+        
+        // 7. Affichage sur la carte
+        await nextTick();
+        setTimeout(() => {
+          displaySignalementsOnMap();
+          
+          // Ajuster la vue pour englober tous les signalements
+          if (signalements.value.length > 0) {
+            fitMapToSignalements();
+          }
+        }, 200);
+        
+      } catch (error) {
+        console.error('❌ Erreur lors du chargement des signalements:', error);
+        
+        // En cas d'erreur, afficher un message à l'utilisateur
+        locationStatus.value = { 
+          type: 'error', 
+          message: 'Erreur lors du chargement des signalements' 
+        };
+        
+        // Optionnel: charger des données de démonstration
+        // await loadDemoData();
+      } finally {
+        loading.value = false;
       }
-      
-      return {
-        ...signalement,
-        latitude: coords?.latitude,
-        longitude: coords?.longitude,
-        type: signalement.type_signalement,
-        status: signalement.statut,
-        description: signalement.description || signalement.objet
-      };
-    });
-    console.log('Coordonnées des signalements traités:', processedSignalements.map(s => ({
-  id: s.id,
-  latitude: s.latitude,
-  longitude: s.longitude
-  })));
-    
-    // Filtrer les signalements sans coordonnées valides
-    signalements.value = processedSignalements.filter(s => {
-      if (!s.latitude || !s.longitude) {
-        console.log(`❌ Signalement ID ${s.id} sans coordonnées valides, filtré`);
-        return false;
-      }
-      return true;
-    });
-    
-    console.log(`\n📊 Résultat final: ${signalements.value.length}/${processedSignalements.length} signalements avec coordonnées valides`);
-    console.log('Signalements chargés:', signalements.value);
-    // 4. Afficher les signalements sur la carte
-    console.log('🗺️ Affichage des signalements sur la carte...');
-    
-    // Assurez-vous que la carte est initialisée avant d'afficher les signalements
-    if (!map.value) {
-      console.error('❌ La carte n\'est pas initialisée!');
-      await initMap();
-    }
-    
-    // Afficher les signalements
-    displaySignalements();
-    
-    // Ajuster la vue pour voir tous les signalements
-    if (signalements.value.length > 0) {
-      fitMapToSignalements();
-    }
-    
-  } catch (error) {
-    console.error('❌ Erreur lors du chargement des données:', error);
-    await loadDemoData(); // Utiliser les données de démo en cas d'erreur
-  } finally {
-    loading.value = false;
-  }
-
-};
-
-// Fonction pour ajuster la vue de la carte pour voir tous les signalements
-const fitMapToSignalements = () => {
-  if (!map.value || signalements.value.length === 0) return;
-  
-  try {
-    console.log('📏 Ajustement de la vue pour voir tous les signalements...');
-    
-    // Créer des bounds qui incluent tous les signalements
-    const bounds = L.latLngBounds([]);
-    
-    signalements.value.forEach(s => {
-      if (s.latitude && s.longitude) {
-        bounds.extend([s.latitude, s.longitude]);
-      }
-    });
-    
-    // Ajouter la position de l'utilisateur si disponible
-    if (userLocation.value) {
-      bounds.extend([userLocation.value.latitude, userLocation.value.longitude]);
-    }
-    
-    // Vérifier que les bounds sont valides
-    if (bounds.isValid()) {
-      map.value.fitBounds(bounds, {
-        padding: [50, 50], // Ajouter un peu d'espace autour
-        maxZoom: 15,       // Ne pas zoomer trop près
-        animate: true
-      });
-      console.log('✅ Vue ajustée pour voir tous les signalements');
-    } else {
-      console.warn('⚠️ Impossible d\'ajuster la vue, bounds invalides');
-      centerOnDefaultLocation();
-    }
-  } catch (error) {
-    console.error('❌ Erreur lors de l\'ajustement de la vue:', error);
-    centerOnDefaultLocation();
-  }
-};
-
-// Améliorer la fonction displaySignalements
-const displaySignalements = () => {
-  console.log('🔄 Affichage des signalements sur la carte...');
-  
-  if (!map.value) {
-    console.error('❌ La carte n\'est pas initialisée, impossible d\'afficher les signalements');
-    return;
-  }
-  
-  // Supprimer les marqueurs existants (sauf l'utilisateur)
-  signalementMarkers.value.forEach(marker => {
-    map.value.removeLayer(marker);
-  });
-  signalementMarkers.value = [];
-  
-  // Filtrer les signalements
-  let filteredSignalements = signalements.value.filter(signalement => {
-    const typeMatch = !selectedType.value || signalement.type_signalement === selectedType.value;
-    const statusMatch = !selectedStatus.value || signalement.statut === selectedStatus.value;
-    const typeActive = signalementTypes.value.find(t => t.name === signalement.type_signalement)?.active !== false;
-    
-    return typeMatch && statusMatch && typeActive && signalement.latitude && signalement.longitude;
-  });
-  
-  console.log(`📍 Affichage de ${filteredSignalements.length} signalements sur la carte`);
-  
-  // Ajouter les nouveaux marqueurs avec des icônes personnalisées
-  filteredSignalements.forEach(signalement => {
-    try {
-      const typeInfo = signalementTypes.value.find(t => t.name === signalement.type_signalement);
-      const color = typeInfo ? typeInfo.color : '#9775FA';
-      
-      // Créer un marqueur avec une icône personnalisée selon le type
-      let markerHtml = '';
-      
-      // Utiliser des icônes différentes selon le type
-      switch (signalement.type_signalement) {
-        case 'pollution':
-          markerHtml = `<div class="custom-marker pollution-marker" style="background-color: ${color}"></div>`;
-          break;
-        case 'dechets':
-          markerHtml = `<div class="custom-marker dechets-marker" style="background-color: ${color}"></div>`;
-          break;
-        case 'climat':
-          markerHtml = `<div class="custom-marker climat-marker" style="background-color: ${color}"></div>`;
-          break;
-        default:
-          markerHtml = `<div class="custom-marker" style="background-color: ${color}"></div>`;
-      }
-      
-      const signalementIcon = L.divIcon({
-        className: `signalement-marker-${signalement.type_signalement}`,
-        html: markerHtml,
-        iconSize: [30, 30],
-        iconAnchor: [15, 30]
-      });
-      
-      // Créer le marqueur à la position du signalement
-      const markerPosition = [signalement.latitude, signalement.longitude];
-      console.log(`  📍 Marqueur à: ${markerPosition[0]}, ${markerPosition[1]}`);
-      
-      const marker = L.marker(markerPosition, {
-        icon: signalementIcon
-      }).addTo(map.value);
-      
-      // Textes pour les statuts et types
-      const statusText = {
-        'en_attente': 'En attente',
-        'en_cours': 'En cours',
-        'traite': 'Traité'
-      };
-      
-      const typeText = {
-        'pollution': 'Pollution',
-        'dechets': 'Déchets',
-        'climat': 'Climat'
-      };
-      
-      // Créer un popup informatif
-      marker.bindPopup(`
-        <div class="popup-content">
-          <div class="popup-header">
-            <strong>${typeText[signalement.type_signalement] || signalement.type_signalement}</strong>
-            <span class="popup-status status-${signalement.statut}">${statusText[signalement.statut] || 'En attente'}</span>
-          </div>
-          <div class="popup-title"><strong>${signalement.objet || 'Sans titre'}</strong></div>
-          <div class="popup-description">${signalement.description || 'Aucune description'}</div>
-          <div class="popup-user">Signalé par: ${signalement.utilisateur_nom || 'Utilisateur'}</div>
-          <div class="popup-date">${signalement.date_signalement ? new Date(signalement.date_signalement).toLocaleString('fr-FR') : 'Date inconnue'}</div>
-        </div>
-      `);
-      
-      // Ajouter le marqueur à la liste
-      signalementMarkers.value.push(marker);
-      
-    } catch (error) {
-      console.error(`❌ Erreur lors de l'affichage du signalement ${signalement.id}:`, error);
-    }
-  });
-  
-  console.log(`✅ ${signalementMarkers.value.length} marqueurs ajoutés à la carte`);
-};
-
-    const filterSignalements = () => {
-      displaySignalements();
     };
 
-    const resetFilters = () => {
+    // Fonction d'affichage des signalements sur la carte
+    const displaySignalementsOnMap = () => {
+      if (!map.value || !signalementMarkersGroup.value) {
+        console.warn('⚠️ Carte ou groupe de marqueurs non initialisé');
+        return;
+      }
+
+      console.log('🔄 Affichage des signalements sur la carte:', filteredSignalements.value.length);
+      
+      // Vider le groupe des marqueurs existants
+      signalementMarkersGroup.value.clearLayers();
+
+      // Ajouter chaque signalement filtré à la carte
+      filteredSignalements.value.forEach(signalement => {
+        addSignalementToMap(signalement);
+      });
+      
+      console.log(`✅ ${filteredSignalements.value.length} marqueurs affichés sur la carte`);
+    };
+
+    // Fonction pour ajouter un signalement à la carte
+    const addSignalementToMap = (signalement) => {
+      if (!map.value || !signalementMarkersGroup.value) return;
+
+      try {
+        // Obtenir la couleur selon le type
+        const typeInfo = signalementTypes.value.find(t => t.name === signalement.type_signalement);
+        const color = typeInfo ? typeInfo.color : '#9775FA';
+
+        // Créer un marqueur personnalisé
+        const markerIcon = L.divIcon({
+          className: 'custom-signalement-marker',
+          html: `
+            <div style="
+              background-color: ${color}; 
+              width: 28px; 
+              height: 28px; 
+              border-radius: 50%; 
+              border: 3px solid white; 
+              box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              font-size: 14px;
+              cursor: pointer;
+              transition: transform 0.2s ease;
+            " onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+              ${getTypeIcon(signalement.type_signalement)}
+            </div>
+          `,
+          iconSize: [28, 28],
+          iconAnchor: [14, 14]
+        });
+
+        // Créer le marqueur
+        const marker = L.marker([signalement.latitude, signalement.longitude], {
+          icon: markerIcon
+        });
+
+        // Libellés pour l'affichage
+        const statusLabels = {
+          'en_attente': 'En attente',
+          'en_cours': 'En cours',
+          'traite': 'Traité'
+        };
+
+        const typeLabels = {
+          'pollution': 'Pollution',
+          'dechets': 'Déchets',
+          'climat': 'Climat'
+        };
+
+        // Créer le contenu du popup
+        const popupContent = `
+          <div class="signalement-popup" style="max-width: 280px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+            <div style="border-bottom: 2px solid ${color}; padding-bottom: 8px; margin-bottom: 12px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <h4 style="margin: 0; font-size: 16px; font-weight: bold; color: #333;">
+                  ${getTypeIcon(signalement.type_signalement)} ${typeLabels[signalement.type_signalement] || signalement.type_signalement}
+                </h4>
+                <span style="
+                  font-size: 11px; 
+                  padding: 4px 8px; 
+                  border-radius: 12px; 
+                  font-weight: 600;
+                  ${getStatusBadgeStyle(signalement.statut)}
+                ">
+                  ${statusLabels[signalement.statut] || 'En attente'}
+                </span>
+              </div>
+              <h5 style="margin: 0; font-size: 14px; font-weight: 600; color: #444;">
+                ${signalement.title || signalement.objet || 'Sans titre'}
+              </h5>
+            </div>
+            
+            <div style="margin-bottom: 12px;">
+              <p style="margin: 0; font-size: 13px; color: #666; line-height: 1.4;">
+                ${(signalement.description || 'Aucune description').substring(0, 120)}${(signalement.description || '').length > 120 ? '...' : ''}
+              </p>
+            </div>
+            
+            <div style="font-size: 12px; color: #888; line-height: 1.5;">
+              <div style="margin-bottom: 4px;">
+                <strong>👤 Signalé par:</strong> ${signalement.author || signalement.utilisateur_nom || 'Utilisateur anonyme'}
+              </div>
+              <div style="margin-bottom: 4px;">
+                <strong>📅 Date:</strong> ${new Date(signalement.date || signalement.date_signalement).toLocaleDateString('fr-FR', {
+                  day: '2-digit',
+                  month: '2-digit', 
+                  year: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                })}
+              </div>
+              <div>
+                <strong>📍 Lieu:</strong> ${signalement.location || signalement.localisation || 'Localisation non précisée'}
+              </div>
+            </div>
+          </div>
+        `;
+
+        marker.bindPopup(popupContent, { 
+          maxWidth: 300,
+          className: 'custom-popup'
+        });
+
+        // Ajouter au groupe de marqueurs
+        signalementMarkersGroup.value.addLayer(marker);
+
+      } catch (error) {
+        console.error(`❌ Erreur lors de l'ajout du signalement ${signalement.id}:`, error);
+      }
+    };
+
+    // Fonction pour obtenir l'icône selon le type
+    const getTypeIcon = (type) => {
+      const icons = {
+        'pollution': '🏭',
+        'dechets': '🗑️',
+        'climat': '🌡️'
+      };
+      return icons[type] || '⚠️';
+    };
+
+    // Fonction pour obtenir le style CSS du badge de statut
+    const getStatusBadgeStyle = (status) => {
+      const styles = {
+        'en_attente': 'background-color: #FEF3C7; color: #92400E;',
+        'en_cours': 'background-color: #DBEAFE; color: #1E40AF;',
+        'traite': 'background-color: #D1FAE5; color: #065F46;'
+      };
+      return styles[status] || 'background-color: #F3F4F6; color: #374151;';
+    };
+
+    // Fonction pour ajuster la vue de la carte
+    const fitMapToSignalements = () => {
+      if (!map.value || filteredSignalements.value.length === 0) return;
+      
+      try {
+        console.log('📏 Ajustement de la vue pour englober tous les signalements...');
+        
+        const bounds = L.latLngBounds([]);
+        
+        filteredSignalements.value.forEach(s => {
+          if (s.latitude && s.longitude) {
+            bounds.extend([s.latitude, s.longitude]);
+          }
+        });
+        
+        // Ajouter la position utilisateur si disponible
+        if (userLocation.value) {
+          bounds.extend([userLocation.value.latitude, userLocation.value.longitude]);
+        }
+        
+        if (bounds.isValid()) {
+          map.value.fitBounds(bounds, {
+            padding: [50, 50],
+            maxZoom: 16,
+            animate: true,
+            duration: 1
+          });
+          console.log('✅ Vue ajustée avec succès');
+        }
+      } catch (error) {
+        console.error('❌ Erreur lors de l\'ajustement de la vue:', error);
+      }
+    };
+
+    // Fonctions de contrôle et filtrage
+    const filterSignalements = async () => {
+      console.log('🔍 Application des filtres...');
+      await loadSignalements(); // Recharger avec les nouveaux filtres
+    };
+
+    const resetFilters = async () => {
       selectedType.value = '';
       selectedStatus.value = '';
       signalementTypes.value.forEach(type => type.active = true);
-      filterSignalements();
+      console.log('🔄 Filtres réinitialisés');
+      await loadSignalements(); // Recharger sans filtres
     };
 
     const centerOnUser = () => {
@@ -698,26 +742,58 @@ const displaySignalements = () => {
       router.push('/dashboard/ctd');
     };
 
-    // Responsive handling
+    // Fonction de rafraîchissement
+    const refreshData = async () => {
+      console.log('🔄 Rafraîchissement des données...');
+      await loadSignalements();
+    };
+
+    // Gestion responsive
     const handleResize = () => {
       isMobile.value = window.innerWidth <= 768;
       if (map.value) {
-        map.value.invalidateSize();
+        setTimeout(() => {
+          map.value.invalidateSize();
+        }, 100);
       }
     };
 
-    onMounted(() => {
-      console.log('Initialisation de la carte...');
-      initMap();
-      loadSignalements();
-      window.addEventListener('resize', handleResize);
+    // Lifecycle hooks
+    onMounted(async () => {
+      console.log('🚀 Initialisation du composant MapSection...');
+      
+      try {
+        // Initialiser la carte
+        await initMap();
+        
+        // Attendre que la carte soit complètement initialisée
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // Charger les signalements depuis le backend
+        await loadSignalements();
+        
+        // Écouter les changements de taille de fenêtre
+        window.addEventListener('resize', handleResize);
+        
+        console.log('✅ Composant MapSection initialisé avec succès');
+        console.log('📊 Statistiques finales:', statistics.value);
+        
+      } catch (error) {
+        console.error('❌ Erreur lors de l\'initialisation:', error);
+      }
     });
 
     onUnmounted(() => {
       window.removeEventListener('resize', handleResize);
+      if (map.value) {
+        map.value.remove();
+      }
+      console.log('🔄 Composant MapSection nettoyé');
     });
 
+    // Retourner les propriétés et méthodes pour le template
     return {
+      // États réactifs
       signalementTypes,
       typeChoices,
       statutChoices,
@@ -727,13 +803,21 @@ const displaySignalements = () => {
       loading,
       locationStatus,
       userLocation,
+      signalements,
+      
+      // Propriétés calculées  
+      filteredSignalements,
+      statistics,
+      
+      // Méthodes
       getCountByType,
       filterSignalements,
       resetFilters,
       centerOnUser,
       goBack,
       loadSignalements,
-      getUserLocation
+      getUserLocation,
+      refreshData
     };
   }
 }

@@ -22,7 +22,7 @@
     <aside
       :class="[
         // Classes de base
-        'bg-green-700 dark:bg-gray-800 dark:text-green-600 text-white p-4 space-y-4 transition-all duration-300 ease-in-out',
+        'bg-green-700 dark:bg-gray-900 dark:text-green-600 text-white p-4 space-y-4 transition-all duration-300 ease-in-out',
         // Mobile: position fixe, taille réduite, en haut à gauche
         'fixed sm:static w-72 sm:w-64',
         // Mobile: positionnement et hauteur
