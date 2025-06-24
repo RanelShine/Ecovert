@@ -1,4 +1,6 @@
-from rest_framework import status, permissions
+# projects/views.py
+
+from rest_framework import status, permissions, generics
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from django.db.models import Q
@@ -8,26 +10,47 @@ from django.http import HttpResponse, Http404
 from django.conf import settings
 from django.utils.encoding import smart_str
 from wsgiref.util import FileWrapper
-from .models import Project, Accountability
+from .models import Project, Accountability, Comment # Importez le modèle Comment
 from .serializers import (
     ProjectListSerializer, ProjectDetailSerializer,
     AccountabilitySerializer, AccountabilityCreateSerializer,
-    AccountabilityResponseSerializer
+    AccountabilityResponseSerializer,
+    CommentSerializer # Importez le CommentSerializer
 )
+from django.shortcuts import get_object_or_404 # Assurez-vous que ceci est importé
 
 class IsCTDOrReadOnly(permissions.BasePermission):
     """
     Permission personnalisée pour permettre uniquement aux CTD de créer/modifier des projets
     """
     def has_permission(self, request, view):
+        # Allow read-only access for anyone (GET, HEAD, OPTIONS)
         if request.method in permissions.SAFE_METHODS:
             return True
+        # Allow write access only for authenticated users with role 'ctd'
         return request.user.is_authenticated and request.user.role == 'ctd'
 
     def has_object_permission(self, request, view, obj):
+        # Allow read-only access for anyone (GET, HEAD, OPTIONS)
         if request.method in permissions.SAFE_METHODS:
             return True
-        return request.user.is_authenticated and request.user.role == 'cdt'
+        # Object-level permission: Only the CTD who created the project or belongs to the project's commune
+        # can modify/delete it. Adjust as per your specific business logic.
+        return request.user.is_authenticated and request.user.role == 'ctd' and request.user.commune == obj.commune
+
+
+# NOUVEAU: Permissions personnalisées pour les commentaires
+class IsCommentAuthorOrReadOnly(permissions.BasePermission):
+    """
+    Permission personnalisée pour permettre uniquement à l'auteur du commentaire de le modifier/supprimer.
+    """
+    def has_object_permission(self, request, view, obj):
+        # Allow read-only access for anyone (GET, HEAD, OPTIONS)
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        # Write permissions are only allowed to the author of the comment.
+        return obj.author == request.user
+
 
 # Project views
 @api_view(['GET'])
@@ -54,6 +77,8 @@ def list_projects(request):
         )
     
     queryset = queryset.order_by('-created_at')
+    # Pour la pagination, vous devriez utiliser DRF's pagination classes
+    # Ici, nous retournons juste la liste brute
     serializer = ProjectListSerializer(queryset, many=True)
     return Response(serializer.data)
 
@@ -61,11 +86,14 @@ def list_projects(request):
 @permission_classes([IsCTDOrReadOnly])
 def create_project(request):
     """Crée un nouveau projet"""
+    # Note: ProjectListSerializer est utilisé ici, mais pour la création,
+    # vous devriez peut-être avoir un ProjectCreateSerializer qui gère mieux les champs
+    # comme 'commune' et 'created_by' si non fournis dans le corps de la requête.
     serializer = ProjectListSerializer(data=request.data)
     if serializer.is_valid():
         serializer.save(
             created_by=request.user,
-            commune=request.user.commune
+            commune=request.user.commune # Assurez-vous que l'utilisateur a une 'commune' associée
         )
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -74,7 +102,8 @@ def create_project(request):
 def project_detail(request, id):
     """Récupère les détails d'un projet spécifique"""
     try:
-        project = Project.objects.get(pk=id)
+        # Utilise select_related pour les FK et prefetch_related pour les related_name (comme 'comments')
+        project = Project.objects.select_related('commune', 'created_by').prefetch_related('comments').get(pk=id)
         serializer = ProjectDetailSerializer(project)
         return Response(serializer.data)
     except Project.DoesNotExist:
@@ -154,7 +183,7 @@ def update_project(request, id):
         # Gérer la suppression de l'ancien fichier si un nouveau est uploadé
         old_file = project.file
         
-        serializer = ProjectDetailSerializer(
+        serializer = ProjectDetailSerializer( # Utilisez ProjectDetailSerializer pour la mise à jour si vous le souhaitez
             project,
             data=request.data,
             partial=request.method == 'PATCH'
@@ -288,4 +317,86 @@ def respond_accountability(request, id):
         return Response(
             {'error': 'Demande non trouvée'},
             status=status.HTTP_404_NOT_FOUND
-        ) 
+        )
+
+# NOUVEAU: Vues pour les commentaires
+class CommentListCreateView(generics.ListCreateAPIView):
+    """
+    Vue pour lister tous les commentaires d'un projet spécifique et créer un nouveau commentaire.
+    """
+    serializer_class = CommentSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly] 
+
+    def get_queryset(self):
+        """
+        Filtrer les commentaires par l'ID du projet passé dans l'URL.
+        Inclure les informations de l'auteur pour éviter N+1 requêtes.
+        """
+        project_id = self.kwargs['project_id']
+        
+        # Vérifier si le projet existe. Si ce n'est pas le cas, Django REST Framework
+        # lèvera automatiquement un Http404, qui sera converti en 404 NOT FOUND.
+        project = get_object_or_404(Project, pk=project_id)
+        
+        # Récupérer les commentaires associés à ce projet existant et trier par date de création.
+        # Utiliser select_related('author') pour optimiser la récupération des données de l'auteur.
+        return Comment.objects.filter(project=project).select_related('author').order_by('-created_at')
+
+    def perform_create(self, serializer):
+        """
+        Associer le commentaire à l'utilisateur connecté et au projet spécifié.
+        """
+        project_id = self.kwargs['project_id']
+        try:
+            project = Project.objects.get(id=project_id)
+        except Project.DoesNotExist:
+            # Si le projet n'existe pas, renvoyer une erreur 404
+            return Response(
+                {"detail": "Projet non trouvé."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        # L'auteur du commentaire est l'utilisateur authentifié
+        if not self.request.user.is_authenticated:
+            return Response(
+                {"detail": "Vous devez être authentifié pour commenter."},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        serializer.save(author=self.request.user, project=project)
+
+    def get_serializer_context(self):
+        """
+        Passe le contexte de la requête au sérialiseur.
+        Ceci est essentiel pour que `AuthorSerializer.get_avatar` puisse construire des URLs absolues.
+        """
+        return {'request': self.request}
+
+
+class CommentDetailView(generics.RetrieveUpdateDestroyAPIView):
+    """
+    Vue pour récupérer, mettre à jour ou supprimer un commentaire spécifique.
+    """
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
+    permission_classes = [IsCommentAuthorOrReadOnly] 
+
+    def get_object(self):
+        """
+        Récupère un commentaire en se basant sur le project_id et le pk du commentaire.
+        """
+        project_id = self.kwargs['project_id']
+        pk = self.kwargs['pk']
+        try:
+            # Récupérer le commentaire et pré-charger les données de l'auteur et du projet.
+            comment = Comment.objects.select_related('author', 'project').get(project_id=project_id, pk=pk)
+            self.check_object_permissions(self.request, comment) 
+            return comment
+        except Comment.DoesNotExist:
+            raise Http404("Commentaire non trouvé.")
+
+    def get_serializer_context(self):
+        """
+        Passe le contexte de la requête au sérialiseur pour `CommentDetailView` également.
+        """
+        return {'request': self.request}

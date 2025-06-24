@@ -344,13 +344,14 @@
     
     <!-- Vidéo avec indicateur de chargement -->
     <div class="relative">
-      <video 
-        ref="video" 
-        autoplay 
-        playsinline 
-        class="w-full h-auto min-h-[200px] rounded-md shadow max-h-60 object-cover bg-gray-900"
-        :class="{ 'opacity-50': !cameraReady }"
-      ></video>
+<video 
+  ref="video" 
+  autoplay 
+  playsinline 
+  muted
+  class="w-full h-auto min-h-[200px] rounded-md shadow max-h-60 object-cover"
+  :class="{ 'opacity-50': !cameraReady }"
+></video>
       
       <!-- Indicateur de chargement -->
       <div v-if="!cameraReady" class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-md">
@@ -660,7 +661,7 @@ const openCameraModal = async () => {
 const cameraReady = ref(false)
 const showDebugInfo = ref(false)
 
-const startCamera = async () => {
+const startCamera = async (): Promise<void> => {
   showCamera.value = true
   cameraReady.value = false
   await nextTick()
@@ -671,8 +672,8 @@ const startCamera = async () => {
       let constraints = { 
         video: { 
           facingMode: 'environment',
-          width: { ideal: 1280, min: 640 },
-          height: { ideal: 720, min: 480 }
+          width: { ideal: 640 },
+          height: { ideal: 480 }
         }, 
         audio: false 
       }
@@ -684,8 +685,8 @@ const startCamera = async () => {
         constraints = { 
           video: { 
             facingMode: 'user',
-            width: { ideal: 1280, min: 640 },
-            height: { ideal: 720, min: 480 }
+            width: { ideal: 1280},
+            height: { ideal: 720}
           }, 
           audio: false 
         }
@@ -695,82 +696,18 @@ const startCamera = async () => {
       if (video.value && stream) {
         video.value.srcObject = stream
         
-        // Attendre que la vidéo soit complètement chargée et prête
-        await new Promise((resolve, reject) => {
-          if (!video.value) {
-            reject(new Error('Élément vidéo non disponible'))
-            return
+        // Version simplifiée de l'initialisation vidéo
+        video.value.onloadedmetadata = (): void => {
+          console.log('Métadonnées chargées')
+          if (video.value) {
+            video.value.play().then(() => {
+              // Attendre un peu que la vidéo se stabilise
+              setTimeout(() => {
+                cameraReady.value = true
+              }, 1000)
+            }).catch(console.error)
           }
-
-          let resolved = false
-          
-          const onSuccess = () => {
-            if (!resolved) {
-              resolved = true
-              console.log('Vidéo prête avec succès')
-              console.log('Dimensions vidéo:', video.value?.videoWidth, 'x', video.value?.videoHeight)
-              cameraReady.value = true
-              resolve(true)
-            }
-          }
-
-          const onError = (error: any) => {
-            if (!resolved) {
-              resolved = true
-              console.error('Erreur vidéo:', error)
-              reject(error)
-            }
-          }
-
-          // Timeout de sécurité
-          const timeout = setTimeout(() => {
-            if (!resolved) {
-              resolved = true
-              console.log('Timeout atteint, on considère la caméra comme prête')
-              cameraReady.value = true
-              resolve(true)
-            }
-          }, 3000) // 3 secondes max
-
-          video.value.onloadedmetadata = () => {
-            console.log('Métadonnées vidéo chargées')
-            console.log('Dimensions vidéo:', video.value?.videoWidth, 'x', video.value?.videoHeight)
-          }
-          
-          video.value.oncanplay = () => {
-            console.log('Vidéo peut être lue')
-            if (video.value) {
-              video.value.play()
-                .then(() => {
-                  console.log('Vidéo démarrée avec succès')
-                  // Attendre un court délai pour s'assurer que la vidéo affiche bien l'image
-                  setTimeout(() => {
-                    clearTimeout(timeout)
-                    onSuccess()
-                  }, 500)
-                })
-                .catch(onError)
-            }
-          }
-          
-          // Événement quand la vidéo commence vraiment à jouer
-          video.value.onplaying = () => {
-            console.log('Vidéo en cours de lecture')
-            setTimeout(() => {
-              clearTimeout(timeout)
-              onSuccess()
-            }, 200)
-          }
-          
-          video.value.onerror = onError
-
-          // Forcer le démarrage si pas encore fait
-          setTimeout(() => {
-            if (video.value && !resolved) {
-              video.value.play().catch(console.error)
-            }
-          }, 100)
-        })
+        }
       }
     } catch (error) {
       console.error('Erreur caméra:', error)
@@ -798,84 +735,92 @@ const startCamera = async () => {
   }
 }
 
-const capturePhoto = () => {
-  if (!video.value || !canvas.value) {
-    console.error('Éléments vidéo ou canvas non disponibles')
+const capturePhoto = (): void => {
+  if (!video.value || !canvas.value || !cameraReady.value) {
+    alert('La caméra n\'est pas encore prête')
     return
   }
-
-  // Vérifier que la vidéo a des dimensions valides
-  if (video.value.videoWidth === 0 || video.value.videoHeight === 0) {
-    console.error('Vidéo non prête - dimensions nulles')
-    alert('La caméra n\'est pas encore prête. Attendez quelques secondes et réessayez.')
-    return
+  
+  // Forcer une actualisation de la vidéo avant capture
+  if (video.value) {
+    video.value.play()
   }
-
-  console.log('Capture en cours - Dimensions vidéo:', video.value.videoWidth, 'x', video.value.videoHeight)
-
-  const context = canvas.value.getContext('2d')
-  if (context) {
-    // Définir les dimensions du canvas selon celles de la vidéo
-    canvas.value.width = video.value.videoWidth
-    canvas.value.height = video.value.videoHeight
-    
-    // Vérifier que le contexte est valide
-    if (canvas.value.width > 0 && canvas.value.height > 0) {
-      // Dessiner l'image vidéo sur le canvas
-      context.drawImage(video.value, 0, 0, canvas.value.width, canvas.value.height)
-      
-      // Vérification simplifiée de l'image (optionnelle et moins stricte)
-      try {
-        const imageData = context.getImageData(0, 0, Math.min(100, canvas.value.width), Math.min(100, canvas.value.height))
-        const data = imageData.data
-        let totalBrightness = 0
-        let pixelCount = 0
-        
-        // Calculer la luminosité moyenne sur un échantillon
-        for (let i = 0; i < data.length; i += 4) {
-          const brightness = (data[i] + data[i + 1] + data[i + 2]) / 3
-          totalBrightness += brightness
-          pixelCount++
-        }
-        
-        const averageBrightness = totalBrightness / pixelCount
-        console.log('Luminosité moyenne de l\'image:', averageBrightness)
-        
-        // Seuil plus bas et avertissement au lieu d'échec
-        if (averageBrightness < 5) {
-          console.warn('Image semble très sombre, mais on continue')
-          // On peut afficher un avertissement mais on continue quand même
-          if (!confirm('L\'image semble très sombre. Voulez-vous quand même l\'utiliser ?')) {
-            return
-          }
-        }
-      } catch (imageCheckError) {
-        console.warn('Impossible de vérifier l\'image, on continue quand même:', imageCheckError)
-        // On continue même si la vérification échoue
-      }
-      
-      // Convertir en blob avec une qualité élevée
-      canvas.value.toBlob((blob) => {
-        if (blob) {
-          // Créer un objet File à partir du blob
-          const capturedFile = new File([blob], `photo_${Date.now()}.jpg`, { type: 'image/jpeg' })
-          file.value = capturedFile
-          createPhotoPreview(capturedFile)
-          console.log('Photo capturée avec succès:', capturedFile.size, 'bytes')
-          closeCameraModal()
-        } else {
-          console.error('Impossible de créer le blob')
-          alert('Erreur lors de la capture de l\'image')
-        }
-      }, 'image/jpeg', 0.9) // Qualité élevée
-    } else {
-      console.error('Dimensions du canvas invalides')
-      alert('Erreur: dimensions de l\'image invalides')
+  
+  // Attendre un petit délai puis capturer
+  setTimeout(() => {
+    // Vérifier que la vidéo a des dimensions valides
+    if (!video.value || video.value.videoWidth === 0 || video.value.videoHeight === 0) {
+      console.error('Vidéo non prête - dimensions nulles')
+      alert('La caméra n\'est pas encore prête. Attendez quelques secondes et réessayez.')
+      return
     }
-  } else {
-    console.error('Impossible d\'obtenir le contexte du canvas')
-    alert('Erreur technique lors de la capture')
-  }
+    
+    console.log('Capture en cours - Dimensions vidéo:', video.value.videoWidth, 'x', video.value.videoHeight)
+    const context = canvas.value?.getContext('2d')
+    
+    if (context && canvas.value) {
+      // Définir les dimensions du canvas selon celles de la vidéo
+      canvas.value.width = video.value.videoWidth
+      canvas.value.height = video.value.videoHeight
+     
+      // Vérifier que le contexte est valide
+      if (canvas.value.width > 0 && canvas.value.height > 0) {
+        // Dessiner l'image vidéo sur le canvas
+        context.drawImage(video.value, 0, 0, canvas.value.width, canvas.value.height)
+       
+        // Vérification simplifiée de l'image (optionnelle et moins stricte)
+        try {
+          const imageData = context.getImageData(0, 0, Math.min(100, canvas.value.width), Math.min(100, canvas.value.height))
+          const data = imageData.data
+          let totalBrightness = 0
+          let pixelCount = 0
+         
+          // Calculer la luminosité moyenne sur un échantillon
+          for (let i = 0; i < data.length; i += 4) {
+            const brightness = (data[i] + data[i + 1] + data[i + 2]) / 3
+            totalBrightness += brightness
+            pixelCount++
+          }
+         
+          const averageBrightness = totalBrightness / pixelCount
+          console.log('Luminosité moyenne de l\'image:', averageBrightness)
+         
+          // Seuil plus bas et avertissement au lieu d'échec
+          if (averageBrightness < 5) {
+            console.warn('Image semble très sombre, mais on continue')
+            // On peut afficher un avertissement mais on continue quand même
+            if (!confirm('L\'image semble très sombre. Voulez-vous quand même l\'utiliser ?')) {
+              return
+            }
+          }
+        } catch (imageCheckError) {
+          console.warn('Impossible de vérifier l\'image, on continue quand même:', imageCheckError)
+          // On continue même si la vérification échoue
+        }
+       
+        // Convertir en blob avec une qualité élevée
+        canvas.value.toBlob((blob: Blob | null) => {
+          if (blob) {
+            // Créer un objet File à partir du blob
+            const capturedFile = new File([blob], `photo_${Date.now()}.jpg`, { type: 'image/jpeg' })
+            file.value = capturedFile
+            createPhotoPreview(capturedFile)
+            console.log('Photo capturée avec succès:', capturedFile.size, 'bytes')
+            closeCameraModal()
+          } else {
+            console.error('Impossible de créer le blob')
+            alert('Erreur lors de la capture de l\'image')
+          }
+        }, 'image/jpeg', 0.9) // Qualité élevée
+      } else {
+        console.error('Dimensions du canvas invalides')
+        alert('Erreur: dimensions de l\'image invalides')
+      }
+    } else {
+      console.error('Impossible d\'obtenir le contexte du canvas')
+      alert('Erreur technique lors de la capture')
+    }
+  }, 200)
 }
 
 const closeCameraModal = () => {
@@ -900,17 +845,17 @@ const closeCameraModal = () => {
 }
 
 // Fonction utilitaire pour vérifier l'état de la caméra
-const checkCameraStatus = () => {
-  if (video.value) {
-    console.log('État vidéo:', {
-      readyState: video.value.readyState,
-      videoWidth: video.value.videoWidth,
-      videoHeight: video.value.videoHeight,
-      currentTime: video.value.currentTime,
-      paused: video.value.paused
-    })
-  }
-}
+// const checkCameraStatus = () => {
+//   if (video.value) {
+//     console.log('État vidéo:', {
+//       readyState: video.value.readyState,
+//       videoWidth: video.value.videoWidth,
+//       videoHeight: video.value.videoHeight,
+//       currentTime: video.value.currentTime,
+//       paused: video.value.paused
+//     })
+//   }
+// }
 
 // Formatage des dates
 const formatDate = (dateString: string): string => {

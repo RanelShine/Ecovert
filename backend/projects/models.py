@@ -1,3 +1,5 @@
+# projects/models.py
+
 from django.db import models
 from django.conf import settings
 from django.utils import timezone
@@ -21,7 +23,7 @@ class Project(models.Model):
         verbose_name="Description détaillée"
     )
     commune = models.ForeignKey(
-        'communes.Commune',
+        'communes.Commune', # Assurez-vous que l'application 'communes' est dans INSTALLED_APPS
         on_delete=models.CASCADE,
         related_name='projects',
         verbose_name="Commune"
@@ -83,6 +85,43 @@ class Project(models.Model):
 
     def __str__(self):
         return f"{self.title} ({self.commune.nom})"
+
+
+class Comment(models.Model):
+    """
+    Modèle pour représenter un commentaire sur un projet.
+    """
+    project = models.ForeignKey(
+        Project, # Référence directe au modèle Project défini ci-dessus
+        on_delete=models.CASCADE,
+        related_name='comments',
+        verbose_name="Projet"
+    )
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL, # Référence au modèle d'utilisateur configuré dans settings.py
+        on_delete=models.CASCADE,
+        related_name='comments',
+        verbose_name="Auteur"
+    )
+    text = models.TextField(
+        verbose_name="Commentaire"
+    )
+    created_at = models.DateTimeField(
+        default=timezone.now,
+        verbose_name="Créé le"
+    )
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        verbose_name="Mis à jour le"
+    )
+
+    class Meta:
+        verbose_name = "Commentaire"
+        verbose_name_plural = "Commentaires"
+        ordering = ['-created_at'] # Trier les commentaires du plus récent au plus ancien
+
+    def __str__(self):
+        return f"Commentaire de {self.author.username} sur {self.project.title}"
 
 
 class Accountability(models.Model):
@@ -155,3 +194,4 @@ class Accountability(models.Model):
             self.responded_at = timezone.now()
             self.status = 'ANSWERED'
         super().save(*args, **kwargs)
+
