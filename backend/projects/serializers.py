@@ -61,6 +61,9 @@ class AuthorSerializer(serializers.ModelSerializer):
             initial = 'U' # Fallback générique si aucune information n'est disponible
             
         return f"https://placehold.co/32x32/cccccc/ffffff?text={initial}"
+    
+    def get_comment_count(self, obj):
+        return obj.comments.count()
 
 
 class CommentSerializer(serializers.ModelSerializer):

@@ -1,7 +1,5 @@
-<!-- CTDProjetSection -->
 <template>
   <div class="space-y-6">
-    <!-- Header avec bouton d'ajout -->
     <div class="flex justify-between items-center">
       <h1 class="text-3xl font-bold text-green-700 dark:text-green-600">Gestion des Projets</h1>
       <button
@@ -12,7 +10,6 @@
       </button>
     </div>
 
-    <!-- Statistiques -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
       <div class="bg-white p-6 rounded-lg shadow-md dark:bg-gray-600">
         <h3 class="text-sm font-medium text-gray-500 dark:text-green-400">Total Projets</h3>
@@ -32,16 +29,13 @@
       </div>
     </div>
 
-    <!-- Filtres et Tri -->
     <div class="bg-white p-4 rounded-lg shadow mb-6 dark:bg-gray-600">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <!-- Recherche -->
             <div class="relative">
                 <input type="text" v-model="searchQuery" placeholder="Rechercher un projet..."
                     class="w-full pl-10 pr-4 py-2 border rounded-lg">
             </div>
 
-            <!-- Filtre par statut -->
             <select v-model="statusFilter" class="w-full py-2 px-4 border rounded-lg">
                 <option value="">Tous les statuts</option>
                 <option v-for="status in projectStatuses" :key="status" :value="status">
@@ -49,7 +43,6 @@
                 </option>
             </select>
 
-            <!-- Tri -->
             <select v-model="sortBy" class="w-full py-2 px-4 border rounded-lg">
                 <option value="created_at">Plus récents</option>
                 <option value="-created_at">Plus anciens</option>
@@ -58,7 +51,6 @@
         </div>
     </div>
 
-    <!-- Liste des projets -->
     <div class="bg-white rounded-lg shadow-md dark:bg-gray-600">
       <div class="p-6 border-b">
         <h2 class="text-3xl font-semibold text-center text-green-700 dark:text-green-600">Liste des Projets</h2>
@@ -86,8 +78,7 @@
           <div
             v-for="projet in filteredAndSortedProjects"
             :key="projet.id"
-            class="border rounded-lg p-4 hover:shadow-lg dark:bg-gray-800 transition-shadow cursor-pointer"
-            @click="selectProjet(projet)"
+            class="border rounded-lg p-4 hover:shadow-lg dark:bg-gray-800 transition-shadow"
           >
             <div class="space-y-2">
               <h3 class="font-semibold text-lg">{{ projet.title }}</h3>
@@ -120,7 +111,6 @@
                 </p>
               </div>
 
-              <!-- Bouton de téléchargement -->
               <div v-if="projet.file" class="mt-3">
                 <button
                   @click.stop="downloadFile(projet.id, projet.title)"
@@ -132,13 +122,35 @@
                   Télécharger
                 </button>
               </div>
+              
+              <div class="flex justify-end items-center mt-3">
+                <div class="">
+                  <button @click.stop="openCommentsModal(projet)"
+                  class="text-blue-600 hover:text-blue-800 dark:text-green-400 dark:hover:text-green-600 text-sm font-medium flex items-center">
+                  Commentaires
+                </button>
+                </div>
+                 <button @click.stop="deleteProjet(projet)"
+                    class="p-2 rounded-full text-red-600 hover:bg-red-100 dark:text-red-400 dark:hover:bg-red-900 transition-colors"
+                    title="Supprimer le projet">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                    </svg>
+                </button>
+                <button @click.stop="openEditModal(projet)"
+                    class="p-2 rounded-full text-blue-600 hover:bg-blue-100 dark:text-blue-400 dark:hover:bg-blue-900 transition-colors"
+                    title="Modifier le projet">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+                    </svg>
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Pagination -->
     <div v-if="totalPages > 1" class="mt-6 flex justify-center">
         <nav class="flex items-center gap-2">
             <button @click="page--" :disabled="page === 1" class="px-3 py-1 rounded border"
@@ -157,7 +169,6 @@
         </nav>
     </div>
 
-    <!-- Modal d'ajout / modification -->
     <div
       v-if="showAddModal"
       class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
@@ -165,7 +176,7 @@
       <div class="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <div class="flex justify-between items-center mb-6">
           <h2 class="text-2xl font-bold dark:text-green-600">
-            {{ selectedProjet ? 'Modifier le Projet' : 'Nouveau Projet' }}
+            {{ selectedProjet ? `Modifier le Projet: ${selectedProjet.title}` : 'Nouveau Projet' }}
           </h2>
           <button @click="closeModal" class="text-gray-500 hover:text-gray-700">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -219,7 +230,6 @@
             <input v-model.number="form.avancement" type="number" min="0" max="100" required class="input" />
           </div>
 
-          <!-- Champ fichier modifié pour accepter tous les types -->
           <div>
             <label class="block text-sm font-medium dark:text-white text-gray-700 mb-1">Fichier joint</label>
             <input @change="handleFileUpload" type="file" class="input" />
@@ -228,14 +238,96 @@
 
           <div class="flex justify-end space-x-3 pt-4">
             <button type="button" @click="closeModal" class="btn-cancel">Annuler</button>
-            <button v-if="selectedProjet" type="button"  @click="deleteProjet" class="btn-delete bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium" :disabled="submitting">
-              {{ submitting ? 'Suppression...' : 'Supprimer' }}
-            </button>
             <button type="submit" :disabled="submitting" class="btn-primary">
               {{ submitting ? 'Enregistrement...' : 'Enregistrer' }}
             </button>
           </div>
         </form>
+      </div>
+    </div>
+  </div>
+
+    <div v-if="showCommentsModal && selectedProjetForComments"
+       class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col dark:bg-gray-700">
+      <div class="p-6 border-b flex justify-between items-center border-gray-200 dark:border-gray-600">
+        <h3 class="text-2xl font-semibold text-gray-800 dark:text-white">
+          Commentaires pour "{{ selectedProjetForComments.title }}"
+        </h3>
+        <button @click="closeCommentsModal" class="text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-gray-100">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="p-6 overflow-y-auto flex-grow">
+        <div class="mb-6">
+          <h4 class="text-xl font-medium text-gray-800 mb-3 dark:text-white">Ajouter un commentaire</h4>
+          <div class="flex items-start space-x-4">
+            <div class="flex-shrink-0">
+              <img class="h-10 w-10 rounded-full object-cover" 
+                   :src="currentUserAvatar" 
+                   :alt="currentUserInitial">
+            </div>
+            <div class="flex-grow">
+              <textarea v-model="newCommentText"
+                        placeholder="Écrivez votre commentaire ici..."
+                        class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-white dark:border-gray-600"
+                        rows="3"></textarea>
+              <p v-if="loadingComments" class="text-sm text-gray-500 mt-1 dark:text-gray-400">
+                Chargement des commentaires existants...
+              </p>
+              <div class="mt-2 text-right">
+                <button @click="submitComment"
+                        :disabled="!newCommentText.trim() || commenting"
+                        class="bg-green-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 dark:text-white-400 dark:hover:text-white-600 dark:bg-green-500 dark:hover:bg-green-600">
+                  <span v-if="commenting" class="mr-2">
+                    <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                  </span>
+                  {{ commenting ? 'Envoi...' : 'Commenter' }}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h4 class="text-xl font-medium text-gray-800 mb-3 dark:text-white">Tous les commentaires</h4>
+          <div v-if="loadingComments" class="text-center py-4">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+            <p class="mt-2 text-gray-600 dark:text-gray-300">Chargement des commentaires...</p>
+          </div>
+          <div v-else-if="!loadingComments && commentsForSelectedProjet && commentsForSelectedProjet.length === 0" class="text-center py-4 text-gray-500 dark:text-gray-400">
+            Aucun commentaire pour ce projet. Soyez le premier !
+          </div>
+          <div v-else class="space-y-4">
+            <div v-for="comment in commentsForSelectedProjet" :key="comment.id"
+                 class="bg-gray-50 p-4 rounded-lg dark:bg-gray-800 dark:text-white dark:border-gray-700">
+              <div class="flex items-start space-x-3">
+                <div class="flex-shrink-0">
+                  <img class="h-8 w-8 rounded-full object-cover" 
+                        :src="comment.author?.avatar || 'https://placehold.co/32x32/cccccc/ffffff?text=U'" 
+                        :alt="comment.author?.prenom ? comment.author.prenom[0].toUpperCase() : 'U'">
+                </div>
+                <div class="flex-grow">
+                  <div class="flex justify-between items-center mb-1">
+                    <span class="font-semibold text-gray-900 dark:text-white">
+                      {{ comment.author?.prenom || comment.author?.nom ? (comment.author.prenom || '') + ' ' + (comment.author.nom || '') : comment.author?.email || 'Utilisateur inconnu' }}
+                    </span>
+                    <span class="text-xs text-gray-500 dark:text-gray-400">{{ formatTimeAgo(comment.created_at) }}</span>
+                  </div>
+                  <p class="text-gray-700 dark:text-gray-300">{{ comment.text }}</p>
+                  <div class="mt-2 flex space-x-3 text-sm text-gray-500 dark:text-gray-400">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -266,6 +358,22 @@ interface ProjetForm extends Partial<Projet> {
     uploadedFile?: File | null;
 }
 
+interface Comment {
+  id: number;
+  project: number;
+  author: {
+    id: number;
+    email: string;
+    nom?: string;
+    prenom?: string;
+    avatar: string;
+  };
+  text: string;
+  created_at: string;
+  updated_at: string;
+}
+
+
 // Données réactives
 const projets = ref<Projet[]>([]);
 const selectedProjet = ref<Projet | null>(null);
@@ -279,6 +387,7 @@ const sortBy = ref('created_at');
 const page = ref(1);
 const totalPages = ref(1);
 const PAGE_SIZE = 12;
+const API_BASE_URL = 'http://localhost:8000'
 
 const stats = reactive({
   total: 0,
@@ -301,6 +410,138 @@ const form = reactive<ProjetForm>({
 });
 
 const projectStatuses: Projet['status'][] = ['PLANNED', 'IN_PROGRESS', 'COMPLETED', 'SUSPENDED'];
+
+const showCommentsModal = ref(false);
+const selectedProjetForComments = ref<Projet | null>(null);
+const commentsForSelectedProjet = ref<Comment[]>([]);
+const newCommentText = ref('');
+const loadingComments = ref(false);
+const commenting = ref(false);
+
+// Nouveau : État de l'utilisateur actuel (pour l'avatar et le nom dans la section d'ajout de commentaire)
+const currentUser = ref<{
+  id: number;
+  email: string;
+  nom?: string;
+  prenom?: string;
+  avatar?: string;
+} | null>(null);
+
+// Propriétés calculées pour l'avatar de l'utilisateur actuel
+const currentUserAvatar = computed(() => {
+  if (currentUser.value?.avatar) { // Si un champ avatar direct existe sur currentUser
+    return currentUser.value.avatar;
+  }
+  // Logique pour générer un avatar factice similaire à votre backend
+  const initial = currentUser.value?.prenom ? currentUser.value.prenom[0].toUpperCase() : 
+                               currentUser.value?.nom ? currentUser.value.nom[0].toUpperCase() : 
+                               currentUser.value?.email ? currentUser.value.email[0].toUpperCase() : 'U';
+  return `https://placehold.co/40x40/cccccc/ffffff?text=${initial}`;
+});
+
+const currentUserInitial = computed(() => {
+  return currentUser.value?.prenom ? currentUser.value.prenom[0].toUpperCase() : 
+           currentUser.value?.nom ? currentUser.value.nom[0].toUpperCase() : 
+           currentUser.value?.email ? currentUser.value.email[0].toUpperCase() : 'U';
+});
+
+const openCommentsModal = async (projet: Projet) => {
+  selectedProjetForComments.value = projet;
+  showCommentsModal.value = true;
+  loadingComments.value = true; 
+  commentsForSelectedProjet.value = []; // Vider les anciens commentaires pour un nouveau chargement
+
+  try {
+    const token = localStorage.getItem('authToken');
+    if (!token) { 
+      toast.error("Vous devez être connecté pour voir les commentaires.");
+      loadingComments.value = false; // Assurez-vous que l'état de chargement est désactivé même ici
+      return; 
+    }
+
+    const response = await fetch(`${API_BASE_URL}/api/projects/${projet.id}/comments/`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('Erreur lors du chargement des commentaires:', response.status, response.statusText, errorData);
+      toast.error('Erreur lors du chargement des commentaires.');
+      return; 
+    }
+
+    // Assurez-vous que la réponse est bien un tableau avant de l'assigner
+    const data = await response.json();
+    console.log('Commentaires reçus du backend :', data);
+    commentsForSelectedProjet.value = Array.isArray(data.results) ? data.results : [];
+
+
+
+  } catch (error) {
+    console.error('Erreur (catch) lors du chargement des commentaires:', error);
+    toast.error('Une erreur inattendue est survenue lors du chargement.');
+  } finally {
+    loadingComments.value = false; // TRÈS IMPORTANT : S'assure que l'état de chargement est désactivé
+  }
+};
+
+const closeCommentsModal = () => {
+  showCommentsModal.value = false;
+  selectedProjetForComments.value = null;
+  commentsForSelectedProjet.value = [];
+  newCommentText.value = '';
+};
+
+const submitComment = async () => {
+  if (!newCommentText.value.trim() || !selectedProjetForComments.value) {
+    return; 
+  }
+
+  commenting.value = true; 
+
+  try {
+    const token = localStorage.getItem('authToken');
+    if (!token) { 
+        toast.error("Vous devez être connecté pour laisser un commentaire.");
+        commenting.value = false; // Assurez-vous que l'état d'envoi est désactivé
+        return;
+    }
+
+    const response = await fetch(`${API_BASE_URL}/api/projects/${selectedProjetForComments.value.id}/comments/`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        project: selectedProjetForComments.value.id, 
+        text: newCommentText.value
+      })
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('Erreur lors de l\'envoi du commentaire:', response.status, response.statusText, errorData);
+      toast.error(`Erreur lors de l'envoi du commentaire: ${JSON.stringify(errorData.detail || errorData)}`);
+      return; 
+    }
+
+    const newComment = await response.json();
+    commentsForSelectedProjet.value.unshift(newComment); 
+    newCommentText.value = ''; 
+    toast.success('Votre commentaire a été ajouté avec succès !');
+
+  } catch (error) {
+    // Correction de l'erreur de syntaxe: utilisation de guillemets doubles ou échappement
+    console.error("Erreur générale lors de l'envoi du commentaire:", error);
+    toast.error("Une erreur inattendue est survenue lors de l'envoi.");
+  } finally {
+    commenting.value = false; // TRÈS IMPORTANT : S'assure que l'état d'envoi est désactivé
+  }
+};
 
 // Nouvelles fonctions utilitaires pour les fichiers
 const isImage = (fileUrl: string): boolean => {
@@ -355,6 +596,24 @@ const downloadFile = async (projectId: number, projectTitle: string) => {
     toast.error('Erreur lors du téléchargement du fichier');
   }
 };
+
+const formatTimeAgo = (timestamp: string): string => {
+  const now = new Date();
+  const date = new Date(timestamp);
+  const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+  if (seconds < 60) return `${seconds} seconde${seconds === 1 ? '' : 's'} ago`;
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes} minute${minutes === 1 ? '' : 's'} ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} heure${hours === 1 ? '' : 's'} ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days} jour${days === 1 ? '' : 's'} ago`;
+  
+  // Si plus d'une semaine, afficher la date complète
+  return date.toLocaleDateString('fr-FR');
+};
+
 
 // Fonction pour charger les projets
 const fetchProjects = async () => {
@@ -425,6 +684,35 @@ watch([searchQuery, statusFilter, sortBy, page], () => {
   fetchProjects();
 });
 
+// Propriété calculée pour le filtrage et le tri
+const filteredAndSortedProjects = computed(() => {
+  let filtered = projets.value;
+
+  if (searchQuery.value) {
+    const query = searchQuery.value.toLowerCase();
+    filtered = filtered.filter(projet => 
+      projet.title.toLowerCase().includes(query) ||
+      projet.description.toLowerCase().includes(query)
+    );
+  }
+
+  if (statusFilter.value) {
+    filtered = filtered.filter(projet => projet.status === statusFilter.value);
+  }
+
+  return filtered.sort((a, b) => {
+    if (sortBy.value === 'title') {
+      return a.title.localeCompare(b.title);
+    } else if (sortBy.value === 'created_at') {
+      return new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime();
+    } else if (sortBy.value === '-created_at') {
+      return new Date(a.created_at || '').getTime() - new Date(b.created_at || '').getTime();
+    }
+    return 0;
+  });
+});
+
+
 // Fonctions utilitaires
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'XOF' }).format(value);
@@ -482,6 +770,19 @@ const openAddModal = () => {
   showAddModal.value = true;
 };
 
+const openEditModal = (projet: Projet) => {
+  selectedProjet.value = projet;
+  const formattedProjet = {
+      ...projet,
+      start_date: projet.start_date ? projet.start_date.split('T')[0] : '',
+      end_date: projet.end_date ? projet.end_date.split('T')[0] : '',
+      file: projet.file,
+  };
+  Object.assign(form, formattedProjet);
+  form.uploadedFile = null;
+  showAddModal.value = true;
+};
+
 const closeModal = () => {
   showAddModal.value = false;
   selectedProjet.value = null;
@@ -497,32 +798,19 @@ const handleFileUpload = (event: Event) => {
     if (isImage(file.name)) {
       const reader = new FileReader();
       reader.onload = (e) => {
-        form.file = e.target?.result as string; // Changé de 'file_url' à 'file'
+        form.file = e.target?.result as string; 
       };
       reader.readAsDataURL(file);
     } else {
       // Pour les autres fichiers, on stocke juste le nom
-      form.file = file.name; // Changé de 'file_url' à 'file'
+      form.file = file.name; 
     }
   } else {
     form.uploadedFile = null;
     if (form.id === undefined) {
-        form.file = null; // Changé de 'file_url' à 'file'
+        form.file = null; 
     }
   }
-};
-
-const selectProjet = (projet: Projet) => {
-  selectedProjet.value = projet;
-  const formattedProjet = {
-      ...projet,
-      start_date: projet.start_date ? projet.start_date.split('T')[0] : '',
-      end_date: projet.end_date ? projet.end_date.split('T')[0] : '',
-      file: projet.file, // Changé de 'file_url' à 'file'
-  };
-  Object.assign(form, formattedProjet);
-  form.uploadedFile = null;
-  showAddModal.value = true;
 };
 
 const submitProjet = async () => {
@@ -530,199 +818,118 @@ const submitProjet = async () => {
   try {
     const formData = new FormData();
     Object.keys(form).forEach(key => {
-        if (key === 'file' || key === 'uploadedFile') return; 
+        if (key === 'file' && !form.uploadedFile) return; // Ne pas envoyer le champ 'file' si un nouveau fichier n'a pas été sélectionné
+        if (key === 'uploadedFile') return; // Ne pas ajouter 'uploadedFile' directement à formData
 
         const value = form[key as keyof ProjetForm]; 
-        if (key === 'id' && value === undefined) return;
-
-        if (value !== null && value !== undefined) {
-             if (key === 'start_date' || key === 'end_date') {
-                 if (value instanceof Date) {
-                     formData.append(key, value.toISOString().split('T')[0]);
-                 } else if (typeof value === 'string' && value) {
-                      formData.append(key, value);
-                 }
-             }
-             else {
-                formData.append(key, value.toString());
-             }
+        if (value !== undefined && value !== null) { // Seulement ajouter les valeurs définies et non nulles
+            if (key === 'start_date' || key === 'end_date') {
+                // S'assurer que les dates sont envoyées au format attendu par le backend (ex: YYYY-MM-DD)
+                formData.append(key, value as string);
+            } else {
+                formData.append(key, String(value));
+            }
         }
     });
 
-    if (form.uploadedFile instanceof File) {
+    if (form.uploadedFile) {
         formData.append('file', form.uploadedFile);
     }
 
-    let response: any;
     const token = localStorage.getItem('authToken');
-
-    if (form.id !== undefined) {
-      response = await axios.patch(`http://127.0.0.1:8000/api/projects/${form.id}/update/`, formData, {
-           headers: {
-                'Authorization': `Bearer ${token}`,
-           },
-      });
-      const index = projets.value.findIndex(p => p.id === response.data.id);
-      if (index !== -1) {
-        projets.value[index] = { ...projets.value[index], ...response.data };
-      }
-      toast.success('Le projet a été modifié avec succès');
-
-    } else {
-      response = await axios.post('http://127.0.0.1:8000/api/projects/create/', formData, {
-           headers: {
-                'Authorization': `Bearer ${token}`,
-           },
-      });
-
-      projets.value.push(response.data);
-      toast.success('Le projet a été créé avec succès');
+    if (!token) {
+        toast.error("Vous devez être connecté.");
+        submitting.value = false;
+        return;
     }
 
-    closeModal();
-    fetchProjects();
-
-  } catch (error) {
-    console.error("Erreur lors de la soumission du projet:", error);
-    if (axios.isAxiosError(error) && error.response) {
-        console.error("Détails de l'erreur API:", error.response.data);
-        let errorMessage = 'Erreur lors de l\'enregistrement: ';
-        if (error.response.data) {
-            try {
-                errorMessage += JSON.stringify(error.response.data);
-            } catch (e) {
-                errorMessage += 'Détails non disponibles.';
-            }
-        }
-        toast.error(errorMessage);
+    let response;
+    if (form.id) {
+        // Modification
+        response = await axios.patch(`${API_BASE_URL}/api/projects/${form.id}/`, formData, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'multipart/form-data', 
+            },
+        });
+        toast.success('Projet modifié avec succès !');
     } else {
-        toast.error("Une erreur est survenue lors de l'enregistrement du projet");
+        // Ajout
+        response = await axios.post(`${API_BASE_URL}/api/projects/`, formData, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+        toast.success('Projet ajouté avec succès !');
+    }
+    
+    closeModal();
+    fetchProjects(); 
+  } catch (error) {
+    console.error('Erreur lors de l\'enregistrement du projet:', error);
+    if (axios.isAxiosError(error) && error.response) {
+      if (error.response.status === 400) {
+        toast.error('Erreur de validation: ' + JSON.stringify(error.response.data));
+      } else if (error.response.status === 401) {
+        toast.error('Non autorisé. Veuillez vous connecter.');
+      } else {
+        toast.error('Erreur lors de l\'enregistrement : ' + (error.response.data.detail || error.message));
+      }
+    } else {
+      toast.error('Une erreur inattendue est survenue.');
     }
   } finally {
     submitting.value = false;
+  }
+};
+
+const deleteProjet = async (projetToDelete: Projet) => {
+  if (!confirm(`Êtes-vous sûr de vouloir supprimer le projet "${projetToDelete.title}" ? Cette action est irréversible.`)) {
+    return;
+  }
+
+  try {
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+      toast.error("Vous devez être connecté pour supprimer un projet.");
+      return;
+    }
+
+    await axios.delete(`${API_BASE_URL}/api/projects/${projetToDelete.id}/delete/`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+    toast.success('Projet supprimé avec succès !');
+    closeModal(); // Ferme la modale si elle était ouverte pour le projet supprimé
+    fetchProjects(); // Rafraîchit la liste des projets
+  } catch (error) {
+    console.error('Erreur lors de la suppression du projet:', error);
+    if (axios.isAxiosError(error) && error.response) {
+      toast.error('Erreur lors de la suppression : ' + (error.response.data.detail || error.message));
+    } else {
+      toast.error('Une erreur inattendue est survenue lors de la suppression.');
+    }
   }
 };
 
 const updateStats = () => {
-  stats.total = projets.value.length; 
+  stats.total = projets.value.length;
   stats.enCours = projets.value.filter(p => p.status === 'IN_PROGRESS').length;
   stats.termines = projets.value.filter(p => p.status === 'COMPLETED').length;
-  stats.budgetTotal = projets.value.reduce((sum, p) => sum + (p.budget || 0), 0);
+  stats.budgetTotal = projets.value.reduce((sum, p) => sum + p.budget, 0);
 };
-
-const deleteProjet = async () => {
-  if (!form.id) return;
-
-  if (!confirm("Êtes-vous sûr de vouloir supprimer ce projet ?")) {
-    return;
-  }
-
-  submitting.value = true;
-
-  try {
-
-    const token = localStorage.getItem('authToken');
-   await axios.delete(`/api/projects/${selectedProjet.value?.id}/delete/`, {
-  headers: {
-    Authorization: `Bearer ${token}`,
-  },
-});
-
-
-    // Retirer le projet supprimé de la liste
-    projets.value = projets.value.filter(p => p.id !== form.id);
-
-    toast.success("Projet supprimé avec succès.");
-    closeModal();
-  } catch (error) {
-    console.error(error);
-    toast.error("Erreur lors de la suppression du projet.");
-  } finally {
-    submitting.value = false;
-  }
-};
-
-const filteredAndSortedProjects = computed(() => {
-  let result = [...projets.value]
-
-    switch (sortBy.value) {
-    case 'created_at':
-      result.sort((a, b) => {
-        const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
-        const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
-        return dateB - dateA;
-      });
-      break
-    case '-created_at':
-      result.sort((a, b) => {
-        const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
-        const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
-        return dateA - dateB;
-      });
-      break
-    case 'title':
-      result.sort((a, b) => a.title.localeCompare(b.title))
-      break
-  }
-
-  return result
-})
-
 </script>
 
 <style scoped>
 .input {
-  width: 100%;
-  padding-left: 0.75rem;
-  padding-right: 0.75rem;
-  padding-top: 0.5rem;
-  padding-bottom: 0.5rem;
-  border: 1px solid #d1d5db;
-  border-radius: 0.375rem;
-  outline: none;
-  transition: box-shadow 0.2s;
+  @apply w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white;
 }
-.input:focus {
-  box-shadow: 0 0 0 2px #3b82f6;
-  border-color: #3b82f6;
-}
-
-.btn-cancel {
-  padding-left: 1rem;
-  padding-right: 1rem;
-  padding-top: 0.5rem;
-  padding-bottom: 0.5rem;
-  color: #374151;
-  background-color: #e5e7eb;
-  border-radius: 0.375rem;
-  transition: background-color 0.2s;
-}
-.btn-cancel:hover {
-  background-color: #d1d5db;
-}
-
 .btn-primary {
-  padding-left: 1rem;
-  padding-right: 1rem;
-  padding-top: 0.5rem;
-  padding-bottom: 0.5rem;
-  background-color: #2563eb;
-  color: #fff;
-  border-radius: 0.375rem;
-  transition: background-color 0.2s, opacity 0.2s;
+  @apply bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50;
 }
-.btn-primary:hover {
-  background-color: #1d4ed8;
-}
-.btn-primary:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.line-clamp-2 {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+.btn-cancel {
+  @apply bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg font-medium transition-colors;
 }
 </style>

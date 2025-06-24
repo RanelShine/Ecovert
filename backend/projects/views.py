@@ -54,14 +54,28 @@ class IsCommentAuthorOrReadOnly(permissions.BasePermission):
 
 # Project views
 @api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated]) # Ajout de cette ligne
 def list_projects(request):
-    """Liste tous les projets avec filtres optionnels"""
-    queryset = Project.objects.select_related('commune', 'created_by')
+    """Liste tous les projets avec filtres optionnels, restreints à la commune de l'utilisateur"""
     
-    # Filtrer par commune si spécifié
-    commune_id = request.query_params.get('commune')
-    if commune_id:
-        queryset = queryset.filter(commune_id=commune_id)
+    # 1. Vérifier si l'utilisateur est authentifié
+    if not request.user.is_authenticated:
+        return Response(
+            {'error': 'Authentification requise pour lister les projets.'},
+            status=status.HTTP_401_UNAUTHORIZED
+        )
+
+    # 2. Récupérer la commune de l'utilisateur
+    user_commune = request.user.commune
+    if not user_commune:
+        # Si l'utilisateur n'a pas de commune associée, il ne doit voir aucun projet
+        return Response(
+            {'error': 'Votre compte n\'est pas associé à une commune. Veuillez contacter l\'administrateur.'},
+            status=status.HTTP_403_FORBIDDEN # Ou 200 avec une liste vide, selon la politique
+        )
+
+    # 3. Filtrer les projets par la commune de l'utilisateur
+    queryset = Project.objects.select_related('commune', 'created_by').filter(commune=user_commune)
     
     # Filtrer par statut si spécifié
     status_param = request.query_params.get('status')
@@ -77,8 +91,7 @@ def list_projects(request):
         )
     
     queryset = queryset.order_by('-created_at')
-    # Pour la pagination, vous devriez utiliser DRF's pagination classes
-    # Ici, nous retournons juste la liste brute
+    
     serializer = ProjectListSerializer(queryset, many=True)
     return Response(serializer.data)
 
@@ -99,11 +112,20 @@ def create_project(request):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated]) # Ajout de cette ligne
 def project_detail(request, id):
-    """Récupère les détails d'un projet spécifique"""
+    """Récupère les détails d'un projet spécifique, en vérifiant la commune de l'utilisateur"""
     try:
         # Utilise select_related pour les FK et prefetch_related pour les related_name (comme 'comments')
         project = Project.objects.select_related('commune', 'created_by').prefetch_related('comments').get(pk=id)
+        
+        # Vérification de la commune de l'utilisateur
+        if not request.user.is_authenticated or request.user.commune != project.commune:
+            return Response(
+                {'error': 'Vous n\'êtes pas autorisé à voir les détails de ce projet car il n\'appartient pas à votre commune.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+            
         serializer = ProjectDetailSerializer(project)
         return Response(serializer.data)
     except Project.DoesNotExist:
@@ -120,6 +142,13 @@ def download_project_file(request, id):
     try:
         project = Project.objects.get(pk=id)
         
+        # AJOUT : Vérification de la commune pour le téléchargement
+        if not request.user.is_authenticated or request.user.commune != project.commune:
+            return Response(
+                {'error': 'Vous n\'êtes pas autorisé à télécharger ce fichier car le projet n\'appartient pas à votre commune.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+            
         if not project.file:
             return Response(
                 {'error': 'Aucun fichier associé à ce projet'},
@@ -174,6 +203,8 @@ def update_project(request, id):
         project = Project.objects.get(pk=id)
         
         # Vérifier que l'utilisateur est un CTD de la bonne commune
+        # La permission IsCTDOrReadOnly.has_object_permission gère déjà cela,
+        # mais une double vérification explicite ne fait pas de mal pour la clarté.
         if request.user.role != 'ctd' or request.user.commune != project.commune:
             return Response(
                 {'error': 'Vous n\'êtes pas autorisé à modifier ce projet'},
@@ -214,11 +245,18 @@ def delete_project(request, id):
         project = Project.objects.get(pk=id)
         
         # Vérifier que l'utilisateur est un CTD de la bonne commune
+        # La permission IsCTDOrReadOnly.has_object_permission gère déjà cela.
         if request.user.role != 'ctd' or request.user.commune != project.commune:
             return Response(
                 {'error': 'Vous n\'êtes pas autorisé à supprimer ce projet'},
                 status=status.HTTP_403_FORBIDDEN
             )
+        
+        # Supprimer le fichier associé si présent
+        if project.file:
+            file_path = os.path.join(settings.MEDIA_ROOT, str(project.file))
+            if os.path.exists(file_path):
+                os.remove(file_path)
         
         project.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -241,7 +279,7 @@ def list_accountability(request):
             project__commune=user.commune
         ).select_related('project', 'citizen', 'responded_by')
     # Les citoyens ne voient que leurs propres demandes
-    else:
+    else: # Ceci inclut également les utilisateurs sans rôle 'ctd' ou 'citizen' défini si vous avez d'autres rôles
         queryset = Accountability.objects.filter(
             citizen=user
         ).select_related('project', 'citizen', 'responded_by')
@@ -250,7 +288,7 @@ def list_accountability(request):
     return Response(serializer.data)
 
 @api_view(['POST'])
-@permission_classes([permissions.IsAuthenticated])
+@permission_classes([permissions.IsAuthenticated]) # Assurez-vous que seul un utilisateur authentifié peut créer une demande
 def create_accountability(request):
     """Crée une nouvelle demande de comptes"""
     serializer = AccountabilityCreateSerializer(
@@ -291,7 +329,7 @@ def accountability_detail(request, id):
         )
 
 @api_view(['POST'])
-@permission_classes([IsCTDOrReadOnly])
+@permission_classes([IsCTDOrReadOnly]) # Seuls les CTD peuvent répondre
 def respond_accountability(request, id):
     """Répond à une demande de comptes"""
     try:
@@ -334,10 +372,18 @@ class CommentListCreateView(generics.ListCreateAPIView):
         """
         project_id = self.kwargs['project_id']
         
-        # Vérifier si le projet existe. Si ce n'est pas le cas, Django REST Framework
-        # lèvera automatiquement un Http404, qui sera converti en 404 NOT FOUND.
+        # Vérifier si le projet existe et si l'utilisateur y a accès
         project = get_object_or_404(Project, pk=project_id)
         
+        # AJOUT : Vérification de la commune de l'utilisateur pour les commentaires
+        # Permettre aux utilisateurs authentifiés de voir les commentaires uniquement pour les projets de leur commune
+        if self.request.user.is_authenticated and self.request.user.commune != project.commune:
+            # Si l'utilisateur est authentifié mais n'a pas accès à ce projet,
+            # retourner un queryset vide pour ne pas afficher de commentaires.
+            # Alternativement, vous pourriez lever une Http404 ou 403 ici.
+            # Cependant, puisque c'est une liste, retourner un queryset vide est plus "doux".
+            return Comment.objects.none() 
+
         # Récupérer les commentaires associés à ce projet existant et trier par date de création.
         # Utiliser select_related('author') pour optimiser la récupération des données de l'auteur.
         return Comment.objects.filter(project=project).select_related('author').order_by('-created_at')
@@ -363,6 +409,13 @@ class CommentListCreateView(generics.ListCreateAPIView):
                 status=status.HTTP_401_UNAUTHORIZED
             )
 
+        # AJOUT : Empêcher les commentaires sur des projets hors de la commune de l'utilisateur
+        if self.request.user.commune != project.commune:
+            return Response(
+                {"detail": "Vous ne pouvez commenter que des projets de votre commune."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
         serializer.save(author=self.request.user, project=project)
 
     def get_serializer_context(self):
@@ -379,7 +432,7 @@ class CommentDetailView(generics.RetrieveUpdateDestroyAPIView):
     """
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
-    permission_classes = [IsCommentAuthorOrReadOnly] 
+    permission_classes = [IsCommentAuthorOrReadOnly] # Cette permission gère déjà l'accès par auteur
 
     def get_object(self):
         """
@@ -390,6 +443,11 @@ class CommentDetailView(generics.RetrieveUpdateDestroyAPIView):
         try:
             # Récupérer le commentaire et pré-charger les données de l'auteur et du projet.
             comment = Comment.objects.select_related('author', 'project').get(project_id=project_id, pk=pk)
+            
+            # AJOUT : Vérification de la commune du projet du commentaire
+            if self.request.user.is_authenticated and self.request.user.commune != comment.project.commune:
+                raise Http404("Commentaire non trouvé (accès restreint par commune).")
+
             self.check_object_permissions(self.request, comment) 
             return comment
         except Comment.DoesNotExist:

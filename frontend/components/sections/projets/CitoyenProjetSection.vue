@@ -310,7 +310,7 @@ const currentUser = ref<{
   email: string;
   nom?: string;
   prenom?: string;
-  avatar?: string; // AJOUTÉ : la propriété avatar est maintenant optionnelle
+  avatar?: string;
 } | null>(null);
 
 // Propriétés calculées pour l'avatar de l'utilisateur actuel
