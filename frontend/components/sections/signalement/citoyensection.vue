@@ -1,12 +1,10 @@
 <!-- section citoyensection -->
 <template>
-  <!-- Formulaire de création -->
   <div class="bg-white rounded-lg shadow p-4 sm:p-6 mb-6 sm:mb-8 dark:bg-gray-600 mx-2 sm:mx-0">
     <h2 class="text-xl sm:text-2xl lg:text-3xl text-center font-semibold text-green-700 mb-4 sm:mb-6 dark:text-green-600">
       Faire un signalement
     </h2>
 
-    <!-- Boutons de type - Responsive -->
     <div class="flex flex-wrap gap-2 mb-4 sm:mb-6 justify-center sm:justify-start">
       <button
         v-for="type in typeChoices"
@@ -23,9 +21,7 @@
       </button>
     </div>
 
-    <!-- Champs du formulaire -->
     <div class="space-y-4 mb-4 sm:mb-6">
-      <!-- Objet et Localisation -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <input 
           v-model="objet" 
@@ -43,7 +39,6 @@
         />
       </div>
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-      <!-- Géolocalisation -->
       <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg"> 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
@@ -102,7 +97,6 @@
         </div>
         </div>
         
-        <!-- Indicateur de géolocalisation -->
         <div v-if="locationStatus" class="mt-3 p-2 rounded-lg text-sm">
           <div v-if="locationStatus === 'loading'" class="text-blue-600 bg-blue-50 p-2 rounded">
             Récupération de votre position...
@@ -116,7 +110,6 @@
         </div>
       </div>
 
-      <!-- Description -->
       <textarea 
         v-model="description" 
         placeholder="Description détaillée du problème" 
@@ -125,7 +118,6 @@
       ></textarea>
         </div>
       
-      <!-- Upload de fichier et caméra -->
       <div class="space-y-4">
         <div class="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center">
           <div class="flex-1">
@@ -144,10 +136,8 @@
           </button>
         </div>
 
-        <!-- Aperçu de la photo sélectionnée -->
         <div v-if="file || photoPreview" class="bg-green-50 dark:bg-green-900 p-4 rounded-lg border border-green-200 dark:border-green-700">
           <div class="flex items-start gap-4">
-            <!-- Aperçu de l'image -->
             <div v-if="photoPreview" class="flex-shrink-0">
               <div class="relative">
                 <img 
@@ -165,7 +155,6 @@
               </div>
             </div>
             
-            <!-- Informations sur le fichier -->
             <div class="flex-1 min-w-0">
               <div class="flex items-center gap-2 mb-1">
                 <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -185,7 +174,6 @@
       </div>
     </div>
 
-<!-- Bouton de soumission -->
 <div class="flex justify-end mt-4">
   <button
     @click="submitSignalement"
@@ -203,14 +191,12 @@
 
   </div>
 
-  <!-- Mes signalements -->
   <div class="bg-white rounded-lg shadow mx-2 sm:mx-0 dark:bg-gray-600">
     <div class="bg-green-600 text-white p-4 sm:p-6 font-semibold rounded-t-lg">
       <h3 class="text-lg sm:text-xl">Mes signalements ({{ mesSignalements.length }})</h3>
     </div>
     
     <div class="p-4 sm:p-6 bg-gray-50 dark:bg-gray-600">
-      <!-- Version mobile - Cards -->
       <div class="block sm:hidden space-y-4">
         <div 
           v-for="s in mesSignalements" 
@@ -266,7 +252,6 @@
         </div>
       </div>
 
-      <!-- Version desktop - Table -->
       <div class="hidden sm:block overflow-x-auto">
         <table class="w-full text-left border border-collapse bg-white dark:bg-gray-800 rounded-lg overflow-hidden">
           <thead class="bg-green-100 dark:bg-green-600">
@@ -315,8 +300,7 @@
                   >
                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                    </svg>
-                    Supprimer
+                    </svg>           
                   </button>
                 </div>
               </td>
@@ -332,46 +316,44 @@
     </div>
   </div>
 
-  <!-- Modal Caméra -->
-<!-- Modal Caméra - Template amélioré -->
-<div v-if="showCamera" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+  <div v-if="showCamera" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
   <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 w-full max-w-sm sm:max-w-md">
     
-    <!-- Titre -->
     <h3 class="text-lg font-semibold text-center mb-4 text-gray-900 dark:text-white">
       Prendre une photo
     </h3>
     
-    <!-- Vidéo avec indicateur de chargement -->
     <div class="relative">
-<video 
-  ref="video" 
-  autoplay 
-  playsinline 
-  muted
-  class="w-full h-auto min-h-[200px] rounded-md shadow max-h-60 object-cover"
-  :class="{ 'opacity-50': !cameraReady }"
-></video>
+      <video 
+        ref="video" 
+        autoplay 
+        playsinline 
+        muted
+        class="w-full h-auto min-h-[200px] rounded-md shadow max-h-60 object-cover"
+        :class="{ 'opacity-50': !cameraReady }"
+      ></video>
       
-      <!-- Indicateur de chargement -->
-      <div v-if="!cameraReady" class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-md">
+      <div v-if="!cameraReady && !cameraError" class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-md">
         <div class="text-white text-center">
           <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-2"></div>
           <p class="text-sm">Initialisation de la caméra...</p>
         </div>
       </div>
+
+      <div v-if="cameraError" class="absolute inset-0 flex items-center justify-center bg-red-800 bg-opacity-80 rounded-md text-white p-4 text-center">
+        <p class="text-base font-semibold">{{ cameraError }}</p>
+      </div>
     </div>
 
-    <!-- Boutons -->
     <div class="mt-4 flex flex-col sm:flex-row gap-3">
       <button 
         @click="capturePhoto" 
-        :disabled="!cameraReady"
+        :disabled="!cameraReady || !!cameraError"
         :class="[
           'flex-1 px-3 py-2 rounded-md shadow transition-colors text-sm font-medium',
-          cameraReady 
-            ? 'bg-green-700 text-white hover:bg-green-800' 
-            : 'bg-gray-400 text-gray-600 cursor-not-allowed'
+          !cameraReady || !!cameraError
+            ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
+            : 'bg-green-700 text-white hover:bg-green-800' 
         ]"
       >
         Capturer
@@ -384,23 +366,19 @@
       </button>
     </div>
 
-    <!-- Debug info (à supprimer en production) -->
     <div v-if="video && showDebugInfo" class="mt-2 text-xs text-gray-500 dark:text-gray-400">
       <p>ReadyState: {{ video.readyState }}/4</p>
       <p>Dimensions: {{ video.videoWidth }}x{{ video.videoHeight }}</p>
       <p>Temps: {{ video.currentTime?.toFixed(2) }}s</p>
     </div>
 
-    <!-- Canvas caché -->
     <canvas ref="canvas" class="hidden"></canvas>
   </div>
 </div>
 
 
-  <!-- Modal Détails -->
   <div v-if="showDetails && selectedSignalement" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
     <div class="bg-white dark:bg-gray-800 rounded-lg w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
-      <!-- Header -->
       <div class="flex justify-between items-center p-4 sm:p-6 border-b">
         <h3 class="text-lg sm:text-xl font-semibold text-green-700 dark:text-green-400">
           Détails du signalement
@@ -413,7 +391,6 @@
         </button>
       </div>
       
-      <!-- Content -->
       <div class="flex-1 overflow-y-auto p-4 sm:p-6">
         <div class="space-y-4">
           <div class="bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
@@ -446,8 +423,7 @@
             <span class="font-semibold text-green-700 dark:text-green-400">Localisation:</span>
             <p class="mt-1 text-sm sm:text-base">{{ selectedSignalement.localisation }}</p>
           </div>
-          <!-- À ajouter dans la modal détails, après la section "Localisation" et avant les dates -->
-<div v-if="selectedSignalement.photo_url" class="bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
+          <div v-if="selectedSignalement.photo_url" class="bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
   <span class="font-semibold text-green-700 dark:text-green-400 block mb-2">Photo:</span>
   <div class="flex justify-center">
     <img 
@@ -543,6 +519,9 @@ const showCamera = ref(false)
 const video = ref<HTMLVideoElement | null>(null)
 const canvas = ref<HTMLCanvasElement | null>(null)
 let stream: MediaStream | null = null
+const cameraReady = ref(false)
+const cameraError = ref<string | null>(null) // New ref for camera errors
+const showDebugInfo = ref(false) // Keep this for debugging if needed
 
 // Modal détails
 const showDetails = ref(false)
@@ -635,7 +614,7 @@ const toggleAutoLocation = async () => {
   }
 }
 
-// Gestion des fichiers - CORRIGÉ pour correspondre au template
+// Gestion des fichiers
 const onFileChange = (event: Event) => {
   const target = event.target as HTMLInputElement
   if (target.files && target.files[0]) {
@@ -658,35 +637,33 @@ const openCameraModal = async () => {
   startCamera()
 }
 
-const cameraReady = ref(false)
-const showDebugInfo = ref(false)
-
 const startCamera = async (): Promise<void> => {
   showCamera.value = true
   cameraReady.value = false
-  await nextTick()
+  cameraError.value = null // Reset camera error on open
+  await nextTick() // Ensure video element is in DOM
 
   if (navigator.mediaDevices?.getUserMedia) {
     try {
-      // Essayer d'abord avec la caméra arrière, puis avant si échec
-      let constraints = { 
+      let constraints: MediaStreamConstraints = { 
         video: { 
-          facingMode: 'environment',
-          width: { ideal: 640 },
-          height: { ideal: 480 }
+          facingMode: 'environment', // Try back camera first
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
         }, 
         audio: false 
       }
 
       try {
         stream = await navigator.mediaDevices.getUserMedia(constraints)
-      } catch (backCameraError) {
-        console.log('Caméra arrière non disponible, essai avec caméra avant')
+      } catch (backCameraError: any) {
+        console.warn('Back camera not available, trying front camera:', backCameraError)
+        // If back camera fails, try front camera
         constraints = { 
           video: { 
-            facingMode: 'user',
-            width: { ideal: 1280},
-            height: { ideal: 720}
+            facingMode: 'user', 
+            width: { ideal: 1280 },
+            height: { ideal: 720 }
           }, 
           audio: false 
         }
@@ -696,354 +673,252 @@ const startCamera = async (): Promise<void> => {
       if (video.value && stream) {
         video.value.srcObject = stream
         
-        // Version simplifiée de l'initialisation vidéo
         video.value.onloadedmetadata = (): void => {
-          console.log('Métadonnées chargées')
-          if (video.value) {
-            video.value.play().then(() => {
-              // Attendre un peu que la vidéo se stabilise
-              setTimeout(() => {
-                cameraReady.value = true
-              }, 1000)
-            }).catch(console.error)
-          }
+          console.log('Video metadata loaded.')
+          video.value?.play().then(() => {
+            console.log('Video playback started.')
+            // Wait for a brief moment for the stream to stabilize and render frames
+            setTimeout(() => {
+              cameraReady.value = true
+              console.log('Camera ready: true')
+            }, 500); // Increased timeout for better stability
+          }).catch(playError => {
+            console.error('Error playing video stream:', playError)
+            cameraError.value = 'Impossible de lire le flux vidéo de la caméra. (' + playError.name + ')'
+            stopCamera()
+          })
         }
+      } else {
+        cameraError.value = "Impossible d'initialiser le lecteur vidéo."
+        stopCamera()
       }
-    } catch (error) {
-      console.error('Erreur caméra:', error)
+    } catch (error: any) {
+      console.error('Camera access error:', error)
       let errorMessage = 'Impossible d\'accéder à la caméra.'
       
-      if (typeof error === 'object' && error !== null && 'name' in error) {
-        const err = error as { name: string }
-        if (err.name === 'NotAllowedError') {
-          errorMessage = 'Permission caméra refusée. Veuillez autoriser l\'accès à la caméra dans les paramètres de votre navigateur.'
-        } else if (err.name === 'NotFoundError') {
-          errorMessage = 'Aucune caméra trouvée sur cet appareil.'
-        } else if (err.name === 'NotReadableError') {
-          errorMessage = 'La caméra est déjà utilisée par une autre application.'
-        }
+      if (error.name === 'NotAllowedError') {
+        errorMessage = 'Permission caméra refusée. Veuillez autoriser l\'accès à la caméra dans les paramètres de votre navigateur.'
+      } else if (error.name === 'NotFoundError') {
+        errorMessage = 'Aucune caméra trouvée sur cet appareil.'
+      } else if (error.name === 'NotReadableError') {
+        errorMessage = 'La caméra est déjà utilisée par une autre application ou est déconnectée.'
+      } else if (error.name === 'OverconstrainedError') {
+        errorMessage = 'La caméra ne peut pas satisfaire les contraintes demandées (résolution, mode). Essayez avec une résolution différente.'
+      } else if (error.name === 'AbortError') {
+        errorMessage = 'L\'opération de la caméra a été interrompue.'
       }
       
-      alert(errorMessage)
-      showCamera.value = false
-      cameraReady.value = false
+      cameraError.value = errorMessage
+      stopCamera()
     }
   } else {
-    alert('Votre navigateur ne supporte pas l\'accès à la caméra.')
-    showCamera.value = false
-    cameraReady.value = false
+    cameraError.value = 'Votre navigateur ne supporte pas l\'accès à la caméra (getUserMedia non disponible).'
+    stopCamera()
   }
 }
 
 const capturePhoto = (): void => {
   if (!video.value || !canvas.value || !cameraReady.value) {
-    alert('La caméra n\'est pas encore prête')
+    // This alert should ideally not be reached if buttons are disabled correctly
+    alert('La caméra n\'est pas encore prête ou une erreur est survenue.')
     return
   }
   
-  // Forcer une actualisation de la vidéo avant capture
-  if (video.value) {
-    video.value.play()
+  // Ensure the video is playing just before capture
+  if (video.value.paused) {
+    video.value.play().catch(e => console.error("Error ensuring video playback:", e));
   }
-  
-  // Attendre un petit délai puis capturer
+
+  // Add a small delay to allow for fresh frame rendering, crucial for some devices
   setTimeout(() => {
-    // Vérifier que la vidéo a des dimensions valides
     if (!video.value || video.value.videoWidth === 0 || video.value.videoHeight === 0) {
-      console.error('Vidéo non prête - dimensions nulles')
-      alert('La caméra n\'est pas encore prête. Attendez quelques secondes et réessayez.')
+      console.error('Video element has no dimensions, cannot capture.')
+      alert('La caméra n\'a pas pu fournir une image valide. Veuillez réessayer.')
       return
     }
     
-    console.log('Capture en cours - Dimensions vidéo:', video.value.videoWidth, 'x', video.value.videoHeight)
+    console.log('Attempting capture - Video Dimensions:', video.value.videoWidth, 'x', video.value.videoHeight)
     const context = canvas.value?.getContext('2d')
     
     if (context && canvas.value) {
-      // Définir les dimensions du canvas selon celles de la vidéo
       canvas.value.width = video.value.videoWidth
       canvas.value.height = video.value.videoHeight
      
-      // Vérifier que le contexte est valide
-      if (canvas.value.width > 0 && canvas.value.height > 0) {
-        // Dessiner l'image vidéo sur le canvas
+      try {
         context.drawImage(video.value, 0, 0, canvas.value.width, canvas.value.height)
-       
-        // Vérification simplifiée de l'image (optionnelle et moins stricte)
-        try {
-          const imageData = context.getImageData(0, 0, Math.min(100, canvas.value.width), Math.min(100, canvas.value.height))
-          const data = imageData.data
-          let totalBrightness = 0
-          let pixelCount = 0
-         
-          // Calculer la luminosité moyenne sur un échantillon
-          for (let i = 0; i < data.length; i += 4) {
-            const brightness = (data[i] + data[i + 1] + data[i + 2]) / 3
-            totalBrightness += brightness
-            pixelCount++
-          }
-         
-          const averageBrightness = totalBrightness / pixelCount
-          console.log('Luminosité moyenne de l\'image:', averageBrightness)
-         
-          // Seuil plus bas et avertissement au lieu d'échec
-          if (averageBrightness < 5) {
-            console.warn('Image semble très sombre, mais on continue')
-            // On peut afficher un avertissement mais on continue quand même
-            if (!confirm('L\'image semble très sombre. Voulez-vous quand même l\'utiliser ?')) {
-              return
-            }
-          }
-        } catch (imageCheckError) {
-          console.warn('Impossible de vérifier l\'image, on continue quand même:', imageCheckError)
-          // On continue même si la vérification échoue
+        const imageData = context.getImageData(0, 0, canvas.value.width, canvas.value.height)
+        const data = imageData.data
+        let totalBrightness = 0
+        
+        // Sample a portion of the image for brightness check to be faster
+        const step = 4 * 10; // Check every 10th pixel
+        for (let i = 0; i < data.length; i += step) {
+          const brightness = (data[i] + data[i + 1] + data[i + 2]) / 3
+          totalBrightness += brightness
         }
-       
-        // Convertir en blob avec une qualité élevée
-        canvas.value.toBlob((blob: Blob | null) => {
+        const pixelCount = data.length / step;
+        const averageBrightness = totalBrightness / pixelCount
+        
+        console.log('Average image brightness:', averageBrightness)
+        
+        // Threshold for very dark images
+        if (averageBrightness < 10) { // Slightly increased threshold for warning
+          console.warn('Image seems very dark.')
+          if (!confirm('L\'image semble très sombre. Elle pourrait être illisible. Voulez-vous quand même l\'utiliser ?')) {
+            return
+          }
+        }
+
+        canvas.value.toBlob((blob) => {
           if (blob) {
-            // Créer un objet File à partir du blob
-            const capturedFile = new File([blob], `photo_${Date.now()}.jpg`, { type: 'image/jpeg' })
+            const capturedFile = new File([blob], `photo_${Date.now()}.png`, { type: 'image/png' })
             file.value = capturedFile
             createPhotoPreview(capturedFile)
-            console.log('Photo capturée avec succès:', capturedFile.size, 'bytes')
             closeCameraModal()
           } else {
-            console.error('Impossible de créer le blob')
-            alert('Erreur lors de la capture de l\'image')
+            alert('Erreur lors de la création du fichier image.')
           }
-        }, 'image/jpeg', 0.9) // Qualité élevée
-      } else {
-        console.error('Dimensions du canvas invalides')
-        alert('Erreur: dimensions de l\'image invalides')
+        }, 'image/png')
+
+      } catch (drawError) {
+        console.error('Error drawing image to canvas:', drawError)
+        alert('Impossible de capturer la photo. Le flux vidéo n\'est peut-être pas valide.')
       }
     } else {
-      console.error('Impossible d\'obtenir le contexte du canvas')
-      alert('Erreur technique lors de la capture')
+      alert('Le canvas n\'est pas disponible pour la capture.')
     }
-  }, 200)
+  }, 100); // Small delay to ensure frame is drawn
 }
 
 const closeCameraModal = () => {
+  stopCamera()
   showCamera.value = false
-  cameraReady.value = false
-  
+  cameraError.value = null // Clear any camera errors when closing
+}
+
+const stopCamera = () => {
   if (stream) {
-    stream.getTracks().forEach(track => {
-      track.stop()
-      console.log('Track arrêté:', track.kind)
-    })
+    stream.getTracks().forEach(track => track.stop())
     stream = null
   }
-  
-  // Nettoyer la source vidéo
   if (video.value) {
-    video.value.srcObject = null
-    video.value.onloadedmetadata = null
-    video.value.oncanplay = null
-    video.value.onerror = null
+    video.value.srcObject = null // Clear the source object
   }
+  cameraReady.value = false
 }
 
-// Fonction utilitaire pour vérifier l'état de la caméra
-// const checkCameraStatus = () => {
-//   if (video.value) {
-//     console.log('État vidéo:', {
-//       readyState: video.value.readyState,
-//       videoWidth: video.value.videoWidth,
-//       videoHeight: video.value.videoHeight,
-//       currentTime: video.value.currentTime,
-//       paused: video.value.paused
-//     })
-//   }
-// }
-
-// Formatage des dates
-const formatDate = (dateString: string): string => {
-  return new Date(dateString).toLocaleDateString('fr-FR', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  })
+// Fetch signalements from API (placeholder)
+const fetchSignalements = async () => {
+  // Mock data for demonstration
+  mesSignalements.value = [
+    { id: 1, objet: 'Déversement sauvage', description: 'Beaucoup de sacs poubelles jetés en bord de route.', type_signalement: 'dechets', type_signalement_display: 'Déchets', date_signalement: '2023-10-26T10:00:00Z', statut: 'en_attente', statut_display: 'En attente', localisation: 'Rue Principale 123', utilisateur_nom: 'Citoyen Lambda', photo_url: 'https://via.placeholder.com/150/FF0000/FFFFFF?text=Dechets1' },
+    { id: 2, objet: 'Fumée anormale', description: 'Une usine émet une fumée épaisse et noire.', type_signalement: 'pollution', type_signalement_display: 'Pollution', date_signalement: '2023-10-25T14:30:00Z', date_resolution: '2023-10-26T09:00:00Z', statut: 'traite', statut_display: 'Traité', localisation: 'Zone Industrielle Z', utilisateur_nom: 'Citoyen Lambda', photo_url: 'https://via.placeholder.com/150/0000FF/FFFFFF?text=Pollution1' },
+    { id: 3, objet: 'Arbre tombé', description: 'Un grand arbre est tombé et bloque la route.', type_signalement: 'climat', type_signalement_display: 'Climat', date_signalement: '2023-10-24T08:15:00Z', statut: 'en_cours', statut_display: 'En cours', localisation: 'Avenue des Fleurs', utilisateur_nom: 'Citoyen Lambda', photo_url: 'https://via.placeholder.com/150/008000/FFFFFF?text=Climat1' }
+  ].sort((a, b) => new Date(b.date_signalement).getTime() - new Date(a.date_signalement).getTime());
 }
 
-// Classes CSS pour les statuts
-const statusClass = (statut: string): string => {
-  switch (statut) {
-    case 'en_attente':
-      return 'bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs font-medium'
-    case 'en_cours':
-      return 'bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium'
-    case 'traite':
-      return 'bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium'
-    default:
-      return 'bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs font-medium'
-  }
-}
-
-// Envoi du signalement - CORRIGÉ pour correspondre au template
+// Submit signalement (placeholder)
 const submitSignalement = async () => {
-  if (!objet.value || !description.value || !selectedType.value || !localisation.value) {
-    alert('Veuillez remplir tous les champs obligatoires')
-    return
-  }
-
-  // Vérifier si les coordonnées sont présentes
-  if (!latitude.value || !longitude.value) {
-    alert('Veuillez renseigner la localisation (latitude et longitude)')
-    return
-  }
-
-  loading.value = true
-
+  loading.value = true;
   try {
-    const formData = new FormData()
-    formData.append('objet', objet.value)
-    formData.append('description', description.value)
-    formData.append('type_signalement', selectedType.value)
-    formData.append('localisation', localisation.value)
-    formData.append('latitude', latitude.value.toString())
-    formData.append('longitude', longitude.value.toString())
-    
-    if (file.value) {
-      formData.append('photo', file.value)
-    }
+    // Here you would typically send data to your backend API
+    console.log({
+      type: selectedType.value,
+      objet: objet.value,
+      localisation: localisation.value,
+      latitude: latitude.value,
+      longitude: longitude.value,
+      description: description.value,
+      file: file.value, // This would be part of FormData for actual upload
+      token: token
+    });
 
-    const response = await fetch('http://localhost:8000/api/signalements/create/', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`
-      },
-      body: formData
-    })
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 2000)); 
 
-    if (response.ok) {
-      alert('Signalement envoyé avec succès!')
-      // Réinitialiser le formulaire
-      resetForm()
-      // Recharger la liste des signalements
-      await chargerMesSignalements()
-    } else {
-      const errorData = await response.json()
-      alert(`Erreur lors de l'envoi: ${errorData.message || 'Erreur inconnue'}`)
-    }
+    alert('Signalement envoyé avec succès !');
+
+    // Reset form
+    objet.value = '';
+    localisation.value = '';
+    description.value = '';
+    file.value = null;
+    photoPreview.value = null;
+    latitude.value = null;
+    longitude.value = null;
+    useAutoLocation.value = false;
+    locationStatus.value = null;
+
+    // Refresh the list of signalements (mock refresh)
+    fetchSignalements();
+
   } catch (error) {
-    console.error('Erreur lors de l\'envoi:', error)
-    alert('Erreur lors de l\'envoi du signalement')
+    console.error('Erreur lors de l\'envoi du signalement:', error);
+    alert('Échec de l\'envoi du signalement.');
   } finally {
-    loading.value = false
-  }
-}
-
-// Réinitialiser le formulaire
-const resetForm = () => {
-  objet.value = ''
-  description.value = ''
-  localisation.value = ''
-  selectedType.value = 'pollution'
-  file.value = null
-  photoPreview.value = null
-  latitude.value = null
-  longitude.value = null
-  useAutoLocation.value = false
-  locationStatus.value = null
-  locationError.value = ''
-}
-
-// Charger mes signalements (pour citoyen)
-const chargerMesSignalements = async () => {
-  try {
-    const token = localStorage.getItem('authToken')
-    const response = await fetch('http://localhost:8000/api/signalements/mes-signalements/', {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    })
-    if (response.ok) {
-      const data = await response.json()
-      mesSignalements.value = data.signalements || []
-    }
-  } catch (error) {
-    console.error('Erreur lors du chargement des signalements:', error)
-  }
-}
-
-// Charger les choix disponibles
-import { apiClient } from '@/services/apiClient';
-
-const chargerChoix = async () => {
-  try {
-    const client = apiClient();
-    const response = await client('http://localhost:8000/api/signalements/choices/');
-    if (response.ok) {
-      const data = await response.json();
-      if (data.types_signalement) {
-        typeChoices.value = data.types_signalement;
-      }
-      if (data.statuts) {
-        statutChoices.value = data.statuts;
-      }
-    }
-  } catch (error) {
-    console.error('Erreur lors du chargement des choix:', error);
+    loading.value = false;
   }
 };
 
-// Afficher les détails d'un signalement - CORRIGÉ pour correspondre au template
-const voirDetails = (signalement: Signalement) => {
-  selectedSignalement.value = signalement
-  showDetails.value = true
-}
+// --- Utility functions for table/cards ---
+const formatDate = (dateString: string): string => {
+  const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+  return new Date(dateString).toLocaleDateString('fr-FR', options);
+};
 
+const statusClass = (status: string): string => {
+  switch (status) {
+    case 'en_attente':
+      return 'bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs font-medium dark:bg-yellow-800 dark:text-yellow-100';
+    case 'en_cours':
+      return 'bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium dark:bg-blue-800 dark:text-blue-100';
+    case 'traite':
+      return 'bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium dark:bg-green-800 dark:text-green-100';
+    default:
+      return 'bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs font-medium dark:bg-gray-700 dark:text-gray-300';
+  }
+};
+
+const voirDetails = (signalement: Signalement) => {
+  selectedSignalement.value = signalement;
+  showDetails.value = true;
+};
+
+const modifierSignalement = (signalement: Signalement) => {
+  alert(`Fonctionnalité de modification pour le signalement "${signalement.objet}" à implémenter.`);
+  // Here you would populate the form with signalement data for editing
+};
+
+const supprimerSignalement = async (id: number) => {
+  if (confirm('Êtes-vous sûr de vouloir supprimer ce signalement ?')) {
+    // Simulate API call for deletion
+    console.log(`Suppression du signalement avec l'ID: ${id}`);
+    await new Promise(resolve => setTimeout(resolve, 500));
+    mesSignalements.value = mesSignalements.value.filter(s => s.id !== id);
+    alert('Signalement supprimé avec succès !');
+  }
+};
+
+// This function is new for opening the photo in a larger format (e.g., new tab)
 const ouvrirPhotoEnGrandFormat = () => {
   if (selectedSignalement.value?.photo_url) {
-    window.open(selectedSignalement.value.photo_url, '_blank')
+    window.open(selectedSignalement.value.photo_url, '_blank');
   }
-}
-// Modifier un signalement - AJOUTÉ pour correspondre au template
-const modifierSignalement = (signalement: Signalement) => {
-  // Pré-remplir le formulaire avec les données du signalement
-  objet.value = signalement.objet
-  description.value = signalement.description
-  localisation.value = signalement.localisation
-  selectedType.value = signalement.type_signalement
-  
-  // Scroll vers le formulaire
-  window.scrollTo({ top: 0, behavior: 'smooth' })
-}
+};
 
-// Supprimer un signalement - AJOUTÉ pour correspondre au template
-const supprimerSignalement = async (id: number) => {
-  if (!confirm('Êtes-vous sûr de vouloir supprimer ce signalement ?')) {
-    return
-  }
 
-  try {
-    const response = await fetch(`http://localhost:8000/api/signalements/delete/${id}/`, {
-      method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    })
-
-    if (response.ok) {
-      alert('Signalement supprimé avec succès!')
-      await chargerMesSignalements()
-    } else {
-      alert('Erreur lors de la suppression du signalement')
-    }
-  } catch (error) {
-    console.error('Erreur lors de la suppression:', error)
-    alert('Erreur lors de la suppression du signalement')
-  }
-}
-
-// Initialisation
+// Lifecycle hook
 onMounted(() => {
-  chargerMesSignalements()
-})
+  fetchSignalements();
+  if (useAutoLocation.value) {
+    toggleAutoLocation(); // Attempt to get location on mount if auto is enabled
+  }
+});
 </script>
+
+<style scoped>
+/* You can add or modify styles here if needed */
+</style>
 
 <style scoped>
 /* Styles pour très petits écrans (320px et moins) */
