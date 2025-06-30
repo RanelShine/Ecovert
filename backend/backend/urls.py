@@ -31,6 +31,7 @@ urlpatterns = [
     path('api/photos/', include('photos.urls')),
     path('api/signalements/', include('signalement.urls')),
     path('api/projects/', include('projects.urls')),
+    path('api/chatbot/', include('chatbot.urls')),
 ]
 
 # Servir les fichiers médias en développement

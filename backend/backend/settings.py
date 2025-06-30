@@ -26,13 +26,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-d5m_z^)cm0!amfbutoebq88vi6p3#t*%@d5#d7sy5*ngv2pj^@'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = [
-    'localhost',
-    '127.0.0.1',
-    '192.168.223.20:3000',  
-]
+ALLOWED_HOSTS = ['nguetsa.pythonanywhere.com']
 
 
 # Application definition
@@ -52,6 +48,7 @@ INSTALLED_APPS = [
     'photos',
     'signalement',
     'projects',
+    'chatbot',
 ]
 
 MIDDLEWARE = [
@@ -149,7 +146,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Configuration des fichiers statiques
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 # Ajoutez ces headers pour CORS si nécessaire
 CORS_ALLOW_ALL_ORIGINS = True  # Pour le développement uniquement
@@ -168,16 +165,14 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024   # 10MB
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-#autorisation des requettes nuxt
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-    "http://192.168.223.20:3000",
+CSRF_TRUSTED_ORIGINS = [
+    'http://vermillion-crisp-07a977.netlify.app',
 ]
 
-CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:3000", "http://127.0.0.1:3000", "http://192.168.173.20:8000"
+CORS_ALLOWED_ORIGINS = [
+    'http://vermillion-crisp-07a977.netlify.app',
 ]
+
 # CSRF_COOKIE_AGE = 60*60*24*14
 # CSRF_USE_SESSIONS = False
 # CSRF_COOKIE_SECURE = False
@@ -189,7 +184,7 @@ AUTH_USER_MODEL = 'accounts.User'
 
 # Email settings for verification
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST        = 'smtp.gmail.com'            
+EMAIL_HOST        = 'smtp.gmail.com'
 EMAIL_PORT        = 587
 EMAIL_USE_TLS     = True
 EMAIL_HOST_USER       = os.environ.get('EMAIL_HOST_USER', 'ranelleshine076@gmail.com')
@@ -220,7 +215,7 @@ SIMPLE_JWT = {
     "USER_ID_FIELD": "id",
 }
 
-# SITE_DOMAIN ="http://localhost:8000"
+# SITE_DOMAIN ="nguetsa.pythonanywhere.com "
 # SITE_NAME = "EcoVert"
 
 # SESSION_COOKIE_AGE =1800
