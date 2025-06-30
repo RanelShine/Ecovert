@@ -52,7 +52,6 @@ INSTALLED_APPS = [
     'photos',
     'signalement',
     'projects',
-    'meteo',
 ]
 
 MIDDLEWARE = [
