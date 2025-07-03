@@ -29,22 +29,36 @@ def create_default_communes(sender, **kwargs):
                 'id': 1,
                 'nom': 'Bafoussam I',
                 'region': 'Ouest',
-                'latitude': 5.475,  # 5° 28′ 30″ N
-                'longitude': 10.421  # 10° 25′ 15″ E
+                'latitude': 5.475,  
+                'longitude': 10.421  
             },
             {
                 'id': 2,
-                'nom': 'Bafoussam II',
+                'nom': 'Bafoussam III',
                 'region': 'Ouest',
-                'latitude': 5.516,  # 5° 30′ 59″ N
-                'longitude': 10.410  # 10° 24′ 37″ E
+                'latitude': 5.283333,  
+                'longitude': 10.28333  
             },
             {
                 'id': 3,
                 'nom': 'Mandjou',
                 'region': 'Est',
-                'latitude': 4.600,  # 4° 36′ N
-                'longitude': 13.733  # 13° 44′ E
+                'latitude': 4.600,  
+                'longitude': 13.733  
+            },
+            {
+                'id': 4,
+                'nom': 'Foumbot',
+                'region': 'Ouest',
+                'latitude': 5.51269400,  
+                'longitude': 10.63627000  
+            },
+            {
+                'id': 5,
+                'nom': 'Ngaoundéré III',
+                'region': 'Adamaoua',
+                'latitude': 7.404728932967782,  
+                'longitude': 13.548091924166249  
             },
         ]
         for data in default_communes:

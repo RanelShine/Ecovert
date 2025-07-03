@@ -1,3 +1,4 @@
+#chatot/models.py
 from django.conf import settings # Add this import
 from django.db import models
 

@@ -1,3 +1,4 @@
+# chatbot/chatbot_logic.py
 import google.generativeai as genai
 from PIL import Image
 
