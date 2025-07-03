@@ -14,11 +14,15 @@ from datetime import timedelta
 import os
 from pathlib import Path
 from decouple import config
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
+OPENWEATHER_API_KEY = os.environ.get('OPENWEATHER_API_KEY')
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
@@ -28,7 +32,7 @@ SECRET_KEY = 'django-insecure-d5m_z^)cm0!amfbutoebq88vi6p3#t*%@d5#d7sy5*ngv2pj^@
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['nguetsa.pythonanywhere.com']
+ALLOWED_HOSTS = ['nguetsa.pythonanywhere.com', '*']
 
 
 # Application definition
@@ -49,6 +53,7 @@ INSTALLED_APPS = [
     'signalement',
     'projects',
     'chatbot',
+    'meteo',
 ]
 
 MIDDLEWARE = [
