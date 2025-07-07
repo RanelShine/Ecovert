@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'projects',
     'chatbot',
     'meteo',
+    'zones',
 ]
 
 MIDDLEWARE = [

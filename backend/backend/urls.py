@@ -33,6 +33,7 @@ urlpatterns = [
     path('api/projects/', include('projects.urls')),
     path('api/', include('chatbot.urls')),
     path('api/meteo/', include('meteo.urls')),
+    path('api/carte/', include('zones.urls')),
 ]
 
 # Servir les fichiers médias en développement
